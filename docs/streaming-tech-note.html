@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Streaming Responses in Copilot Studio — Tech Note Deck</title>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.min.js"></script>
+<script>
+  (() => {
+    const param = new URLSearchParams(window.location.search).get("scoutTheme");
+    const theme =
+      param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<style>
+  :root {
+    color-scheme: light;
+    --cp-bg: #f7f4ef;
+    --cp-bg-elevated: #fcfbf8;
+    --cp-surface: #ffffff;
+    --cp-surface-soft: #f5f5f5;
+    --cp-border: #dedede;
+    --cp-border-strong: #919191;
+    --cp-text: #242424;
+    --cp-text-muted: #5c5c5c;
+    --cp-text-soft: #6f6f6f;
+    --cp-accent: #b11f4b;
+    --cp-accent-hover: #9a1a41;
+    --cp-accent-soft: rgba(177, 31, 75, 0.08);
+    --cp-accent-fg: #ffffff;
+    --cp-success: #16a34a;
+    --cp-danger: #dc2626;
+    --cp-warning: #f59e0b;
+    --cp-link: #0078d4;
+    --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+    --cp-overlay: rgba(255, 255, 255, 0.8);
+    --cp-panel: rgba(255, 255, 255, 0.86);
+    --cp-panel-strong: rgba(255, 255, 255, 0.96);
+    --cp-sheen: rgba(255, 255, 255, 0.55);
+    --cp-highlight: rgba(177, 31, 75, 0.12);
+  }
+  html[data-theme="dark"] {
+    color-scheme: dark;
+    --cp-bg: #3d3b3a;
+    --cp-bg-elevated: #343231;
+    --cp-surface: #292929;
+    --cp-surface-soft: #2e2e2e;
+    --cp-border: #474747;
+    --cp-border-strong: #5f5f5f;
+    --cp-text: #dedede;
+    --cp-text-muted: #919191;
+    --cp-text-soft: #b0b0b0;
+    --cp-accent: #fd8ea1;
+    --cp-accent-hover: #fb7b91;
+    --cp-accent-soft: rgba(253, 142, 161, 0.14);
+    --cp-accent-fg: #1a1a1a;
+    --cp-success: #4ade80;
+    --cp-danger: #f87171;
+    --cp-warning: #fbbf24;
+    --cp-link: #4da6ff;
+    --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+    --cp-overlay: rgba(41, 41, 41, 0.88);
+    --cp-panel: rgba(41, 41, 41, 0.72);
+    --cp-panel-strong: rgba(41, 41, 41, 0.96);
+    --cp-sheen: rgba(255, 255, 255, 0.04);
+    --cp-highlight: rgba(253, 142, 161, 0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--cp-bg);
+    color: var(--cp-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  code, pre, .mono { font-family: Consolas, "Courier New", Courier, monospace; }
+
+  /* ---- Deck shell ---- */
+  .deck {
+    width: min(1100px, 94vw);
+    height: min(680px, 90vh);
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    background: var(--cp-surface);
+    border: 1px solid var(--cp-border);
+    border-radius: 16px;
+    box-shadow: var(--cp-shadow);
+    padding: 48px 56px;
+    display: none;
+    flex-direction: column;
+    overflow: auto;
+  }
+  .slide.active { display: flex; animation: fade 0.35s ease; }
+  @keyframes fade {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .kicker {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--cp-accent);
+    margin-bottom: 14px;
+  }
+
+  h1 { font-size: 42px; line-height: 1.12; margin-bottom: 18px; }
+  h2 { font-size: 30px; line-height: 1.15; margin-bottom: 22px; }
+  h3 { font-size: 18px; margin-bottom: 10px; }
+
+  p { font-size: 17px; line-height: 1.55; color: var(--cp-text-muted); }
+  .lead { font-size: 20px; color: var(--cp-text); }
+
+  ul { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+  li { font-size: 16.5px; line-height: 1.45; display: flex; gap: 12px; align-items: flex-start; }
+  li .ic { flex: none; font-size: 18px; line-height: 1.45; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+
+  .card {
+    background: var(--cp-bg-elevated);
+    border: 1px solid var(--cp-border);
+    border-radius: 12px;
+    padding: 22px 24px;
+  }
+  .card.good { border-top: 4px solid var(--cp-success); }
+  .card.bad { border-top: 4px solid var(--cp-danger); }
+  .card h3 { display: flex; align-items: center; gap: 8px; }
+
+  .pill {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--cp-accent-soft);
+    color: var(--cp-accent);
+  }
+
+  pre {
+    background: var(--cp-surface-soft);
+    border: 1px solid var(--cp-border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    overflow: auto;
+    color: var(--cp-text);
+    white-space: pre;
+  }
+  .tok-key { color: var(--cp-accent); }
+  .tok-com { color: var(--cp-text-soft); font-style: italic; }
+
+  .flow { display: flex; align-items: stretch; gap: 0; flex-wrap: wrap; }
+  .flow .step {
+    flex: 1;
+    min-width: 150px;
+    background: var(--cp-bg-elevated);
+    border: 1px solid var(--cp-border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    position: relative;
+  }
+  .flow .arrow { display: flex; align-items: center; padding: 0 6px; color: var(--cp-accent); font-size: 22px; font-weight: 700; }
+  .flow .step .tag { font-size: 12px; font-weight: 700; color: var(--cp-accent); text-transform: uppercase; letter-spacing: 0.05em; }
+  .flow .step .desc { font-size: 13.5px; color: var(--cp-text-muted); margin-top: 6px; }
+  .flow .step .mono { font-size: 11.5px; color: var(--cp-text-soft); margin-top: 8px; display: block; }
+
+  .muted { color: var(--cp-text-soft); font-size: 14px; }
+
+  .takeaway {
+    margin-top: auto;
+    background: var(--cp-accent-soft);
+    border-left: 4px solid var(--cp-accent);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 15px;
+    color: var(--cp-text);
+  }
+  .takeaway b { color: var(--cp-accent); }
+
+  /* ---- Title slide ---- */
+  .title-slide { justify-content: center; }
+  .title-slide .badge {
+    align-self: flex-start;
+    background: var(--cp-accent);
+    color: var(--cp-accent-fg);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    padding: 6px 14px;
+    border-radius: 999px;
+    margin-bottom: 26px;
+  }
+  .title-slide .meta { margin-top: 28px; display: flex; gap: 26px; flex-wrap: wrap; }
+  .title-slide .meta div { font-size: 14px; color: var(--cp-text-muted); }
+  .title-slide .meta b { display: block; color: var(--cp-text); font-size: 15px; margin-bottom: 2px; }
+
+  /* ---- Chrome ---- */
+  .chrome {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--cp-panel-strong);
+    border: 1px solid var(--cp-border);
+    border-radius: 999px;
+    padding: 8px 10px 8px 18px;
+    box-shadow: var(--cp-shadow);
+    backdrop-filter: blur(8px);
+    z-index: 20;
+  }
+  .chrome .count { font-size: 13px; color: var(--cp-text-muted); min-width: 56px; text-align: center; font-variant-numeric: tabular-nums; }
+  .nav-btn {
+    border: none;
+    background: var(--cp-accent);
+    color: var(--cp-accent-fg);
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .nav-btn:hover { background: var(--cp-accent-hover); }
+  .nav-btn:disabled { opacity: 0.4; cursor: default; }
+  .theme-toggle {
+    border: 1px solid var(--cp-border);
+    background: var(--cp-surface);
+    color: var(--cp-text);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .progress {
+    position: fixed; top: 0; left: 0; height: 3px;
+    background: var(--cp-accent);
+    transition: width 0.3s ease;
+    z-index: 30;
+  }
+  .hint { position: fixed; bottom: 22px; right: 24px; font-size: 12px; color: var(--cp-text-soft); z-index: 20; }
+
+  .export-btn {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--cp-accent-fg);
+    background: var(--cp-accent);
+    border: none;
+    border-radius: 999px;
+    padding: 12px 22px;
+    cursor: pointer;
+    box-shadow: var(--cp-shadow);
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .export-btn:hover { background: var(--cp-accent-hover); transform: translateY(-1px); }
+  .export-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
+  .export-status { display: block; margin-top: 12px; font-size: 13px; color: var(--cp-text-muted); }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+
+<div class="deck" id="deck">
+
+  <!-- 1. Title -->
+  <section class="slide title-slide active">
+    <span class="badge">TECH NOTE · KNOWLEDGE SHARING</span>
+    <h1>Streaming Responses in<br />Copilot Studio</h1>
+    <p class="lead">What works, what doesn't, and the gotchas we hit building a live token-by-token streaming chat playground on the Direct-to-Engine SDK.</p>
+    <div class="meta">
+      <div><b>Surface</b>Copilot Studio agent + Bot Framework Web Chat</div>
+      <div><b>Transport</b>@microsoft/agents-copilotstudio-client (SDK)</div>
+      <div><b>Date</b>June 2026</div>
+    </div>
+  </section>
+
+  <!-- 2. Context -->
+  <section class="slide">
+    <div class="kicker">The Goal</div>
+    <h2>Render a real, progressive streaming answer</h2>
+    <div class="grid2">
+      <div>
+        <p class="lead" style="margin-bottom:16px;">We wanted the same experience users expect from modern AI chat:</p>
+        <ul>
+          <li><span class="ic">①</span><span>A <b>single answer bubble</b> that grows token-by-token in place.</span></li>
+          <li><span class="ic">②</span><span>An inline <b>"thought process"</b> showing the agent's reasoning steps while it works.</span></li>
+          <li><span class="ic">③</span><span>The view <b>auto-following</b> the answer as it streams.</span></li>
+          <li><span class="ic">④</span><span>A diagnostics <b>inspector</b> to see raw streaming activities.</span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>The stack</h3>
+        <p style="font-size:15px;">
+          <b>Web Chat:</b> CDN <span class="mono">botframework-webchat/latest</span><br /><br />
+          <b>Client:</b> <span class="mono">agents-copilotstudio-client</span> (Direct-to-Engine)<br /><br />
+          <b>Auth:</b> <span class="mono">@azure/msal-browser</span> (Entra redirect)<br /><br />
+          <b>Relay:</b> Express token server, port 3978
+        </p>
+      </div>
+    </div>
+    <div class="takeaway">Streaming "just working" out of the box is a myth — Web Chat and the SDK each make assumptions you have to actively reconcile.</div>
+  </section>
+
+  <!-- 3. How streaming arrives -->
+  <section class="slide">
+    <div class="kicker">The Wire Format</div>
+    <h2>How a streamed answer actually arrives</h2>
+    <div class="flow">
+      <div class="step">
+        <span class="tag">informative</span>
+        <div class="desc">Dynamic reasoning steps ("Generating plan…", "Processing", "Analyzing data…").</div>
+        <span class="mono">type: typing</span>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step">
+        <span class="tag">streaming</span>
+        <div class="desc">Interim chunks with <b>cumulative growing text</b>. Many per answer (we saw 150+).</div>
+        <span class="mono">type: typing</span>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step">
+        <span class="tag">final</span>
+        <div class="desc">The concluded message that replaces the growing bubble.</div>
+        <span class="mono">type: message</span>
+      </div>
+    </div>
+    <pre style="margin-top:26px;"><span class="tok-com">// Each interim chunk is a typing activity carrying streaminfo</span>
+{
+  <span class="tok-key">"type"</span>: <span class="tok-key">"typing"</span>,
+  <span class="tok-key">"id"</span>: <span class="tok-key">"e4c33a60…c20-3"</span>,   <span class="tok-com">// UNIQUE per chunk: streamId-sequence</span>
+  <span class="tok-key">"channelData"</span>: { <span class="tok-key">"streamType"</span>: <span class="tok-key">"streaming"</span>, <span class="tok-key">"streamId"</span>: <span class="tok-key">"e4c33a60…c20"</span>,
+                    <span class="tok-key">"streamSequence"</span>: 3, <span class="tok-key">"webchat:sequence-id"</span>: 14 },
+  <span class="tok-key">"entities"</span>: [{ <span class="tok-key">"type"</span>: <span class="tok-key">"streaminfo"</span>, … }]   <span class="tok-com">// mirrored copy</span>
+}</pre>
+    <div class="takeaway">All chunks of one answer share a <b>streamId</b>, but every chunk has its own unique <b>activity id</b>. That single fact causes the biggest gotcha.</div>
+  </section>
+
+  <!-- 4. WHAT'S WORKING -->
+  <section class="slide">
+    <div class="kicker">The Good News</div>
+    <h2>What's working ✅</h2>
+    <div class="grid2">
+      <div class="card good">
+        <h3>✅ Token-by-token streaming (SDK mode)</h3>
+        <p style="font-size:15px;">The Direct-to-Engine SDK (<span class="mono">CopilotStudioWebChat.createConnection</span>) is the <b>only</b> path that surfaces true generative streaming. Entra sign-in, no secret in the browser.</p>
+      </div>
+      <div class="card good">
+        <h3>✅ Single growing bubble</h3>
+        <p style="font-size:15px;">Forcing the activity <span class="mono">id = streamId</span> makes Web Chat update <b>one</b> bubble in place — verified growing 8 → 1385 chars in a single message.</p>
+      </div>
+      <div class="card good">
+        <h3>✅ Dynamic "thought process"</h3>
+        <p style="font-size:15px;">The <span class="mono">informative</span> chunks are real reasoning steps. We render them as a styled timeline that disappears the moment the answer streams.</p>
+      </div>
+      <div class="card good">
+        <h3>✅ Auto-scroll &amp; diagnostics</h3>
+        <p style="font-size:15px;">A MutationObserver keeps the view pinned to the growing answer. The inspector confirmed 439 chunks across 2 livestreams end-to-end.</p>
+      </div>
+    </div>
+    <div class="takeaway">With the right normalization, the full modern streaming UX is achievable — single bubble, inline reasoning, live scroll.</div>
+  </section>
+
+  <!-- 5. WHAT'S NOT WORKING -->
+  <section class="slide">
+    <div class="kicker">The Hard Parts</div>
+    <h2>What's not working (out of the box) ⚠️</h2>
+    <div class="grid2">
+      <div class="card bad">
+        <h3>⚠️ 152 bubbles, not 1</h3>
+        <p style="font-size:15px;">Web Chat dedupes by activity <b>id</b>. Since every chunk has a unique id, each renders as its own bubble. Long answers exploded into 150+ stacked bubbles.</p>
+      </div>
+      <div class="card bad">
+        <h3>⚠️ Cold observable, one subscriber</h3>
+        <p style="font-size:15px;">The SDK's <span class="mono">activity$</span> is cold with a single internal subscriber. Subscribe twice (e.g. for an inspector) and one observer goes <b>blind</b>.</p>
+      </div>
+      <div class="card bad">
+        <h3>⚠️ No auto-scroll on in-place updates</h3>
+        <p style="font-size:15px;">Web Chat only auto-pins on <b>new</b> activities. A streaming answer updates the same id, so the view stays put while content grows off-screen.</p>
+      </div>
+      <div class="card bad">
+        <h3>⚠️ Streaming is SDK-only</h3>
+        <p style="font-size:15px;">Direct Line secret/token modes do <b>not</b> surface token-by-token streaming — they only paint the final message. Easy to mis-scope.</p>
+      </div>
+    </div>
+    <div class="takeaway">None of these are bugs exactly — they're <b>mismatched assumptions</b> between the SDK's streaming model and Web Chat's transcript model.</div>
+  </section>
+
+  <!-- 6. The fixes -->
+  <section class="slide">
+    <div class="kicker">The Fixes</div>
+    <h2>How we reconciled them</h2>
+    <ul>
+      <li><span class="ic" style="color:var(--cp-success)">▸</span><span><b>Stamp <span class="mono">id = streamId</span></b> on every interim chunk so Web Chat groups them into one growing message (also set <span class="mono">from.role = "bot"</span>).</span></li>
+      <li><span class="ic" style="color:var(--cp-success)">▸</span><span><b>Single subscription + tap pattern</b> — wrap the SDK connection once, then tap each activity for both the inspector and Web Chat. Never subscribe to <span class="mono">activity$</span> twice.</span></li>
+      <li><span class="ic" style="color:var(--cp-success)">▸</span><span><b>MutationObserver auto-scroll</b> — watch the transcript DOM and snap to bottom while the user is near the bottom (respects manual scroll-up).</span></li>
+      <li><span class="ic" style="color:var(--cp-success)">▸</span><span><b>Withhold informative chunks</b> from Web Chat — route them to the custom "thought process" card instead, then fade it when <span class="mono">streaming</span> begins.</span></li>
+    </ul>
+    <pre style="margin-top:8px;"><span class="tok-com">// The one-line fix that collapsed 152 bubbles → 1</span>
+function normalizeStreamingForWebChat(activity) {
+  const info = getStreamInfo(activity);
+  if (info?.streamId) activity.id = info.streamId;   <span class="tok-com">// group by stream, not chunk</span>
+  return activity;
+}</pre>
+    <div class="takeaway">Every fix lives in a thin <b>normalization layer</b> between the SDK connection and Web Chat — no forks, no patched libraries.</div>
+  </section>
+
+  <!-- 7. Gotchas / lessons -->
+  <section class="slide">
+    <div class="kicker">Field Notes</div>
+    <h2>Smaller gotchas worth knowing</h2>
+    <div class="grid2">
+      <div>
+        <ul>
+          <li><span class="ic">•</span><span>Web Chat <b>sorts the transcript</b> by <span class="mono">webchat:sequence-id</span> — get this wrong and bubbles render out of order.</span></li>
+          <li><span class="ic">•</span><span><span class="mono">net::ERR_ABORTED</span> on the conversations POST is <b>benign</b> — it's the SSE stream closing.</span></li>
+          <li><span class="ic">•</span><span>Token is cached by MSAL, so reconnects are <b>silent</b> (no second sign-in).</span></li>
+        </ul>
+      </div>
+      <div>
+        <ul>
+          <li><span class="ic">•</span><span>Informative chunks carry a <b>lower sequence-id</b> than streaming chunks — they genuinely precede the answer.</span></li>
+          <li><span class="ic">•</span><span>Browser <b>caching</b> bites hard during dev — hard-reload after edits.</span></li>
+          <li><span class="ic">•</span><span><span class="mono">showTyping: true</span> on the connection polishes the latency loader UX.</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="takeaway">Budget time for the <b>plumbing</b>, not the UI. The visible chat is easy; the activity reconciliation is where the work is.</div>
+  </section>
+
+  <!-- 8. Summary -->
+  <section class="slide title-slide">
+    <span class="badge">TAKEAWAYS</span>
+    <h2 style="font-size:34px;">If you remember three things</h2>
+    <ul style="gap:20px; margin-top:6px;">
+      <li><span class="pill">1</span><span style="font-size:18px;">Use the <b>Direct-to-Engine SDK</b> — it's the only mode with real streaming.</span></li>
+      <li><span class="pill">2</span><span style="font-size:18px;">Web Chat groups bubbles by activity <b>id</b>; force <span class="mono">id = streamId</span> for one growing bubble.</span></li>
+      <li><span class="pill">3</span><span style="font-size:18px;">Do all reconciliation in a <b>normalization tap</b> — single subscription, no library forks.</span></li>
+    </ul>
+    <div class="meta" style="margin-top:36px;">
+      <div><b>Repo</b>github.com/jzh24516/copilot-streaming-chat-playground</div>
+      <div><b>Questions?</b>Reach out — happy to walk through the inspector live.</div>
+    </div>
+    <button class="export-btn" id="exportPptx" style="margin-top:30px;">
+      <span aria-hidden="true">⤓</span> Export this deck as PowerPoint (.pptx)
+    </button>
+    <span class="export-status" id="exportStatus"></span>
+  </section>
+
+</div>
+
+<div class="chrome">
+  <button class="nav-btn" id="prev" aria-label="Previous slide">‹</button>
+  <span class="count" id="count">1 / 8</span>
+  <button class="nav-btn" id="next" aria-label="Next slide">›</button>
+  <button class="theme-toggle" id="themeToggle">◑ Theme</button>
+</div>
+<div class="hint">← → arrows · F fullscreen</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll(".slide"));
+  let idx = 0;
+  const countEl = document.getElementById("count");
+  const prevBtn = document.getElementById("prev");
+  const nextBtn = document.getElementById("next");
+  const progress = document.getElementById("progress");
+
+  function show(n) {
+    idx = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, i) => s.classList.toggle("active", i === idx));
+    countEl.textContent = `${idx + 1} / ${slides.length}`;
+    prevBtn.disabled = idx === 0;
+    nextBtn.disabled = idx === slides.length - 1;
+    progress.style.width = `${((idx + 1) / slides.length) * 100}%`;
+  }
+
+  prevBtn.onclick = () => show(idx - 1);
+  nextBtn.onclick = () => show(idx + 1);
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " ") { show(idx + 1); e.preventDefault(); }
+    else if (e.key === "ArrowLeft" || e.key === "PageUp") { show(idx - 1); e.preventDefault(); }
+    else if (e.key === "Home") show(0);
+    else if (e.key === "End") show(slides.length - 1);
+    else if (e.key.toLowerCase() === "f") {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+  });
+
+  document.getElementById("themeToggle").onclick = () => {
+    const cur = document.documentElement.getAttribute("data-theme");
+    document.documentElement.setAttribute("data-theme", cur === "dark" ? "light" : "dark");
+  };
+
+  show(0);
+
+  // -------------------------------------------------------------------------
+  // Export the deck to a .pptx file (PptxGenJS, all client-side).
+  // -------------------------------------------------------------------------
+  // Palette tuned to the Lenovo-style reference deck: red brand accent,
+  // cream cards, soft tan borders, blue highlight, muted gray body.
+  const ACCENT = "E2231A";   // brand red
+  const ACCENT2 = "2F6BEB";  // highlight blue
+  const INK = "1A1A1A";
+  const MUTED = "6B7280";
+  const SOFT = "9AA0A6";
+  const BG = "FFFFFF";
+  const PANEL = "FBF7F0";     // cream card fill
+  const PANEL_BD = "ECE3D2";  // soft tan border
+  const CODE_BG = "F6F2EA";
+  const GREEN = "16A34A";
+  const RED = "DC2626";
+
+  let ST = null;
+
+  // Small red rounded square + white plus — the corner brand mark.
+  function brandMark(s, x, y) {
+    s.addShape(ST.roundRect, { x, y, w: 0.42, h: 0.42, fill: { color: ACCENT }, line: { type: "none" }, rectRadius: 0.07 });
+    s.addText("+", { x, y: y - 0.04, w: 0.42, h: 0.42, color: "FFFFFF", bold: true, fontSize: 24, align: "center", valign: "middle" });
+  }
+
+  // Bordered pill tags row, like the channel chips in the reference.
+  function pills(s, x, y, items) {
+    let cx = x;
+    items.forEach((t) => {
+      const w = 0.34 + t.length * 0.095;
+      s.addShape(ST.roundRect, { x: cx, y, w, h: 0.36, fill: { color: "FFFFFF" }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.18 });
+      s.addText(t, { x: cx, y, w, h: 0.36, color: MUTED, fontSize: 10.5, align: "center", valign: "middle" });
+      cx += w + 0.16;
+    });
+  }
+
+  // Footer rule + left meta + right brand label and page number.
+  function footer(s, n) {
+    s.addShape(ST.line, { x: 0.6, y: 7.0, w: 12.13, h: 0, line: { color: "E7E1D4", width: 1 } });
+    s.addText("2026 \u00B7 Internal \u2014 Streaming Chat Playground", { x: 0.6, y: 7.05, w: 8, h: 0.34, color: SOFT, fontSize: 10 });
+    s.addText([
+      { text: "Copilot Studio Streaming", options: { color: ACCENT, bold: true } },
+      { text: "    " + n + " / 8", options: { color: SOFT } }
+    ], { x: 7.7, y: 7.05, w: 5.03, h: 0.34, fontSize: 10, align: "right" });
+  }
+
+  function addTitleSlide(pptx) {
+    const s = pptx.addSlide();
+    s.background = { color: BG };
+    brandMark(s, 0.6, 0.62);
+    s.addText("TECH NOTE \u00B7 KNOWLEDGE SHARING", { x: 1.18, y: 0.64, w: 9, h: 0.4, color: ACCENT, bold: true, fontSize: 12, charSpacing: 2 });
+    s.addText("Streaming Responses in Copilot Studio", { x: 0.6, y: 1.55, w: 11.8, h: 1.4, color: INK, bold: true, fontSize: 40 });
+    s.addText("What works, what doesn't, and the gotchas we hit building a live token-by-token streaming chat playground on the Direct-to-Engine SDK.", { x: 0.6, y: 2.95, w: 10.8, h: 1, color: MUTED, fontSize: 18 });
+    pills(s, 0.6, 4.05, ["Copilot Studio", "Bot Framework Web Chat", "Direct-to-Engine SDK", "MSAL", "Express"]);
+    s.addText([
+      { text: "Surface:  ", options: { bold: true, color: INK } }, { text: "Copilot Studio agent + Bot Framework Web Chat\n", options: { color: MUTED } },
+      { text: "Transport:  ", options: { bold: true, color: INK } }, { text: "@microsoft/agents-copilotstudio-client (SDK)\n", options: { color: MUTED } },
+      { text: "Date:  ", options: { bold: true, color: INK } }, { text: "June 2026", options: { color: MUTED } }
+    ], { x: 0.6, y: 4.75, w: 11.5, h: 1.5, fontSize: 14, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, margin: 14 });
+    footer(s, 1);
+  }
+
+  function header(s, kicker, title) {
+    s.background = { color: BG };
+    brandMark(s, 0.6, 0.5);
+    s.addText(kicker, { x: 1.18, y: 0.44, w: 11, h: 0.3, color: ACCENT, bold: true, fontSize: 12, charSpacing: 2 });
+    s.addText(title, { x: 1.15, y: 0.74, w: 11.6, h: 0.7, color: INK, bold: true, fontSize: 28 });
+  }
+
+  function bullets(items) {
+    return items.map((t) => ({ text: t, options: { bullet: { code: "2022", indent: 14 }, color: MUTED, fontSize: 15, paraSpaceAfter: 10 } }));
+  }
+
+  function takeaway(s, text) {
+    s.addShape(ST.rect, { x: 0.6, y: 6.32, w: 12.13, h: 0.55, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 } });
+    s.addShape(ST.rect, { x: 0.6, y: 6.32, w: 0.09, h: 0.55, fill: { color: ACCENT }, line: { type: "none" } });
+    s.addText(text, { x: 0.85, y: 6.32, w: 11.7, h: 0.55, color: INK, fontSize: 12, italic: true, valign: "middle" });
+  }
+
+  function buildSlides(pptx) {
+    ST = pptx.ShapeType;
+    pptx.defineLayout({ name: "WIDE", width: 13.33, height: 7.5 });
+    pptx.layout = "WIDE";
+
+    // 1
+    addTitleSlide(pptx);
+
+    // 2 — Goal
+    let s = pptx.addSlide();
+    header(s, "01 \u00B7 THE GOAL", "Render a real, progressive streaming answer");
+    s.addText(bullets([
+      "A single answer bubble that grows token-by-token in place.",
+      "An inline \u201Cthought process\u201D showing the agent's reasoning while it works.",
+      "The view auto-following the answer as it streams.",
+      "A diagnostics inspector to see raw streaming activities."
+    ]), { x: 0.6, y: 1.95, w: 7.2, h: 3.5 });
+    s.addText([
+      { text: "The stack\n\n", options: { bold: true, color: INK, fontSize: 16 } },
+      { text: "Web Chat: botframework-webchat/latest (CDN)\n\nClient: agents-copilotstudio-client (Direct-to-Engine)\n\nAuth: @azure/msal-browser (Entra)\n\nRelay: Express token server, port 3978", options: { color: MUTED, fontSize: 13 } }
+    ], { x: 8.1, y: 1.95, w: 4.63, h: 3.5, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, margin: 14 });
+    takeaway(s, "Streaming \u201Cjust working\u201D out of the box is a myth \u2014 Web Chat and the SDK each make assumptions you must reconcile.");
+    footer(s, 2);
+
+    // 3 — Wire format
+    s = pptx.addSlide();
+    header(s, "02 \u00B7 THE WIRE FORMAT", "How a streamed answer actually arrives");
+    const steps = [["informative", "Dynamic reasoning steps (\u201CGenerating plan\u2026\u201D)"], ["streaming", "Cumulative growing-text chunks. 150+ per answer."], ["final", "Concluded message that replaces the bubble."]];
+    steps.forEach(([tag, desc], i) => {
+      const x = 0.6 + i * 4.25;
+      s.addShape(ST.roundRect, { x, y: 1.95, w: 3.9, h: 1.5, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.1 });
+      s.addText([
+        { text: tag.toUpperCase() + "\n", options: { bold: true, color: ACCENT, fontSize: 13 } },
+        { text: desc, options: { color: MUTED, fontSize: 12 } }
+      ], { x: x + 0.18, y: 2.05, w: 3.55, h: 1.35, valign: "top" });
+      if (i < 2) s.addText("\u2192", { x: x + 3.9, y: 1.95, w: 0.35, h: 1.5, color: SOFT, fontSize: 24, bold: true, align: "center", valign: "middle" });
+    });
+    s.addText("// Each interim chunk is a typing activity carrying streaminfo\n{\n  \"type\": \"typing\",\n  \"id\": \"e4c33a60\u2026c20-3\",   // UNIQUE per chunk: streamId-sequence\n  \"channelData\": { \"streamType\": \"streaming\", \"streamId\": \"e4c33a60\u2026c20\",\n                    \"streamSequence\": 3, \"webchat:sequence-id\": 14 }\n}", { x: 0.6, y: 3.7, w: 12.13, h: 2.35, fontFace: "Consolas", fontSize: 12, color: INK, fill: { color: CODE_BG }, line: { color: PANEL_BD, width: 1 }, margin: 14 });
+    takeaway(s, "All chunks of one answer share a streamId, but every chunk has its own unique activity id \u2014 the root of the biggest gotcha.");
+    footer(s, 3);
+
+    // 4 — Working
+    s = pptx.addSlide();
+    header(s, "03 \u00B7 THE GOOD NEWS", "What's working \u2705");
+    const good = [
+      ["\u2705 Token-by-token streaming (SDK)", "Direct-to-Engine SDK is the only path that surfaces true generative streaming."],
+      ["\u2705 Single growing bubble", "Forcing activity id = streamId makes Web Chat update one bubble in place."],
+      ["\u2705 Dynamic thought process", "informative chunks render as a timeline that fades when the answer streams."],
+      ["\u2705 Auto-scroll & diagnostics", "MutationObserver pins the view; inspector saw 439 chunks across 2 livestreams."]
+    ];
+    good.forEach(([t, d], i) => {
+      const x = 0.6 + (i % 2) * 6.18, y = 1.95 + Math.floor(i / 2) * 2.15;
+      s.addShape(ST.roundRect, { x, y, w: 5.85, h: 1.9, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.08 });
+      s.addShape(ST.rect, { x, y, w: 0.09, h: 1.9, fill: { color: GREEN }, line: { type: "none" } });
+      s.addText([{ text: t + "\n", options: { bold: true, color: INK, fontSize: 15 } }, { text: d, options: { color: MUTED, fontSize: 12 } }], { x: x + 0.28, y: y + 0.15, w: 5.45, h: 1.6, valign: "top" });
+    });
+    takeaway(s, "With the right normalization, the full modern streaming UX is achievable \u2014 single bubble, inline reasoning, live scroll.");
+    footer(s, 4);
+
+    // 5 — Not working
+    s = pptx.addSlide();
+    header(s, "04 \u00B7 THE HARD PARTS", "What's not working out of the box \u26A0\uFE0F");
+    const bad = [
+      ["\u26A0\uFE0F 152 bubbles, not 1", "Web Chat dedupes by activity id; unique chunk ids stack into 150+ bubbles."],
+      ["\u26A0\uFE0F Cold observable, 1 subscriber", "SDK activity$ is cold; subscribing twice blinds one observer."],
+      ["\u26A0\uFE0F No auto-scroll on updates", "Web Chat only auto-pins on new activities, not in-place stream updates."],
+      ["\u26A0\uFE0F Streaming is SDK-only", "Direct Line secret/token modes only paint the final message."]
+    ];
+    bad.forEach(([t, d], i) => {
+      const x = 0.6 + (i % 2) * 6.18, y = 1.95 + Math.floor(i / 2) * 2.15;
+      s.addShape(ST.roundRect, { x, y, w: 5.85, h: 1.9, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.08 });
+      s.addShape(ST.rect, { x, y, w: 0.09, h: 1.9, fill: { color: RED }, line: { type: "none" } });
+      s.addText([{ text: t + "\n", options: { bold: true, color: INK, fontSize: 15 } }, { text: d, options: { color: MUTED, fontSize: 12 } }], { x: x + 0.28, y: y + 0.15, w: 5.45, h: 1.6, valign: "top" });
+    });
+    takeaway(s, "Not bugs \u2014 mismatched assumptions between the SDK's streaming model and Web Chat's transcript model.");
+    footer(s, 5);
+
+    // 6 — Fixes
+    s = pptx.addSlide();
+    header(s, "05 \u00B7 THE FIXES", "How we reconciled them");
+    s.addText(bullets([
+      "Stamp id = streamId on every interim chunk so Web Chat groups them into one message.",
+      "Single subscription + tap pattern \u2014 wrap the connection once; never subscribe to activity$ twice.",
+      "MutationObserver auto-scroll \u2014 snap to bottom while the user is near the bottom.",
+      "Withhold informative chunks from Web Chat \u2014 route them to the custom thought-process card."
+    ]), { x: 0.6, y: 1.95, w: 12.13, h: 2.5 });
+    s.addText("function normalizeStreamingForWebChat(activity) {\n  const info = getStreamInfo(activity);\n  if (info?.streamId) activity.id = info.streamId;  // group by stream, not chunk\n  return activity;\n}", { x: 0.6, y: 4.55, w: 12.13, h: 1.6, fontFace: "Consolas", fontSize: 13, color: INK, fill: { color: CODE_BG }, line: { color: PANEL_BD, width: 1 }, margin: 14 });
+    takeaway(s, "Every fix lives in a thin normalization layer between the SDK connection and Web Chat \u2014 no forks, no patched libraries.");
+    footer(s, 6);
+
+    // 7 — Field notes
+    s = pptx.addSlide();
+    header(s, "06 \u00B7 FIELD NOTES", "Smaller gotchas worth knowing");
+    s.addText(bullets([
+      "Web Chat sorts the transcript by webchat:sequence-id \u2014 wrong values render bubbles out of order.",
+      "net::ERR_ABORTED on the conversations POST is benign \u2014 it's the SSE stream closing.",
+      "Token is cached by MSAL, so reconnects are silent (no second sign-in).",
+      "Informative chunks carry a lower sequence-id than streaming chunks \u2014 they precede the answer.",
+      "Browser caching bites during dev \u2014 hard-reload after edits.",
+      "showTyping: true on the connection polishes the latency loader UX."
+    ]), { x: 0.6, y: 1.95, w: 12.13, h: 4 });
+    takeaway(s, "Budget time for the plumbing, not the UI. The visible chat is easy; activity reconciliation is the work.");
+    footer(s, 7);
+
+    // 8 — Takeaways
+    s = pptx.addSlide();
+    header(s, "07 \u00B7 TAKEAWAYS", "If you remember three things");
+    const tk = [
+      "Use the Direct-to-Engine SDK \u2014 the only mode with real streaming.",
+      "Web Chat groups bubbles by activity id; force id = streamId for one growing bubble.",
+      "Do all reconciliation in a normalization tap \u2014 single subscription, no library forks."
+    ];
+    tk.forEach((t, i) => {
+      const y = 1.95 + i * 1.25;
+      s.addShape(ST.roundRect, { x: 0.6, y, w: 12.13, h: 1.05, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.06 });
+      s.addShape(ST.roundRect, { x: 0.8, y: y + 0.22, w: 0.62, h: 0.62, fill: { color: ACCENT }, line: { type: "none" }, rectRadius: 0.31 });
+      s.addText(String(i + 1), { x: 0.8, y: y + 0.2, w: 0.62, h: 0.62, color: "FFFFFF", bold: true, fontSize: 22, align: "center", valign: "middle" });
+      s.addText(t, { x: 1.7, y, w: 10.7, h: 1.05, color: INK, fontSize: 16, valign: "middle" });
+    });
+    s.addText("Repo: github.com/jzh24516/copilot-streaming-chat-playground", { x: 0.6, y: 6.4, w: 12, h: 0.45, color: SOFT, fontSize: 13 });
+    footer(s, 8);
+  }
+
+  const exportBtn = document.getElementById("exportPptx");
+  const exportStatus = document.getElementById("exportStatus");
+  exportBtn.onclick = async () => {
+    if (typeof PptxGenJS === "undefined") {
+      exportStatus.textContent = "PowerPoint library failed to load (check your network).";
+      return;
+    }
+    exportBtn.disabled = true;
+    exportStatus.textContent = "Generating PowerPoint\u2026";
+    try {
+      const pptx = new PptxGenJS();
+      pptx.author = "Streaming Chat Playground";
+      pptx.title = "Streaming Responses in Copilot Studio";
+      buildSlides(pptx);
+      await pptx.writeFile({ fileName: "Streaming-Responses-in-Copilot-Studio.pptx" });
+      exportStatus.textContent = "Done \u2014 saved Streaming-Responses-in-Copilot-Studio.pptx";
+    } catch (err) {
+      console.error(err);
+      exportStatus.textContent = "Export failed: " + (err && err.message ? err.message : err);
+    } finally {
+      exportBtn.disabled = false;
+    }
+  };
+</script>
+</body>
+</html>

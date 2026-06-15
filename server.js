@@ -39,6 +39,8 @@ const COPILOT_AGENT_CLOUD = process.env.COPILOT_AGENT_CLOUD?.trim() || 'Prod';
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+// Serve the knowledge-sharing tech note deck (and any future docs).
+app.use('/docs', express.static(path.join(__dirname, 'docs')));
 
 /**
  * Reports which connection mode the server is configured for, without leaking
