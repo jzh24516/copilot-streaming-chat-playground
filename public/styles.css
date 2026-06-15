@@ -1,0 +1,652 @@
+:root {
+  --bg: #0b1020;
+  --panel: #121933;
+  --panel-2: #0e1530;
+  --border: #233056;
+  --text: #e8edff;
+  --muted: #93a0c8;
+  --accent: #5b8cff;
+  --accent-2: #8a6bff;
+  --ok: #2dd4a7;
+  --warn: #ffb020;
+  --err: #ff5d6c;
+  --informative: #ffb020;
+  --streaming: #5b8cff;
+  --final: #2dd4a7;
+  --radius: 14px;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  /* Lock the app to the viewport: header + three equal-height panels fill the
+     screen exactly and each panel scrolls internally instead of growing the page. */
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(1200px 600px at 80% -10%, #1a2350 0%, transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, #2a1a52 0%, transparent 55%), var(--bg);
+  color: var(--text);
+}
+
+/* Header */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10, 15, 33, 0.6);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, var(--accent), var(--accent-2), var(--ok), var(--accent));
+  box-shadow: 0 0 16px var(--accent);
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: 0.2px;
+}
+
+.brand p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+  max-width: 640px;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--panel-2);
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.status-dot[data-state="idle"] { background: var(--muted); }
+.status-dot[data-state="connecting"] { background: var(--warn); animation: pulse 1s infinite; }
+.status-dot[data-state="online"] { background: var(--ok); box-shadow: 0 0 10px var(--ok); }
+.status-dot[data-state="error"] { background: var(--err); box-shadow: 0 0 10px var(--err); }
+
+@keyframes pulse {
+  50% { opacity: 0.35; }
+}
+
+/* Layout */
+.layout {
+  display: grid;
+  grid-template-columns: 320px 1fr 360px;
+  gap: 16px;
+  padding: 16px;
+  align-items: stretch;
+  /* Fill the viewport below the sticky header so panels flex with window height. */
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 1100px) {
+  /* When stacked, the panels no longer fit one viewport, so let the page scroll. */
+  body {
+    height: auto;
+    min-height: 100vh;
+    overflow: auto;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+    /* Stack vertically and let the page scroll instead of squeezing panels. */
+    flex: none;
+    min-height: 0;
+  }
+
+  /* Each panel sizes to its content when stacked; cap the log so it scrolls
+     within the inspector rather than stretching the page. */
+  .inspector .log {
+    max-height: 50vh;
+  }
+
+  #webchat {
+    min-height: 420px;
+  }
+}
+
+.panel {
+  background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* The config column can be taller than the viewport; let it scroll inside its
+   own panel instead of stretching the locked layout. */
+.config {
+  overflow-y: auto;
+}
+
+.panel h2 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+
+/* Config fields */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+/* The [hidden] attribute must win over the flex display above. */
+[hidden] {
+  display: none !important;
+}
+
+.field > span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.field small {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* SDK (Direct-to-Engine) config block */
+.field-group {
+  margin-bottom: 14px;
+}
+
+.field-note {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.field code,
+.field-note code {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 1px 5px;
+  font-size: 11px;
+}
+
+input,
+select {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  padding: 10px 12px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+input:focus,
+select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(91, 140, 255, 0.18);
+}
+
+.toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 4px 0 14px;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text);
+}
+.check em {
+  color: var(--muted);
+  font-style: normal;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+button {
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  transition: transform 0.08s, background 0.15s, opacity 0.15s;
+}
+button:active { transform: translateY(1px); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+button.primary {
+  background: linear-gradient(180deg, var(--accent), #3f6fe0);
+  border-color: transparent;
+  color: white;
+}
+button.ghost {
+  background: var(--panel-2);
+  color: var(--text);
+}
+button.small {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.hint {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--muted);
+  min-height: 16px;
+}
+.hint.ok { color: var(--ok); }
+.hint.err { color: var(--err); }
+
+.legend {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.legend h3 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+.legend ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  margin-right: 6px;
+}
+.tag.informative { background: rgba(255, 176, 32, 0.15); color: var(--informative); }
+.tag.streaming { background: rgba(91, 140, 255, 0.15); color: var(--streaming); }
+.tag.final { background: rgba(45, 212, 167, 0.15); color: var(--final); }
+.tag.typing { background: rgba(147, 160, 200, 0.15); color: var(--muted); }
+.tag.malformed { background: rgba(255, 93, 108, 0.15); color: var(--err); }
+
+/* Chat canvas */
+.chat {
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+.chat-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.chat-toolbar h2 { margin: 0; }
+.convo {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: "Cascadia Code", "Consolas", monospace;
+}
+
+#webchat {
+  flex: 1;
+  /* Fill the fixed-height canvas panel exactly; Web Chat scrolls its own
+     transcript. (The stacked breakpoint restores a min-height floor.) */
+  min-height: 0;
+  position: relative;
+  background: #fbfcff;
+}
+
+.placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #6b7280;
+  pointer-events: none;
+}
+.placeholder-art {
+  font-size: 56px;
+  color: var(--accent);
+  opacity: 0.4;
+}
+
+/* Agent "thinking" plan card ----------------------------------------------
+   A light card floats over the canvas while the agent reasons. Its steps are
+   the agent's DYNAMIC informative streaminfo chunks: a vertical timeline
+   (✓ done · filled active dot · faded pending). It DISAPPEARS the moment the
+   streamed answer starts to grow. */
+.thinking {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 76px;
+  z-index: 5;
+  padding: 16px 18px;
+  border: 1px solid #e3e6ea;
+  border-radius: 14px;
+  background: #f5f6f8;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+  color: #1f2430;
+  pointer-events: none;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.thinking[hidden] {
+  display: none;
+}
+.thinking.hide {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.plan-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.plan-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1f2430;
+}
+.plan-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  padding: 3px 11px;
+  border: 1px solid #d9dde3;
+  border-radius: 999px;
+  background: #fff;
+}
+
+.plan-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.plan-step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 5px 0;
+}
+/* vertical connector between consecutive dots */
+.plan-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  width: 2px;
+  height: 100%;
+  background: #dde1e7;
+  z-index: 0;
+}
+.plan-step.done:not(:last-child)::after {
+  background: #c3c8d2;
+}
+
+.plan-dot {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #dfe2e8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+.plan-label {
+  font-size: 14px;
+  color: #b3b9c4;
+}
+
+/* Done: grey ring + grey check */
+.plan-step.done .plan-dot {
+  border-color: #c3c8d2;
+}
+.plan-step.done .plan-dot::after {
+  content: "✓";
+  font-size: 11px;
+  font-weight: 700;
+  color: #9aa0ac;
+}
+.plan-step.done .plan-label {
+  color: #1f2430;
+}
+
+/* Active: blue ring + solid blue inner dot */
+.plan-step.active .plan-dot {
+  border-color: #1f78d1;
+  box-shadow: 0 0 0 4px rgba(31, 120, 209, 0.12);
+}
+.plan-step.active .plan-dot::after {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #1f78d1;
+  animation: plan-pulse 1.1s ease-in-out infinite;
+}
+.plan-step.active .plan-label {
+  color: #1f2430;
+  font-weight: 700;
+}
+
+/* Pending: faded dot + faded text (defaults above) */
+
+@keyframes plan-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.72); opacity: 0.65; }
+}
+
+/* Inspector */
+.inspector-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 4px 0 12px;
+}
+
+.diagnosis {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 10px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--muted);
+}
+.diagnosis[data-state="ok"] {
+  border-color: var(--final);
+  background: rgba(45, 212, 167, 0.12);
+  color: var(--final);
+}
+.diagnosis[data-state="warn"] {
+  border-color: var(--informative);
+  background: rgba(255, 176, 32, 0.12);
+  color: var(--informative);
+}
+.metric {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+}
+.metric strong {
+  display: block;
+  font-size: 20px;
+  color: var(--text);
+}
+.metric span {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--muted);
+}
+
+.log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  /* Flex within the panel so the list grows/shrinks with the window height. */
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 120px;
+}
+.log-item {
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: var(--panel-2);
+  font-size: 12px;
+  animation: slideIn 0.2s ease;
+}
+.log-item.informative { border-left-color: var(--informative); }
+.log-item.streaming { border-left-color: var(--streaming); }
+.log-item.final { border-left-color: var(--final); }
+.log-item.typing { border-left-color: var(--muted); }
+.log-item.malformed { border-left-color: var(--err); }
+.log-item.other { border-left-color: var(--muted); }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-4px); }
+}
+
+.log-item .row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.log-item .seq {
+  font-family: "Cascadia Code", "Consolas", monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+.log-item .text {
+  margin-top: 4px;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 64px;
+  overflow: hidden;
+}
+.log-item .meta {
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--muted);
+  font-family: "Cascadia Code", "Consolas", monospace;
+}
+.log-item .raw {
+  margin-top: 6px;
+}
+.log-item .raw > summary {
+  cursor: pointer;
+  font-size: 10px;
+  color: var(--streaming);
+  user-select: none;
+  list-style: none;
+}
+.log-item .raw > summary::-webkit-details-marker {
+  display: none;
+}
+.log-item .raw > summary::before {
+  content: "▸ ";
+}
+.log-item .raw[open] > summary::before {
+  content: "▾ ";
+}
+.log-item .raw pre {
+  margin: 6px 0 0;
+  padding: 8px;
+  max-height: 240px;
+  overflow: auto;
+  background: var(--bg);
+  border: 1px solid var(--border, #2a2f3a);
+  border-radius: 6px;
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--text);
+  font-family: "Cascadia Code", "Consolas", monospace;
+  white-space: pre;
+}

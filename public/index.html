@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Copilot Studio · Streaming Chat Playground</title>
+    <link rel="preconnect" href="https://cdn.botframework.com" />
+    <link rel="stylesheet" href="./styles.css" />
+    <!-- Bot Framework Web Chat (livestreaming supported since 4.17.0) -->
+    <script
+      crossorigin="anonymous"
+      src="https://cdn.botframework.com/botframework-webchat/latest/webchat.js"
+    ></script>
+    <!-- MSAL (browser) for the SDK / Direct-to-Engine mode: user signs in with Entra ID. -->
+    <script src="https://unpkg.com/@azure/msal-browser@4.13.1/lib/msal-browser.js"></script>
+    <!-- Copilot Studio client browser bundle (self-contained esbuild bundle). -->
+    <script type="importmap">
+      {
+        "imports": {
+          "@microsoft/agents-copilotstudio-client": "https://unpkg.com/@microsoft/agents-copilotstudio-client@1.5.3/dist/src/browser.mjs"
+        }
+      }
+    </script>
+    <script type="module" src="./sdk-client.js"></script>
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <div>
+          <h1>Streaming Chat Playground</h1>
+          <p>Live-streaming responses from a Microsoft Copilot Studio agent · SDK Direct-to-Engine with Direct Line diagnostics</p>
+        </div>
+      </div>
+      <div class="status" id="status">
+        <span class="status-dot" data-state="idle"></span>
+        <span class="status-label" id="statusLabel">Not connected</span>
+      </div>
+    </header>
+
+    <main class="layout">
+      <!-- Configuration panel -->
+      <section class="panel config" aria-label="Connection configuration">
+        <h2>Connection</h2>
+
+        <label class="field">
+          <span>Connection mode</span>
+          <select id="mode">
+            <option value="sdk">Copilot Studio SDK · Direct-to-Engine (Entra sign-in · generative streaming)</option>
+            <option value="server">Server relay (secret stays server-side)</option>
+            <option value="tokenEndpoint">Copilot Studio token endpoint URL</option>
+            <option value="secret">Direct Line secret / token</option>
+          </select>
+        </label>
+
+        <div class="field-group" id="sdkField" hidden>
+          <label class="field">
+            <span>Entra application (client) ID</span>
+            <input
+              type="text"
+              id="sdkClientId"
+              placeholder="00000000-0000-0000-0000-000000000000"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <small>SPA app registration with the <code>CopilotStudio.Copilots.Invoke</code> delegated permission.</small>
+          </label>
+          <label class="field">
+            <span>Directory (tenant) ID</span>
+            <input
+              type="text"
+              id="sdkTenantId"
+              placeholder="00000000-0000-0000-0000-000000000000"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Environment ID</span>
+            <input
+              type="text"
+              id="sdkEnvironmentId"
+              placeholder="Copilot Studio → Settings → Advanced → Metadata"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Agent schema name</span>
+            <input
+              type="text"
+              id="sdkSchemaName"
+              placeholder="e.g. mjsrc_agent"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <small class="field-note">
+            You sign in with your own Entra account; no secret leaves the browser. This is the
+            only mode that surfaces token-by-token generative streaming.
+          </small>
+        </div>
+
+        <label class="field" id="tokenEndpointField" hidden>
+          <span>Token endpoint URL</span>
+          <input
+            type="url"
+            id="tokenEndpoint"
+            placeholder="https://&lt;env&gt;.environment.api.powerplatform.com/.../directline/token?api-version=2022-03-01-preview"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <small>Copilot Studio → Settings → Channels → "Custom website" / Mobile app → Token endpoint.</small>
+        </label>
+
+        <label class="field" id="secretField" hidden>
+          <span>Direct Line secret or token</span>
+          <input
+            type="password"
+            id="secret"
+            placeholder="Paste Direct Line secret or token"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <small>Use a token where possible. Secrets in the browser are for local testing only.</small>
+        </label>
+
+        <div class="toggles">
+          <label class="check">
+            <input type="checkbox" id="forceWebSocket" checked />
+            <span>Force Web Socket transport <em>(Direct Line modes only)</em></span>
+          </label>
+          <label class="check">
+            <input type="checkbox" id="autoInspect" checked />
+            <span>Capture streaming chunks in inspector</span>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button id="connectBtn" class="primary">Connect</button>
+          <button id="testBtn" class="ghost">Test connection</button>
+          <button id="disconnectBtn" class="ghost" disabled>Disconnect</button>
+        </div>
+
+        <div class="hint" id="serverHint"></div>
+
+        <div class="legend">
+          <h3>Streaming legend</h3>
+          <ul>
+            <li><span class="tag informative">informative</span> latency loader (e.g. "Searching…")</li>
+            <li><span class="tag streaming">streaming</span> interim chunk (typing activity)</li>
+            <li><span class="tag final">final</span> concluded message</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Web Chat canvas -->
+      <section class="panel chat" aria-label="Chat canvas">
+        <div class="chat-toolbar">
+          <h2>Canvas</h2>
+          <span class="convo" id="convoId">conversation: —</span>
+        </div>
+        <div id="webchat" role="main">
+          <div class="placeholder" id="placeholder">
+            <div class="placeholder-art">⌁</div>
+            <p>Connect to your Copilot Studio agent to start streaming.</p>
+          </div>
+        </div>
+        <!-- Agent "thinking" transition: informative chunks stack here before
+             the streaming text bubble starts painting. -->
+        <div class="thinking" id="thinking" hidden></div>
+      </section>
+
+      <!-- Activity inspector -->
+      <section class="panel inspector" aria-label="Streaming activity inspector">
+        <div class="inspector-head">
+          <h2>Activity inspector</h2>
+          <button id="clearLog" class="ghost small">Clear</button>
+        </div>
+        <div class="metrics">
+          <div class="metric"><strong id="mStreams">0</strong><span>livestreams</span></div>
+          <div class="metric"><strong id="mChunks">0</strong><span>chunks</span></div>
+          <div class="metric"><strong id="mFinal">0</strong><span>finalized</span></div>
+        </div>
+        <div class="diagnosis" id="diagnosis" data-state="idle">Waiting for bot activity…</div>
+        <ol class="log" id="log"></ol>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
