@@ -1,6 +1,7 @@
 // @ts-check
 import 'dotenv/config';
 import express from 'express';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -8,6 +9,21 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 const PORT = process.env.PORT || 3978;
+
+// ---------------------------------------------------------------------------
+// Non-secret SDK defaults stored in the repo (config/sdk.json). Environment
+// variables of the same name override these when present.
+// ---------------------------------------------------------------------------
+/** @type {{ clientId?: string, tenantId?: string, environmentId?: string, schemaName?: string, cloud?: string }} */
+let sdkFileConfig = {};
+try {
+  const sdkConfigPath = path.join(__dirname, 'config', 'sdk.json');
+  if (fs.existsSync(sdkConfigPath)) {
+    sdkFileConfig = JSON.parse(fs.readFileSync(sdkConfigPath, 'utf8'));
+  }
+} catch (err) {
+  console.warn('[config] Could not read config/sdk.json:', err.message);
+}
 
 // ---------------------------------------------------------------------------
 // Configuration (server side - keeps secrets out of the browser)
@@ -31,11 +47,11 @@ const DIRECT_LINE_TOKEN_GENERATE_URL =
 // the signed-in user via Entra ID (MSAL) and streams over the Direct Engine
 // protocol - the only path that emits generative streaming chunks.
 // ---------------------------------------------------------------------------
-const ENTRA_CLIENT_ID = process.env.ENTRA_CLIENT_ID?.trim() || '';
-const ENTRA_TENANT_ID = process.env.ENTRA_TENANT_ID?.trim() || '';
-const COPILOT_ENVIRONMENT_ID = process.env.COPILOT_ENVIRONMENT_ID?.trim() || '';
-const COPILOT_SCHEMA_NAME = process.env.COPILOT_SCHEMA_NAME?.trim() || '';
-const COPILOT_AGENT_CLOUD = process.env.COPILOT_AGENT_CLOUD?.trim() || 'Prod';
+const ENTRA_CLIENT_ID = process.env.ENTRA_CLIENT_ID?.trim() || sdkFileConfig.clientId?.trim() || '';
+const ENTRA_TENANT_ID = process.env.ENTRA_TENANT_ID?.trim() || sdkFileConfig.tenantId?.trim() || '';
+const COPILOT_ENVIRONMENT_ID = process.env.COPILOT_ENVIRONMENT_ID?.trim() || sdkFileConfig.environmentId?.trim() || '';
+const COPILOT_SCHEMA_NAME = process.env.COPILOT_SCHEMA_NAME?.trim() || sdkFileConfig.schemaName?.trim() || '';
+const COPILOT_AGENT_CLOUD = process.env.COPILOT_AGENT_CLOUD?.trim() || sdkFileConfig.cloud?.trim() || 'Prod';
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));

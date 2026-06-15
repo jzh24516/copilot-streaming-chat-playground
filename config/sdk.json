@@ -1,0 +1,8 @@
+{
+  "_comment": "Non-secret defaults for the Copilot Studio SDK (Direct-to-Engine) connection mode. These IDs are sent to the browser anyway, so they are safe to commit. Environment variables of the same name (ENTRA_CLIENT_ID, ENTRA_TENANT_ID, COPILOT_ENVIRONMENT_ID, COPILOT_SCHEMA_NAME, COPILOT_AGENT_CLOUD) override these values when set.",
+  "clientId": "",
+  "tenantId": "",
+  "environmentId": "",
+  "schemaName": "mjsrc_agent",
+  "cloud": "Prod"
+}
