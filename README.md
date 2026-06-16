@@ -77,7 +77,7 @@ published agent through `@microsoft/agents-copilotstudio-client`.
 
 ```ini
 ENTRA_CLIENT_ID=<application-client-id>
-ENTRA_TENANT_ID=
+ENTRA_TENANT_ID=<directory-tenant-id>
 COPILOT_ENVIRONMENT_ID=<copilot-studio-environment-id>
 COPILOT_SCHEMA_NAME=mjsrc_agent
 COPILOT_AGENT_CLOUD=Prod
