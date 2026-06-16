@@ -699,23 +699,26 @@ button.small {
   padding: 12px 16px 16px;
 }
 
-/* The main composer row becomes a single flat, rounded surface. */
+/* The main composer row becomes a single flat, fully-rounded surface.
+   align-items: center keeps the upload/send buttons vertically centered
+   within the pill. */
 #webchat .webchat__send-box__main {
   display: flex;
-  align-items: flex-end;
-  gap: 6px;
+  align-items: center;
+  gap: 4px;
   background: #ffffff;
   border: 1px solid #e3e7f1;
-  border-radius: 26px;
-  padding: 4px 6px 4px 8px;
-  box-shadow: 0 6px 20px rgba(31, 53, 122, 0.08);
+  border-radius: 28px;
+  padding: 6px 8px 6px 10px;
+  min-height: 56px;
+  box-shadow: 0 8px 24px rgba(31, 53, 122, 0.08);
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
-/* Focus-within glow — modern, accent-tinted ring. */
+/* Focus-within glow — subtle, accent-tinted ring matching the reference. */
 #webchat .webchat__send-box__main:focus-within {
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px rgba(91, 140, 255, 0.16), 0 8px 24px rgba(31, 53, 122, 0.12);
+  box-shadow: 0 0 0 4px rgba(91, 140, 255, 0.12), 0 10px 28px rgba(31, 53, 122, 0.1);
 }
 
 /* Text area: flat, transparent, comfortable padding, auto-growing. */
@@ -729,89 +732,134 @@ button.small {
   background: transparent;
   border: 0;
   outline: 0;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.5;
-  padding: 10px 6px;
+  padding: 10px 8px;
   color: #1f2430;
   font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  resize: none;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 #webchat .webchat__send-box-text-box textarea::placeholder,
 #webchat .webchat__send-box-text-box__input::placeholder {
   color: #9aa3bd;
 }
 
-/* All icon buttons (upload + send) become soft, circular, flat targets. */
-#webchat .webchat__send-box__button,
-#webchat .webchat__icon-button {
+/* Neutralize Web Chat's default button "shade" (the grey/white rounded box
+   that pokes out past the pill) and the full-height stretch modifier so the
+   buttons stay as clean circles vertically centered in the pill. */
+#webchat .webchat__send-box__button--align-stretch {
+  align-self: center;
+}
+#webchat .webchat__icon-button__shade,
+#webchat .webchat__icon-button__keyboard-focus-indicator {
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+}
+
+/* Upload wrapper + send button: identical 44px circular footprint. */
+#webchat .webchat__send-box__main .webchat__upload-button,
+#webchat .webchat__send-box__main .webchat__send-button {
   border: 0;
   background: transparent;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  flex: 0 0 44px;
+  padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
   cursor: pointer;
-  transition: background 0.15s ease, transform 0.12s ease;
+  box-shadow: none;
+  transition: background 0.15s ease, color 0.15s ease, filter 0.15s ease, transform 0.12s ease;
 }
-#webchat .webchat__send-box__button:hover:not(:disabled),
-#webchat .webchat__icon-button:hover:not(:disabled) {
-  background: rgba(91, 140, 255, 0.12);
-}
-#webchat .webchat__send-box__button:active:not(:disabled),
-#webchat .webchat__icon-button:active:not(:disabled) {
-  transform: scale(0.92);
+
+/* The inner <button> inside the upload wrapper fills its circle. */
+#webchat .webchat__upload-button .webchat__icon-button {
+  border: 0;
+  background: transparent;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
 /* Upload (attachment) button: muted by default, accent on hover. */
-#webchat .webchat__upload-button {
-  border: 0;
-  background: transparent;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
+#webchat .webchat__send-box__main .webchat__upload-button {
   color: #6b7280;
-  transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
 }
-#webchat .webchat__upload-button:hover {
+#webchat .webchat__send-box__main .webchat__upload-button:hover {
   background: rgba(91, 140, 255, 0.12);
   color: var(--accent);
 }
-#webchat .webchat__upload-button:active {
+#webchat .webchat__send-box__main .webchat__upload-button:active {
   transform: scale(0.92);
 }
-#webchat .webchat__upload-button svg,
-#webchat .webchat__send-box__button svg,
-#webchat .webchat__icon-button svg {
-  width: 20px;
-  height: 20px;
+
+/* Upload (attachment) icon: custom paperclip glyph rendered via CSS mask so we
+   fully control its size + color. Sized up a bit from Web Chat's default. */
+#webchat .webchat__send-box__main .webchat__attachment-icon svg,
+#webchat .webchat__send-box__main .webchat__upload-button svg {
+  display: none;
+}
+#webchat .webchat__send-box__main .webchat__attachment-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+#webchat .webchat__send-box__main .webchat__attachment-icon::before {
+  content: "";
+  width: 24px;
+  height: 24px;
+  background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
-/* Send button gets a filled accent pill so it reads as the primary action. */
-#webchat .webchat__send-box__main > .webchat__send-box__button:last-child,
-#webchat .webchat__send-box__main .webchat__icon-button--send {
+/* Send button: light grey by default; turns solid accent ONLY when the input
+   has text. Web Chat never disables the button, so we detect emptiness via the
+   input still showing its placeholder. Match both the single-line input and
+   the multiline textarea variants (sendBoxTextWrap renders a textarea). */
+#webchat .webchat__send-box__main .webchat__send-button {
+  background: #e5e7eb;
+  color: #9aa3bd;
+  box-shadow: none;
+}
+#webchat .webchat__send-box__main:has(.webchat__send-box-text-box__input:not(:placeholder-shown)) .webchat__send-button,
+#webchat .webchat__send-box__main:has(.webchat__send-box-text-box__text-area:not(:placeholder-shown)) .webchat__send-button,
+#webchat .webchat__send-box__main:has(.webchat__send-box-text-box textarea:not(:placeholder-shown)) .webchat__send-button {
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
   color: #fff;
-  box-shadow: 0 4px 12px rgba(91, 140, 255, 0.35);
+  box-shadow: 0 2px 8px rgba(91, 140, 255, 0.3);
 }
-#webchat .webchat__send-box__main > .webchat__send-box__button:last-child:hover:not(:disabled),
-#webchat .webchat__send-box__main .webchat__icon-button--send:hover:not(:disabled) {
-  filter: brightness(1.05);
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+#webchat .webchat__send-box__main .webchat__send-button:hover {
+  filter: brightness(1.04);
 }
-#webchat .webchat__send-box__main > .webchat__send-box__button:last-child svg,
-#webchat .webchat__send-box__main .webchat__icon-button--send svg {
-  color: #fff;
+#webchat .webchat__send-box__main .webchat__send-button:active {
+  transform: scale(0.92);
 }
-#webchat .webchat__send-box__button:disabled,
-#webchat .webchat__icon-button:disabled {
-  opacity: 0.5;
-  cursor: default;
+
+/* Send icon: custom up-arrow glyph via mask, inherits the button's color. */
+#webchat .webchat__send-box__main .webchat__send-button svg {
+  display: none;
+}
+#webchat .webchat__send-box__main .webchat__send-button::before {
+  content: "";
+  width: 22px;
+  height: 22px;
+  background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 19V5'/%3E%3Cpath d='m5 12 7-7 7 7'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 19V5'/%3E%3Cpath d='m5 12 7-7 7 7'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
 /* Attachment chips / previews above the composer (when a file is staged). */

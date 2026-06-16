@@ -809,6 +809,9 @@ async function connect() {
           sendBoxBorderBottom: '',
           sendBoxHeight: 48,
           sendBoxMaxHeight: 180,
+          // Render a multiline textarea that wraps text and auto-grows in
+          // height (up to sendBoxMaxHeight) instead of a single-line input.
+          sendBoxTextWrap: true,
           sendBoxTextColor: '#1f2430',
           sendBoxPlaceholderColor: '#9aa3bd',
           sendBoxButtonColor: '#5b8cff',
