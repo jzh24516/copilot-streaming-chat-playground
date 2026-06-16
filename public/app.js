@@ -797,9 +797,27 @@ async function connect() {
           bubbleBorderRadius: 14,
           bubbleFromUserBorderRadius: 14,
           rootHeight: '100%',
-          hideUploadButton: true,
-          // Livestreaming is on by default in recent Web Chat; these just polish UX.
-          sendBoxButtonColor: '#5b8cff'
+
+          // --- Modern, flat send box -------------------------------------
+          // Show the file-upload (attachment) button and let users add files.
+          hideUploadButton: false,
+          sendAttachmentOn: 'send',
+          // Flat canvas: drop Web Chat's default top border; our CSS draws the
+          // pill-shaped composer instead.
+          sendBoxBackground: 'transparent',
+          sendBoxBorderTop: '',
+          sendBoxBorderBottom: '',
+          sendBoxHeight: 48,
+          sendBoxMaxHeight: 180,
+          sendBoxTextColor: '#1f2430',
+          sendBoxPlaceholderColor: '#9aa3bd',
+          sendBoxButtonColor: '#5b8cff',
+          sendBoxButtonColorOnHover: '#3f74ff',
+          sendBoxButtonColorOnFocus: '#3f74ff',
+          sendBoxButtonColorOnDisabled: '#c4ccde',
+          sendBoxButtonShadeColor: 'transparent',
+          // Subtle typing indicator that matches the new accent palette.
+          sendTypingIndicator: true
         }
       },
       el('webchat')
