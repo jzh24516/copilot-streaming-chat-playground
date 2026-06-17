@@ -37,6 +37,11 @@ try {
 // ---------------------------------------------------------------------------
 const COPILOT_TOKEN_ENDPOINT = process.env.COPILOT_TOKEN_ENDPOINT?.trim();
 const DIRECT_LINE_SECRET = process.env.DIRECT_LINE_SECRET?.trim();
+// Convenience-only prefill for the CLIENT-SIDE "Direct Line secret / token"
+// mode. Unlike DIRECT_LINE_SECRET (which the server keeps to itself and only
+// exchanges for a token), this value is sent to the browser to pre-fill the
+// secret input so it survives page reloads. Intended for LOCAL testing only.
+const DIRECT_LINE_SECRET_CLIENT = process.env.DIRECT_LINE_SECRET_CLIENT?.trim() || '';
 const DIRECT_LINE_TOKEN_GENERATE_URL =
   process.env.DIRECT_LINE_TOKEN_GENERATE_URL?.trim() ||
   'https://directline.botframework.com/v3/directline/tokens/generate';
@@ -74,6 +79,9 @@ app.get('/api/config', (_req, res) => {
     tokenEndpointHost: COPILOT_TOKEN_ENDPOINT
       ? safeHost(COPILOT_TOKEN_ENDPOINT)
       : null,
+    // Optional prefill for the client-side "Direct Line secret / token" mode so
+    // the operator does not have to paste it after every reload (local testing).
+    directLineSecret: DIRECT_LINE_SECRET_CLIENT || null,
     // Non-secret defaults for the SDK (Direct-to-Engine) mode.
     sdk: {
       clientId: ENTRA_CLIENT_ID,

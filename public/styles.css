@@ -849,6 +849,17 @@ button.small {
   transform: scale(0.92);
 }
 
+/* The Web Chat bundle (jsDelivr genuine-latest) renders its send/upload glyphs
+   as <div class="component-icon"> elements (icon--attachment / icon--send)
+   instead of <svg>. Our `svg` display:none rule above can't catch those, so
+   without this they'd appear ALONGSIDE our custom ::before glyphs (duplicate
+   icons). Hide the native component-icon glyphs so only our custom icon shows.
+   The .wc-secret-mode host class is applied for every connected mode. */
+#webchat.wc-secret-mode .webchat__attachment-icon__icon,
+#webchat.wc-secret-mode .webchat__send-icon {
+  display: none;
+}
+
 /* Send icon: custom up-arrow glyph via mask, inherits the button's color. */
 #webchat .webchat__send-box__main .webchat__send-button svg {
   display: none;

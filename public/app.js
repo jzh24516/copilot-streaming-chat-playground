@@ -17,6 +17,7 @@ const tokenEndpointInput = el('tokenEndpoint');
 const secretInput = el('secret');
 const forceWebSocket = el('forceWebSocket');
 const autoInspect = el('autoInspect');
+const typewriterToggle = el('typewriter');
 const connectBtn = el('connectBtn');
 const testBtn = el('testBtn');
 const disconnectBtn = el('disconnectBtn');
@@ -53,6 +54,12 @@ let autoScrollObserver = null;
 let thinkingSteps = []; // [{ text, status: 'active' | 'done' }]
 let thinkingActive = false;
 let thinkingHideTimer = null;
+// True once the answer has started and we've begun fading the card out. Guards
+// finishThinkingSoon() so the SDK's rapid streaming chunks (one every ~60-90ms)
+// can't each re-show the overlay and reschedule its removal — which previously
+// parked the "Thought process" card over the streaming answer for the entire
+// turn, making the canvas look frozen until the final message arrived.
+let thinkingFinishing = false;
 
 // ---------------------------------------------------------------------------
 // Connection status helpers (DirectLine ConnectionStatus enum)
@@ -107,6 +114,12 @@ async function loadServerConfig() {
     if (sdk.schemaName) sdkSchemaName.value = sdk.schemaName;
     if (sdk.cloud) sdkCloud = sdk.cloud;
 
+    // Pre-fill the client-side "Direct Line secret / token" input from .env
+    // (DIRECT_LINE_SECRET_CLIENT) so it survives reloads.
+    if (cfg.directLineSecret && !secretInput.value) {
+      secretInput.value = cfg.directLineSecret;
+    }
+
     const sdkReady = Boolean(sdk.clientId && sdk.environmentId && sdk.schemaName);
     const sdkConfigured = Boolean(
       sdk.clientId || sdk.tenantId || sdk.environmentId || sdk.schemaName
@@ -116,6 +129,14 @@ async function loadServerConfig() {
       modeSel.value = 'sdk';
       setHint(
         'Copilot Studio SDK ready · Direct-to-Engine. Click Connect to sign in and stream.',
+        'ok'
+      );
+    } else if (cfg.directLineSecret && !sdkConfigured) {
+      // No SDK config, but a saved Direct Line secret is available — land the
+      // operator directly in the secret mode with the field pre-filled.
+      modeSel.value = 'secret';
+      setHint(
+        'Direct Line secret loaded from .env · Direct Line secret / token mode. Click Connect.',
         'ok'
       );
     } else if (sdkConfigured || cfg.mode === 'none') {
@@ -560,6 +581,10 @@ function pushThinkingStep(text) {
   const clean = (text || '').trim();
   if (!clean) return;
   thinkingActive = true;
+  // A fresh reasoning step means we're no longer finishing — re-arm so the next
+  // streaming chunk can fade the card out again (handles informative chunks that
+  // arrive interleaved with, or after, streaming text).
+  thinkingFinishing = false;
   // The previously-active step is now complete.
   thinkingSteps.forEach((s) => {
     if (s.status === 'active') s.status = 'done';
@@ -577,6 +602,7 @@ function resetThinking() {
   clearTimeout(thinkingHideTimer);
   thinkingHideTimer = null;
   thinkingActive = false;
+  thinkingFinishing = false;
   thinkingSteps = [];
   if (thinkingEl) thinkingEl.classList.remove('hide');
   renderThinking();
@@ -584,7 +610,14 @@ function resetThinking() {
 
 // The streamed answer is starting — make the plan card disappear.
 function finishThinkingSoon() {
-  if (!thinkingActive) return;
+  // Run exactly once per reasoning burst. Without this guard every streaming
+  // chunk re-entered here, and renderThinking() below strips the `hide` class
+  // (snapping the card back to full opacity) before re-adding it and resetting
+  // the 350ms removal timer — so with chunks arriving faster than 350ms the
+  // card never finished fading and stayed over the canvas until the stream
+  // ended.
+  if (!thinkingActive || thinkingFinishing) return;
+  thinkingFinishing = true;
   thinkingSteps.forEach((s) => (s.status = 'done'));
   renderThinking();
   if (thinkingEl) thinkingEl.classList.add('hide'); // quick fade
@@ -618,42 +651,79 @@ function handleThinking(activity, info) {
 // Wrap a Copilot Studio SDK connection so the inspector can observe every
 // activity WITHOUT opening a competing subscription. The SDK's activity$ is a
 // cold observable that overwrites its single internal subscriber on each
-// subscribe(), so we let only Web Chat subscribe (through this wrapper) and tap
-// each activity on the way through.
+// subscribe(), so we must subscribe to it EXACTLY ONCE and multicast the result
+// to every downstream subscriber. Web Chat subscribes to `activity$` many times
+// (this build does so ~5×); subscribing upstream per downstream subscribe would
+// repeatedly overwrite the cold observable's single subscriber (starving all
+// but the last) and run the inspector/thinking logic once per subscription.
 function wrapWithInspectorTap(conn) {
-  const originalActivity$ = conn.activity$;
+  const observers = new Set();
+  let upstreamSub = null;
+
+  const broadcast = (activity) => {
+    for (const observer of observers) {
+      try {
+        observer.next && observer.next(activity);
+      } catch (e) {
+        console.warn('webchat observer error', e);
+      }
+    }
+  };
+
+  const startUpstream = () => {
+    upstreamSub = conn.activity$.subscribe({
+      next: (activity) => {
+        if (conn.conversationId && convoIdLabel) {
+          convoIdLabel.textContent = `conversation: ${conn.conversationId}`;
+        }
+        try {
+          logActivity(activity);
+        } catch (e) {
+          console.warn('inspector error', e);
+        }
+        // A new user turn clears any leftover thinking stack.
+        if (activity.type === 'message' && activity.from?.role === 'user') {
+          resetThinking();
+        }
+        // Informative chunks become the "thinking" overlay and are withheld
+        // from Web Chat; streaming/final chunks close the overlay and flow on
+        // so the canvas paints the token-by-token livestream bubble.
+        const info = getStreamInfo(activity);
+        if (info && info.valid && handleThinking(activity, info)) {
+          return;
+        }
+        broadcast(normalizeStreamingForWebChat(activity));
+      },
+      error: (e) => {
+        for (const observer of observers) observer.error && observer.error(e);
+      },
+      complete: () => {
+        for (const observer of observers) observer.complete && observer.complete();
+      }
+    });
+  };
+
   const tappedActivity$ = {
     subscribe(observerOrNext, error, complete) {
       const observer =
         typeof observerOrNext === 'function'
           ? { next: observerOrNext, error, complete }
           : observerOrNext || {};
-      return originalActivity$.subscribe({
-        next: (activity) => {
-          if (conn.conversationId && convoIdLabel) {
-            convoIdLabel.textContent = `conversation: ${conn.conversationId}`;
+      observers.add(observer);
+      if (observers.size === 1) startUpstream();
+      return {
+        unsubscribe() {
+          observers.delete(observer);
+          if (observers.size === 0 && upstreamSub) {
+            try {
+              upstreamSub.unsubscribe();
+            } catch {
+              /* noop */
+            }
+            upstreamSub = null;
           }
-          try {
-            logActivity(activity);
-          } catch (e) {
-            console.warn('inspector error', e);
-          }
-          // A new user turn clears any leftover thinking stack.
-          if (activity.type === 'message' && activity.from?.role === 'user') {
-            resetThinking();
-          }
-          // Informative chunks become the "thinking" overlay and are withheld
-          // from Web Chat; streaming/final chunks close the overlay and flow on
-          // so the canvas paints the token-by-token livestream bubble.
-          const info = getStreamInfo(activity);
-          if (info && info.valid && handleThinking(activity, info)) {
-            return;
-          }
-          if (observer.next) observer.next(normalizeStreamingForWebChat(activity));
-        },
-        error: (e) => observer.error && observer.error(e),
-        complete: () => observer.complete && observer.complete()
-      });
+        }
+      };
     }
   };
   // Delegate everything else (connectionStatus$, conversationId, postActivity,
@@ -689,6 +759,172 @@ function normalizeStreamingForWebChat(activity) {
   return next;
 }
 
+// ---------------------------------------------------------------------------
+// Typewriter effect (Direct Line modes)
+//
+// Over the Direct Line channel, Copilot Studio sends the answer as a SINGLE
+// final `message` activity — so there is no native token-by-token feel. We
+// simulate one by re-emitting that message as a series of same-id frames whose
+// text grows a few characters at a time. Web Chat updates the SAME bubble in
+// place (it dedupes by activity id), producing a typing animation. The final
+// frame is the original activity (full text + any attachments / suggested
+// actions), so cards never flash early.
+//
+// SDK (Direct-to-Engine) mode is left untouched: it already streams generative
+// chunks natively.
+// ---------------------------------------------------------------------------
+const TYPEWRITER = {
+  tickMs: 16, // delay between frames
+  minStep: 2, // characters revealed per frame (floor)
+  maxDurationMs: 3500 // long answers still finish within this budget
+};
+
+let typewriterTimers = [];
+// Activity ids we've already started/finished animating. The Direct Line
+// transport often delivers the SAME final message twice (WebSocket + resend);
+// without this, the duplicate would launch a SECOND concurrent animation on the
+// same bubble, and the two timer chains would fight — one revealing full text
+// while the other rewinds it to a partial slice, which looks frozen/stuck.
+const typedActivityIds = new Set();
+
+function clearTypewriter() {
+  typewriterTimers.forEach((t) => clearTimeout(t));
+  typewriterTimers = [];
+  typedActivityIds.clear();
+}
+
+function shouldTypewrite(activity) {
+  if (!typewriterToggle || !typewriterToggle.checked) return false;
+  if (activity.type !== 'message') return false;
+  if (activity.from?.role === 'user') return false;
+  if (!activity.text) return false;
+  // Real generative streaming chunks animate themselves — don't double up.
+  if (getStreamInfo(activity)) return false;
+  return true;
+}
+
+// Emits `activity` as progressive same-id frames via `emit`, then the original.
+function emitTypewriter(activity, emit) {
+  // Direct Line may deliver the same final message more than once. Animate each
+  // distinct activity id exactly once; silently drop later duplicates so they
+  // can't restart the reveal and rewind an already-growing/complete bubble.
+  if (activity.id) {
+    if (typedActivityIds.has(activity.id)) return;
+    typedActivityIds.add(activity.id);
+  }
+
+  const fullText = activity.text || '';
+  const total = fullText.length;
+
+  // Pick a per-frame step so the whole reveal fits inside maxDurationMs.
+  const maxTicks = Math.max(1, Math.floor(TYPEWRITER.maxDurationMs / TYPEWRITER.tickMs));
+  const step = Math.max(TYPEWRITER.minStep, Math.ceil(total / maxTicks));
+
+  // While animating, withhold attachments / suggested actions so cards and
+  // quick replies appear only once the text is fully revealed.
+  const base = { ...activity };
+  delete base.attachments;
+  delete base.suggestedActions;
+  delete base.attachmentLayout;
+
+  let shown = 0;
+  const tick = () => {
+    shown = Math.min(total, shown + step);
+    if (shown >= total) {
+      // Final frame: the untouched original (full text + attachments).
+      emit(activity);
+      return;
+    }
+    emit({ ...base, text: fullText.slice(0, shown) });
+    typewriterTimers.push(setTimeout(tick, TYPEWRITER.tickMs));
+  };
+  tick();
+}
+
+// Wraps a Direct Line connection so bot final messages stream in with a
+// typewriter effect. Also taps each (original) activity for the inspector so we
+// don't open a second activity$ subscription.
+//
+// IMPORTANT: Web Chat subscribes to `activity$` MANY times (this build does so
+// ~5×). The wrapper must therefore subscribe to the real connection EXACTLY
+// ONCE and MULTICAST the (typewriter-transformed) stream to every downstream
+// subscriber. The previous design re-subscribed upstream per `subscribe()` and
+// ran the typewriter + its module-global de-dup (`typedActivityIds`) once per
+// subscription, so the FIRST subscription consumed the message id and every
+// later subscription — including the one Web Chat renders from — was starved
+// and emitted nothing, leaving bot replies visible in the inspector but absent
+// from the canvas. Subscribing upstream once and broadcasting fixes that and
+// also logs each activity to the inspector exactly once.
+function wrapWithTypewriter(conn) {
+  const observers = new Set();
+  let upstreamSub = null;
+
+  const broadcast = (activity) => {
+    for (const observer of observers) {
+      try {
+        observer.next && observer.next(activity);
+      } catch (e) {
+        console.warn('webchat observer error', e);
+      }
+    }
+  };
+
+  const startUpstream = () => {
+    upstreamSub = conn.activity$.subscribe({
+      next: (activity) => {
+        if (conn.conversationId && convoIdLabel) {
+          convoIdLabel.textContent = `conversation: ${conn.conversationId}`;
+        }
+        try {
+          logActivity(activity);
+        } catch (e) {
+          console.warn('inspector error', e);
+        }
+        if (shouldTypewrite(activity)) {
+          emitTypewriter(activity, broadcast);
+        } else {
+          broadcast(activity);
+        }
+      },
+      error: (e) => {
+        for (const observer of observers) observer.error && observer.error(e);
+      },
+      complete: () => {
+        for (const observer of observers) observer.complete && observer.complete();
+      }
+    });
+  };
+
+  const tappedActivity$ = {
+    subscribe(observerOrNext, error, complete) {
+      const observer =
+        typeof observerOrNext === 'function'
+          ? { next: observerOrNext, error, complete }
+          : observerOrNext || {};
+      observers.add(observer);
+      if (observers.size === 1) startUpstream();
+      return {
+        unsubscribe() {
+          observers.delete(observer);
+          if (observers.size === 0 && upstreamSub) {
+            try {
+              upstreamSub.unsubscribe();
+            } catch {
+              /* noop */
+            }
+            upstreamSub = null;
+          }
+        }
+      };
+    }
+  };
+
+  const wrapped = Object.create(conn);
+  wrapped.activity$ = tappedActivity$;
+  wrapped.__inspectorTapped = true;
+  return wrapped;
+}
+
 // Web Chat keeps the transcript pinned to the bottom when a *new* activity
 // arrives, but a streaming answer updates the SAME activity in place — so the
 // bubble grows without the view following it. We watch the scrollable
@@ -722,6 +958,16 @@ function attachAutoScroll() {
   autoScrollObserver = observer;
 }
 
+// ---------------------------------------------------------------------------
+// Web Chat rendering
+//
+// Every mode shares the single global `WebChat` loaded once in index.html from
+// jsDelivr's @latest npm bundle (the genuine newest release). We intentionally
+// do NOT load a second Web Chat bundle at runtime: each full bundle ships its
+// own React, and two copies of React on one page break rendering with React
+// error #321 ("Invalid hook call").
+// ---------------------------------------------------------------------------
+
 async function connect() {
   await disconnect();
   resetInspector();
@@ -732,6 +978,11 @@ async function connect() {
 
   try {
     const mode = modeSel.value;
+    // All Direct Line modes share the single global Web Chat bundle loaded in
+    // index.html (jsDelivr genuine-latest). Loading a second full bundle would
+    // put a second copy of React on the page and break rendering with React
+    // error #321 ("Invalid hook call").
+    let webChatLib = WebChat;
 
     if (mode === 'sdk') {
       // Direct-to-Engine: MSAL sign-in, then a Web Chat-compatible connection.
@@ -749,10 +1000,13 @@ async function connect() {
     } else {
       const { token } = await acquireToken(mode);
       // Web Socket transport is required for livestreaming.
-      directLine = WebChat.createDirectLine({
+      directLine = webChatLib.createDirectLine({
         token,
         webSocket: forceWebSocket.checked
       });
+      // Animate bot final messages with a typewriter effect (Direct Line sends
+      // the answer as a single final message, so there's no native typing feel).
+      directLine = wrapWithTypewriter(directLine);
     }
 
     // Surface conversation id + inspect every activity.
@@ -786,7 +1040,13 @@ async function connect() {
 
     placeholder.style.display = 'none';
 
-    WebChat.renderWebChat(
+    // The Web Chat bundle (jsDelivr) renders its send/upload icons as
+    // <div class="component-icon"> glyphs (not <svg>). Tag the host so the
+    // stylesheet can suppress those native glyphs and keep only our custom
+    // icons.
+    el('webchat').classList.add('wc-secret-mode');
+
+    webChatLib.renderWebChat(
       {
         directLine,
         styleOptions: {
@@ -841,6 +1101,7 @@ async function connect() {
 }
 
 async function disconnect() {
+  clearTypewriter();
   subscriptions.forEach((s) => {
     try {
       s.unsubscribe();
@@ -862,6 +1123,7 @@ async function disconnect() {
     directLine = null;
   }
   el('webchat').innerHTML = '';
+  el('webchat').classList.remove('wc-secret-mode');
   el('webchat').appendChild(placeholder);
   placeholder.style.display = 'flex';
   convoIdLabel.textContent = 'conversation: —';

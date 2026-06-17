@@ -4,12 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Copilot Studio · Streaming Chat Playground</title>
-    <link rel="preconnect" href="https://cdn.botframework.com" />
+    <!-- Direct Line secret / token mode loads Web Chat on demand from jsDelivr. -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link rel="stylesheet" href="./styles.css" />
-    <!-- Bot Framework Web Chat (livestreaming supported since 4.17.0) -->
+    <!-- Bot Framework Web Chat (livestreaming supported since 4.17.0).
+         Loaded ONCE from jsDelivr's @latest npm bundle, which resolves to the
+         genuine newest release. We must never load a second Web Chat bundle on
+         the page (e.g. the cdn.botframework.com "latest" alias as well): each
+         full bundle ships its own React, and two copies of React on one page
+         triggers "Invalid hook call" (React error #321) when Web Chat renders. -->
     <script
       crossorigin="anonymous"
-      src="https://cdn.botframework.com/botframework-webchat/latest/webchat.js"
+      src="https://cdn.jsdelivr.net/npm/botframework-webchat@latest/dist/webchat.js"
     ></script>
     <!-- MSAL (browser) for the SDK / Direct-to-Engine mode: user signs in with Entra ID. -->
     <script src="https://unpkg.com/@azure/msal-browser@4.13.1/lib/msal-browser.js"></script>
@@ -138,6 +144,10 @@
           <label class="check">
             <input type="checkbox" id="autoInspect" checked />
             <span>Capture streaming chunks in inspector</span>
+          </label>
+          <label class="check">
+            <input type="checkbox" id="typewriter" checked />
+            <span>Typewriter effect <em>(Direct Line final messages)</em></span>
           </label>
         </div>
 
