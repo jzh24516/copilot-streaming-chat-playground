@@ -180,6 +180,27 @@
   .flow .step .desc { font-size: 13.5px; color: var(--cp-text-muted); margin-top: 6px; }
   .flow .step .mono { font-size: 11.5px; color: var(--cp-text-soft); margin-top: 8px; display: block; }
 
+  .arch-band {
+    border: 1px solid var(--cp-border);
+    border-radius: 10px;
+    background: var(--cp-bg-elevated);
+    padding: 11px 16px;
+    font-size: 14px;
+    color: var(--cp-text-muted);
+    text-align: center;
+  }
+  .arch-band b { color: var(--cp-text); }
+  .archchain { display: flex; flex-direction: column; gap: 5px; margin-top: 4px; }
+  .archchain .node {
+    background: var(--cp-surface);
+    border: 1px solid var(--cp-border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+    color: var(--cp-text);
+  }
+  .archchain .down { text-align: center; color: var(--cp-accent); font-size: 12px; font-weight: 700; }
+
   .muted { color: var(--cp-text-soft); font-size: 14px; }
 
   .takeaway {
@@ -457,7 +478,63 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
     <div class="takeaway">Verified against the same agent: DtE streams natively; DL streams the instant you send <b>deliveryMode:"stream"</b> <i>(with</i> <span class="mono">Channels_SupportForStreamingEnabled</span> <i>ON)</i> — confirmed <b>1 livestream / 84 chunks / 1 finalized</b>.</div>
   </section>
 
-  <!-- 8. Gotchas / lessons -->
+  <!-- 8. Technical architecture -->
+  <section class="slide">
+    <div class="kicker">Technical Architecture</div>
+    <h2>Components behind the streaming playground</h2>
+    <div class="arch-band" style="margin-bottom:12px;"><b>Browser</b> &middot; Bot Framework Web Chat (CDN) + <span class="mono">app.js</span> normalization tap &middot; stream coalescing &middot; diagnostics inspector &middot; auto-scroll</div>
+    <div class="grid2" style="gap:18px;">
+      <div class="card good">
+        <h3>Direct-to-Engine (DtE)</h3>
+        <div class="archchain">
+          <div class="node"><span class="mono">sdk-client.js</span> — agents-copilotstudio-client</div>
+          <div class="down">↓ token</div>
+          <div class="node">MSAL browser — Entra access token</div>
+          <div class="down">↓ HTTPS</div>
+          <div class="node">Direct-to-Engine endpoint <span class="mono">/conversations</span></div>
+        </div>
+        <p style="font-size:13px; margin-top:10px; color:var(--cp-text-muted)">Native streaming — no client opt-in.</p>
+      </div>
+      <div class="card good">
+        <h3>Direct Line (DL)</h3>
+        <div class="archchain">
+          <div class="node"><span class="mono">DirectLine.js</span> (Web Chat) + <span class="mono">deliveryMode</span> opt-in</div>
+          <div class="down">↓ token</div>
+          <div class="node">Express relay <span class="mono">:3978</span> (secret→token) · or token-endpoint URL</div>
+          <div class="down">↓ WebSocket</div>
+          <div class="node">Direct Line channel</div>
+        </div>
+        <p style="font-size:13px; margin-top:10px; color:var(--cp-text-muted)">Needs <span class="mono">Channels_SupportForStreamingEnabled</span> = ON.</p>
+      </div>
+    </div>
+    <div class="arch-band" style="margin-top:12px;"><b>Copilot Studio agent</b> — emits <span class="mono">informative → streaming → final</span> activities</div>
+    <div class="takeaway">Both transports converge on the <b>same agent</b> and the <b>same app.js normalization tap</b> — only the connection + auth layer differs.</div>
+  </section>
+
+  <!-- 9. Testing flow -->
+  <section class="slide">
+    <div class="kicker">Testing Flow</div>
+    <h2>How the components interact during a test run</h2>
+    <div class="flow">
+      <div class="step"><span class="tag">1 · run</span><div class="desc">Start Express <span class="mono">:3978</span> — serves the playground.</div><span class="mono">npm start</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="tag">2 · pick mode</span><div class="desc">Open the playground, choose SDK (DtE) or token / secret / dlStream (DL).</div><span class="mono">localhost:3978</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="tag">3 · token</span><div class="desc">DtE: MSAL Entra redirect. DL: Express mints a Direct Line token.</div><span class="mono">/api/config</span></div>
+    </div>
+    <div class="flow" style="margin-top:12px;">
+      <div class="step"><span class="tag">4 · connect</span><div class="desc">Web Chat connects; DL also posts <span class="mono">startConversation</span> with <span class="mono">deliveryMode:"stream"</span>.</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="tag">5 · prompt</span><div class="desc">Send a <b>generative</b> prompt — only LLM answers stream (not canned topic replies).</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="tag">6 · stream</span><div class="desc">Agent emits informative → streaming → final into <b>one growing bubble</b>.</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="tag">7 · verify</span><div class="desc">Inspector confirms chunk count, <span class="mono">streamId</span> grouping &amp; sequence order.</div></div>
+    </div>
+    <div class="takeaway">A passing run = <b>1 livestream / N streaming chunks / 1 finalized</b>, one clean growing bubble, full markdown, and no duplicate final.</div>
+  </section>
+
+  <!-- 10. Gotchas / lessons -->
   <section class="slide">
     <div class="kicker">Field Notes</div>
     <h2>Smaller gotchas worth knowing</h2>
@@ -480,7 +557,7 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
     <div class="takeaway">Budget time for the <b>plumbing</b>, not the UI. The visible chat is easy; the activity reconciliation is where the work is.</div>
   </section>
 
-  <!-- 8. Summary -->
+  <!-- 11. Summary -->
   <section class="slide title-slide">
     <span class="badge">TAKEAWAYS</span>
     <h2 style="font-size:34px;">If you remember three things</h2>
@@ -503,7 +580,7 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
 
 <div class="chrome">
   <button class="nav-btn" id="prev" aria-label="Previous slide">‹</button>
-  <span class="count" id="count">1 / 9</span>
+  <span class="count" id="count">1 / 11</span>
   <button class="nav-btn" id="next" aria-label="Next slide">›</button>
   <button class="theme-toggle" id="themeToggle">◑ Theme</button>
 </div>
@@ -589,7 +666,7 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
     s.addText("2026 \u00B7 Internal \u2014 Streaming Chat Playground", { x: 0.6, y: 7.05, w: 8, h: 0.34, color: SOFT, fontSize: 10 });
     s.addText([
       { text: "Copilot Studio Streaming", options: { color: ACCENT, bold: true } },
-      { text: "    " + n + " / 9", options: { color: SOFT } }
+      { text: "    " + n + " / 11", options: { color: SOFT } }
     ], { x: 7.7, y: 7.05, w: 5.03, h: 0.34, fontSize: 10, align: "right" });
   }
 
@@ -733,9 +810,57 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
     takeaway(s, "Verified on the same agent: DtE streams natively; DL streams the instant you send deliveryMode:\u201Cstream\u201D (with Channels_SupportForStreamingEnabled ON) \u2014 1 livestream / 84 chunks / 1 finalized.");
     footer(s, 7);
 
-    // 8 — Field notes
+    // 8 — Technical architecture
     s = pptx.addSlide();
-    header(s, "07 \u00B7 FIELD NOTES", "Smaller gotchas worth knowing");
+    header(s, "07 \u00B7 ARCHITECTURE", "Components behind the streaming playground");
+    s.addShape(ST.roundRect, { x: 0.6, y: 1.8, w: 12.13, h: 0.62, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.06 });
+    s.addText([{ text: "Browser   ", options: { bold: true, color: INK } }, { text: "Bot Framework Web Chat (CDN) + app.js normalization tap \u00B7 stream coalescing \u00B7 diagnostics inspector \u00B7 auto-scroll", options: { color: MUTED } }], { x: 0.85, y: 1.8, w: 11.6, h: 0.62, fontSize: 12, valign: "middle", align: "center" });
+    const arch = [
+      ["Direct-to-Engine (DtE)", ["sdk-client.js \u2014 agents-copilotstudio-client", "\u2193  MSAL browser \u2014 Entra access token", "\u2193  HTTPS", "Direct-to-Engine endpoint  /conversations"], "Native streaming \u2014 no client opt-in."],
+      ["Direct Line (DL)", ["DirectLine.js (Web Chat) + deliveryMode opt-in", "\u2193  token: Express relay :3978 or token-endpoint URL", "\u2193  WebSocket", "Direct Line channel"], "Needs Channels_SupportForStreamingEnabled = ON."]
+    ];
+    arch.forEach(([t, chain, note], i) => {
+      const x = 0.6 + i * 6.18;
+      s.addShape(ST.roundRect, { x, y: 2.62, w: 5.85, h: 2.95, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.06 });
+      s.addShape(ST.rect, { x, y: 2.62, w: 0.09, h: 2.95, fill: { color: GREEN }, line: { type: "none" } });
+      s.addText(t, { x: x + 0.28, y: 2.72, w: 5.45, h: 0.4, bold: true, color: INK, fontSize: 14 });
+      s.addText(chain.map((c) => ({ text: c + "\n", options: { color: MUTED, fontSize: 11, fontFace: "Consolas", paraSpaceAfter: 4 } })), { x: x + 0.28, y: 3.14, w: 5.45, h: 1.85, valign: "top" });
+      s.addText(note, { x: x + 0.28, y: 5.08, w: 5.45, h: 0.4, italic: true, color: SOFT, fontSize: 11 });
+    });
+    s.addShape(ST.roundRect, { x: 0.6, y: 5.7, w: 12.13, h: 0.5, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.06 });
+    s.addText([{ text: "Copilot Studio agent   ", options: { bold: true, color: INK } }, { text: "emits informative \u2192 streaming \u2192 final activities", options: { color: MUTED } }], { x: 0.85, y: 5.7, w: 11.6, h: 0.5, fontSize: 12, valign: "middle", align: "center" });
+    takeaway(s, "Both transports converge on the same agent and the same app.js normalization tap \u2014 only the connection + auth layer differs.");
+    footer(s, 8);
+
+    // 9 — Testing flow
+    s = pptx.addSlide();
+    header(s, "08 \u00B7 TESTING FLOW", "How the components interact during a test run");
+    const tsteps = [
+      ["1 \u00B7 RUN", "Start Express :3978 \u2014 serves the playground.", "npm start"],
+      ["2 \u00B7 PICK MODE", "Open the playground; choose SDK (DtE) or token / secret / dlStream (DL).", "localhost:3978"],
+      ["3 \u00B7 TOKEN", "DtE: MSAL Entra redirect. DL: Express mints a Direct Line token.", "/api/config"],
+      ["4 \u00B7 CONNECT", "Web Chat connects; DL posts startConversation deliveryMode:\u201Cstream\u201D.", ""],
+      ["5 \u00B7 PROMPT", "Send a generative prompt \u2014 only LLM answers stream.", ""],
+      ["6 \u00B7 STREAM", "Agent emits informative \u2192 streaming \u2192 final into one growing bubble.", ""],
+      ["7 \u00B7 VERIFY", "Inspector confirms chunk count, streamId grouping & sequence order.", ""]
+    ];
+    tsteps.forEach(([tag, desc, mono], i) => {
+      const col = i % 4, row = Math.floor(i / 4);
+      const x = 0.6 + col * 3.06, y = 2.05 + row * 1.95;
+      s.addShape(ST.roundRect, { x, y, w: 2.86, h: 1.68, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.08 });
+      s.addText([
+        { text: tag + "\n", options: { bold: true, color: ACCENT, fontSize: 11.5 } },
+        { text: desc + (mono ? "\n" : ""), options: { color: MUTED, fontSize: 10.5 } },
+        ...(mono ? [{ text: mono, options: { color: SOFT, fontSize: 10, fontFace: "Consolas" } }] : [])
+      ], { x: x + 0.16, y: y + 0.12, w: 2.6, h: 1.46, valign: "top" });
+      if (col < 3 && i < tsteps.length - 1) s.addText("\u2192", { x: x + 2.86, y, w: 0.2, h: 1.68, color: SOFT, fontSize: 18, bold: true, align: "center", valign: "middle" });
+    });
+    takeaway(s, "A passing run = 1 livestream / N streaming chunks / 1 finalized, one clean growing bubble, full markdown, no duplicate final.");
+    footer(s, 9);
+
+    // 10 — Field notes
+    s = pptx.addSlide();
+    header(s, "09 \u00B7 FIELD NOTES", "Smaller gotchas worth knowing");
     s.addText(bullets([
       "Web Chat sorts the transcript by webchat:sequence-id \u2014 wrong values render bubbles out of order.",
       "net::ERR_ABORTED on the conversations POST is benign \u2014 it's the SSE stream closing.",
@@ -745,11 +870,11 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
       "showTyping: true on the connection polishes the latency loader UX."
     ]), { x: 0.6, y: 1.95, w: 12.13, h: 4 });
     takeaway(s, "Budget time for the plumbing, not the UI. The visible chat is easy; activity reconciliation is the work.");
-    footer(s, 8);
+    footer(s, 10);
 
-    // 9 — Takeaways
+    // 11 — Takeaways
     s = pptx.addSlide();
-    header(s, "08 \u00B7 TAKEAWAYS", "If you remember three things");
+    header(s, "10 \u00B7 TAKEAWAYS", "If you remember three things");
     const tk = [
       "Both Direct Line and Direct-to-Engine stream — DtE is native; DL needs deliveryMode:“stream”.",
       "Web Chat groups bubbles by activity id; force id = streamId for one growing bubble.",
@@ -763,7 +888,7 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
       s.addText(t, { x: 1.7, y, w: 10.7, h: 1.05, color: INK, fontSize: 16, valign: "middle" });
     });
     s.addText("Repo: github.com/jzh24516/copilot-streaming-chat-playground", { x: 0.6, y: 6.4, w: 12, h: 0.45, color: SOFT, fontSize: 13 });
-    footer(s, 9);
+    footer(s, 11);
   }
 
   const exportBtn = document.getElementById("exportPptx");
