@@ -61,6 +61,7 @@
             <option value="server">Server relay (secret stays server-side)</option>
             <option value="tokenEndpoint">Copilot Studio token endpoint URL</option>
             <option value="secret">Direct Line secret / token</option>
+            <option value="dlStream">Direct Line · live streaming (custom coalescing) · experimental</option>
           </select>
         </label>
 
@@ -134,6 +135,23 @@
             spellcheck="false"
           />
           <small>Use a token where possible. Secrets in the browser are for local testing only.</small>
+        </label>
+
+        <label class="field" id="dlStreamField" hidden>
+          <span>Direct Line secret, token, or token-endpoint URL</span>
+          <input
+            type="password"
+            id="dlStreamCred"
+            placeholder="Paste a Direct Line secret / token, or a token-endpoint URL"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <small>
+            Experimental: connects over Direct Line (WebSocket) and coalesces Copilot Studio
+            <code>streamType:"streaming"</code> chunks into one growing bubble by <code>streamId</code>,
+            dropping the trailing duplicate final message. Accepts a secret, a Direct Line token,
+            or a token-endpoint URL — whichever “connection string” you have for the agent.
+          </small>
         </label>
 
         <div class="toggles">

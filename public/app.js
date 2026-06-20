@@ -8,6 +8,7 @@ const el = (id) => document.getElementById(id);
 const modeSel = el('mode');
 const tokenEndpointField = el('tokenEndpointField');
 const secretField = el('secretField');
+const dlStreamField = el('dlStreamField');
 const sdkField = el('sdkField');
 const sdkClientId = el('sdkClientId');
 const sdkTenantId = el('sdkTenantId');
@@ -15,6 +16,7 @@ const sdkEnvironmentId = el('sdkEnvironmentId');
 const sdkSchemaName = el('sdkSchemaName');
 const tokenEndpointInput = el('tokenEndpoint');
 const secretInput = el('secret');
+const dlStreamCred = el('dlStreamCred');
 const forceWebSocket = el('forceWebSocket');
 const autoInspect = el('autoInspect');
 const typewriterToggle = el('typewriter');
@@ -92,9 +94,12 @@ function refreshModeUI() {
   const mode = modeSel.value;
   tokenEndpointField.hidden = mode !== 'tokenEndpoint';
   secretField.hidden = mode !== 'secret';
+  dlStreamField.hidden = mode !== 'dlStream';
   sdkField.hidden = mode !== 'sdk';
-  // Web Socket transport only applies to Direct Line modes.
-  forceWebSocket.disabled = mode === 'sdk';
+  // Web Socket transport only applies to Direct Line modes (and is mandatory
+  // for the live-streaming adapter, so it is forced/locked there).
+  forceWebSocket.disabled = mode === 'sdk' || mode === 'dlStream';
+  if (mode === 'dlStream') forceWebSocket.checked = true;
 }
 modeSel.addEventListener('change', refreshModeUI);
 
@@ -118,6 +123,15 @@ async function loadServerConfig() {
     // (DIRECT_LINE_SECRET_CLIENT) so it survives reloads.
     if (cfg.directLineSecret && !secretInput.value) {
       secretInput.value = cfg.directLineSecret;
+    }
+    // The experimental live-streaming mode reuses the same credential.
+    if (cfg.directLineSecret && dlStreamCred && !dlStreamCred.value) {
+      dlStreamCred.value = cfg.directLineSecret;
+    }
+    // Pre-fill the "Copilot Studio token endpoint URL" mode from .env
+    // (COPILOT_TOKEN_ENDPOINT_CLIENT) so it survives reloads.
+    if (cfg.tokenEndpointUrl && tokenEndpointInput && !tokenEndpointInput.value) {
+      tokenEndpointInput.value = cfg.tokenEndpointUrl;
     }
 
     const sdkReady = Boolean(sdk.clientId && sdk.environmentId && sdk.schemaName);
@@ -181,6 +195,34 @@ async function acquireToken(mode) {
     if (!resp.ok) throw new Error(`Token endpoint returned HTTP ${resp.status}`);
     const body = await resp.json();
     if (!body.token) throw new Error('Token endpoint did not return a "token".');
+    return { token: body.token };
+  }
+
+  // Experimental live-streaming mode: accepts a secret, a Direct Line token, OR
+  // a token-endpoint URL (the closest thing Copilot Studio has to an "agent
+  // connection string"), auto-detecting which one was pasted.
+  if (mode === 'dlStream') {
+    const value = ((dlStreamCred && dlStreamCred.value) || secretInput.value || '').trim();
+    if (!value) {
+      throw new Error('Enter a Direct Line secret, token, or token-endpoint URL.');
+    }
+    // A URL is a token endpoint: GET it for a token.
+    if (/^https?:\/\//i.test(value)) {
+      const resp = await fetch(value, { method: 'GET' });
+      if (!resp.ok) throw new Error(`Token endpoint returned HTTP ${resp.status}`);
+      const body = await resp.json();
+      if (!body.token) throw new Error('Token endpoint did not return a "token".');
+      return { token: body.token };
+    }
+    // A JWT-looking value is a ready-to-use token.
+    if (value.split('.').length === 3) return { token: value };
+    // Otherwise treat it as a secret and exchange it for a token.
+    const resp = await fetch(
+      'https://directline.botframework.com/v3/directline/tokens/generate',
+      { method: 'POST', headers: { Authorization: `Bearer ${value}` } }
+    );
+    if (!resp.ok) throw new Error(`Token generation failed (HTTP ${resp.status})`);
+    const body = await resp.json();
     return { token: body.token };
   }
 
@@ -925,6 +967,151 @@ function wrapWithTypewriter(conn) {
   return wrapped;
 }
 
+// Direct Line live-streaming adapter (experimental "dlStream" mode).
+//
+// When streaming is enabled on a Copilot Studio agent, interim answer chunks
+// arrive over Direct Line as `typing` activities carrying livestreaming
+// metadata — channelData.streamType="streaming", a stable `streamId`, and an
+// incrementing `streamSequence` — whose `text` is the FULL answer-so-far
+// snapshot. A `final` (or plain) `message` then delivers the completed text,
+// often TWICE: once tagged streamType:"final" and once as an untagged duplicate
+// message (the same double-send the peer's C# DirectLine client had to dedup).
+//
+// Web Chat re-renders an activity in place when a later activity reuses its
+// `id`, so we coalesce every chunk of one stream onto a single synthetic
+// `message` keyed on `streamId` → one bubble that grows in realtime. We also
+// drop the trailing duplicate final message so the answer doesn't flash twice.
+// Like the other wrappers, we subscribe upstream exactly once and multicast to
+// every Web Chat subscriber.
+function wrapWithDirectLineStreaming(conn) {
+  const observers = new Set();
+  let upstreamSub = null;
+  // streamId -> last full text we emitted, kept so we can recognise (and drop)
+  // the trailing duplicate final message Direct Line re-sends after a stream.
+  const completed = new Map();
+
+  const broadcast = (activity) => {
+    for (const observer of observers) {
+      try {
+        observer.next && observer.next(activity);
+      } catch (e) {
+        console.warn('webchat observer error', e);
+      }
+    }
+  };
+
+  const handle = (activity) => {
+    const info = getStreamInfo(activity);
+
+    // Interim streaming / informative chunk → grow ONE bubble keyed on streamId.
+    if (
+      info &&
+      info.valid &&
+      (info.streamType === 'streaming' || info.streamType === 'informative')
+    ) {
+      const id = info.streamId || activity.id;
+      const text = activity.text || '';
+      broadcast({
+        ...activity,
+        type: 'message',
+        id,
+        text,
+        from: activity.from || { role: 'bot' }
+      });
+      completed.set(id, text);
+      return;
+    }
+
+    // Final streamed message → replace the growing bubble with the full text.
+    if (info && info.valid && info.streamType === 'final') {
+      const id = info.streamId || activity.id;
+      const text = activity.text || completed.get(id) || '';
+      broadcast({ ...activity, type: 'message', id, text });
+      completed.set(id, text);
+      return;
+    }
+
+    // Plain bot message with no stream metadata: if it duplicates a stream we
+    // just finished, drop it; otherwise pass it through (ordinary reply).
+    const isBotMessage =
+      activity.type === 'message' && activity.from?.role !== 'user';
+    if (isBotMessage && !info && activity.text) {
+      for (const doneText of completed.values()) {
+        if (doneText && doneText === activity.text) return;
+      }
+    }
+
+    broadcast(activity);
+  };
+
+  const startUpstream = () => {
+    upstreamSub = conn.activity$.subscribe({
+      next: (activity) => {
+        if (conn.conversationId && convoIdLabel) {
+          convoIdLabel.textContent = `conversation: ${conn.conversationId}`;
+        }
+        try {
+          logActivity(activity);
+        } catch (e) {
+          console.warn('inspector error', e);
+        }
+        try {
+          handle(activity);
+        } catch (e) {
+          console.warn('stream adapter error', e);
+          broadcast(activity);
+        }
+      },
+      error: (e) => {
+        for (const observer of observers) observer.error && observer.error(e);
+      },
+      complete: () => {
+        for (const observer of observers) observer.complete && observer.complete();
+      }
+    });
+  };
+
+  const tappedActivity$ = {
+    subscribe(observerOrNext, error, complete) {
+      const observer =
+        typeof observerOrNext === 'function'
+          ? { next: observerOrNext, error, complete }
+          : observerOrNext || {};
+      observers.add(observer);
+      if (observers.size === 1) startUpstream();
+      return {
+        unsubscribe() {
+          observers.delete(observer);
+          if (observers.size === 0 && upstreamSub) {
+            try {
+              upstreamSub.unsubscribe();
+            } catch {
+              /* noop */
+            }
+            upstreamSub = null;
+          }
+        }
+      };
+    }
+  };
+
+  const wrapped = Object.create(conn);
+  wrapped.activity$ = tappedActivity$;
+  wrapped.__inspectorTapped = true;
+  // Copilot Studio streams a generative answer only when the triggering user
+  // message carries deliveryMode:"stream" (the official test canvas's Web Chat
+  // sets this on every outgoing message). Plain Web Chat does not, so inject it
+  // here for outgoing user messages.
+  wrapped.postActivity = (activity) => {
+    let outgoing = activity;
+    if (activity && activity.type === 'message') {
+      outgoing = { ...activity, deliveryMode: 'stream' };
+    }
+    return conn.postActivity(outgoing);
+  };
+  return wrapped;
+}
+
 // Web Chat keeps the transcript pinned to the bottom when a *new* activity
 // arrives, but a streaming answer updates the SAME activity in place — so the
 // bubble grows without the view following it. We watch the scrollable
@@ -1002,20 +1189,80 @@ async function connect() {
       // Web Socket transport is required for livestreaming.
       directLine = webChatLib.createDirectLine({
         token,
-        webSocket: forceWebSocket.checked
+        webSocket: mode === 'dlStream' ? true : forceWebSocket.checked
       });
-      // Animate bot final messages with a typewriter effect (Direct Line sends
-      // the answer as a single final message, so there's no native typing feel).
-      directLine = wrapWithTypewriter(directLine);
+      if (mode === 'dlStream') {
+        // Coalesce real Copilot Studio livestreaming chunks into one growing
+        // bubble keyed on streamId (and drop the trailing duplicate final).
+        directLine = wrapWithDirectLineStreaming(directLine);
+      } else {
+        // Animate bot final messages with a typewriter effect (Direct Line sends
+        // the answer as a single final message, so there's no native typing feel).
+        directLine = wrapWithTypewriter(directLine);
+      }
     }
 
     // Surface conversation id + inspect every activity.
+    // Copilot Studio only emits generative (token-by-token) streaming when the
+    // client opts in with a `startConversation` event carrying
+    // deliveryMode:"stream" + a ClientCapabilities entity — exactly what the
+    // official test canvas sends. Plain Web Chat never sends it, so without this
+    // the bot returns only the final message. Send it once when dlStream goes
+    // online, before the first user message.
+    let streamOptInSent = false;
     subscriptions.push(
       directLine.connectionStatus$.subscribe((status) => {
         const meta = STATUS[status] || { label: `Status ${status}`, state: 'idle' };
         setStatus(meta.state, meta.label);
         if (status === 2) {
           setHint('Connected. Send a message to see streaming chunks arrive.', 'ok');
+          if (mode === 'dlStream' && !streamOptInSent) {
+            streamOptInSent = true;
+            try {
+              const sdkMeta = (() => {
+                try {
+                  return readSdkConfig();
+                } catch {
+                  return {};
+                }
+              })();
+              const optIn = {
+                type: 'event',
+                name: 'startConversation',
+                deliveryMode: 'stream',
+                channelId: 'webchat',
+                from: {
+                  id: 'user-' + Math.random().toString(36).slice(2),
+                  role: 'user'
+                },
+                locale: 'en-US',
+                channelData: { postBack: true },
+                value: { __version__: '2' },
+                entities: [
+                  {
+                    type: 'ClientCapabilities',
+                    requiresBotState: true,
+                    supportsListening: true,
+                    supportsTts: true
+                  }
+                ]
+              };
+              if (sdkMeta.tenantId) optIn.cci_tenant_id = sdkMeta.tenantId;
+              if (sdkMeta.environmentId)
+                optIn.cci_environment_id = sdkMeta.environmentId;
+              directLine.postActivity(optIn).subscribe({
+                next: () =>
+                  setHint(
+                    'Streaming opt-in sent (deliveryMode:"stream") — send a message to see chunks.',
+                    'ok'
+                  ),
+                error: (e) =>
+                  console.warn('startConversation stream opt-in failed', e)
+              });
+            } catch (e) {
+              console.warn('could not send streaming opt-in', e);
+            }
+          }
         }
       })
     );
@@ -1045,6 +1292,17 @@ async function connect() {
     // stylesheet can suppress those native glyphs and keep only our custom
     // icons.
     el('webchat').classList.add('wc-secret-mode');
+
+    // Render Web Chat into a FRESH child node on every connect. Web Chat mounts
+    // a React root onto the node we hand it. If we reused #webchat directly,
+    // disconnect()'s `innerHTML = ''` would wipe the DOM but leave React's root
+    // bound to #webchat; the NEXT renderWebChat would then collide with that
+    // stale root and paint nothing (canvas stuck/empty on reconnect). A new
+    // child node guarantees a clean root each time and is disposed wholesale
+    // when disconnect() clears the host.
+    const mount = document.createElement('div');
+    mount.className = 'webchat-mount';
+    el('webchat').appendChild(mount);
 
     webChatLib.renderWebChat(
       {
@@ -1083,7 +1341,7 @@ async function connect() {
           sendTypingIndicator: true
         }
       },
-      el('webchat')
+      mount
     );
 
     attachAutoScroll();

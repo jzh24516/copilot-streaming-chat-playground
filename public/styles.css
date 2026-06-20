@@ -395,6 +395,14 @@ button.small {
   color: #6b7280;
   pointer-events: none;
 }
+
+/* Web Chat is mounted into this fresh child node on every connect (a new node
+   each time avoids stale React-root collisions on reconnect). It must fill the
+   relatively-positioned #webchat host so Web Chat's rootHeight:100% resolves. */
+.webchat-mount {
+  position: absolute;
+  inset: 0;
+}
 .placeholder-art {
   font-size: 56px;
   color: var(--accent);

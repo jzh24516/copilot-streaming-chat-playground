@@ -42,6 +42,13 @@ const DIRECT_LINE_SECRET = process.env.DIRECT_LINE_SECRET?.trim();
 // exchanges for a token), this value is sent to the browser to pre-fill the
 // secret input so it survives page reloads. Intended for LOCAL testing only.
 const DIRECT_LINE_SECRET_CLIENT = process.env.DIRECT_LINE_SECRET_CLIENT?.trim() || '';
+// Convenience-only prefill for the CLIENT-SIDE "Copilot Studio token endpoint
+// URL" mode. The token endpoint is anonymous (it mints short-lived tokens), so
+// this is safe to send to the browser; it just saves re-pasting the URL after
+// every reload. Must be the Direct Line TOKEN endpoint
+// (.../botsbyschema/<schema>/directline/token), NOT the Direct-to-Engine
+// .../bots/<schema>/conversations URL.
+const COPILOT_TOKEN_ENDPOINT_CLIENT = process.env.COPILOT_TOKEN_ENDPOINT_CLIENT?.trim() || '';
 const DIRECT_LINE_TOKEN_GENERATE_URL =
   process.env.DIRECT_LINE_TOKEN_GENERATE_URL?.trim() ||
   'https://directline.botframework.com/v3/directline/tokens/generate';
@@ -82,6 +89,9 @@ app.get('/api/config', (_req, res) => {
     // Optional prefill for the client-side "Direct Line secret / token" mode so
     // the operator does not have to paste it after every reload (local testing).
     directLineSecret: DIRECT_LINE_SECRET_CLIENT || null,
+    // Optional prefill for the client-side "Copilot Studio token endpoint URL"
+    // mode (anonymous token endpoint - safe for the browser, local testing).
+    tokenEndpointUrl: COPILOT_TOKEN_ENDPOINT_CLIENT || null,
     // Non-secret defaults for the SDK (Direct-to-Engine) mode.
     sdk: {
       clientId: ENTRA_CLIENT_ID,
