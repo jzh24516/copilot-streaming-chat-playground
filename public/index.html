@@ -27,6 +27,7 @@
         }
       }
     </script>
+    <script src="./i18n.js"></script>
     <script type="module" src="./sdk-client.js"></script>
   </head>
   <body>
@@ -39,6 +40,10 @@
         </div>
       </div>
       <div class="header-actions">
+        <label class="language-switcher" aria-label="Language">
+          <span>Language</span>
+          <select id="languageSelect"></select>
+        </label>
         <a class="deck-link" href="/docs/streaming-tech-note.html" target="_blank" rel="noopener" title="Open the streaming tech note deck">
           <span aria-hidden="true">▤</span> Tech Note Deck
         </a>

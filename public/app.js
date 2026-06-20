@@ -35,6 +35,43 @@ const mStreams = el('mStreams');
 const mChunks = el('mChunks');
 const mFinal = el('mFinal');
 const diagnosisEl = el('diagnosis');
+const languageSelect = el('languageSelect');
+const deckLink = document.querySelector('.deck-link');
+
+const i18n = window.StreamingI18n;
+let currentLang = i18n ? i18n.getInitialLang() : 'en';
+let lastHint = { message: '', kind: '', vars: null };
+
+function t(key, vars) {
+  return i18n ? i18n.translate(key, currentLang, vars) : key;
+}
+
+function formatConversation(id) {
+  return t('conversation: {id}', { id: id || '—' });
+}
+
+function syncDeckLink() {
+  if (!deckLink) return;
+  const url = new URL(deckLink.getAttribute('href'), window.location.origin);
+  if (currentLang === 'en') url.searchParams.delete('lang');
+  else url.searchParams.set('lang', currentLang);
+  deckLink.href = url.pathname + url.search + url.hash;
+}
+
+function applyLanguage(lang) {
+  currentLang = i18n ? i18n.setStoredLang(lang) : lang;
+  if (i18n) {
+    i18n.populateSelect(languageSelect, currentLang);
+    i18n.apply(document.body, currentLang);
+  }
+  document.title = t('Copilot Studio · Streaming Chat Playground');
+  syncDeckLink();
+  renderHint(lastHint.message, lastHint.kind, lastHint.vars);
+  if (convoIdLabel && convoIdLabel.textContent.trim().endsWith('—')) {
+    convoIdLabel.textContent = formatConversation('—');
+  }
+  updateDiagnosis();
+}
 
 // ---------------------------------------------------------------------------
 // State
@@ -79,12 +116,17 @@ const STATUS = {
 
 function setStatus(state, label) {
   statusDot.setAttribute('data-state', state);
-  statusLabel.textContent = label;
+  statusLabel.textContent = t(label);
 }
 
-function setHint(message, kind = '') {
-  serverHint.textContent = message || '';
+function renderHint(message, kind = '', vars = null) {
+  serverHint.textContent = message ? t(message, vars) : '';
   serverHint.className = `hint ${kind}`.trim();
+}
+
+function setHint(message, kind = '', vars = null) {
+  lastHint = { message, kind, vars };
+  renderHint(message, kind, vars);
 }
 
 // ---------------------------------------------------------------------------
@@ -156,15 +198,15 @@ async function loadServerConfig() {
     } else if (sdkConfigured || cfg.mode === 'none') {
       modeSel.value = 'sdk';
       setHint(
-        'Fill in the Entra client ID and Environment ID below (or add them to .env), ' +
-          'then Connect. SDK mode is the only one that streams generatively.'
+        'Fill in the Entra client ID and Environment ID below (or add them to .env), then Connect. SDK mode is the only one that streams generatively.'
       );
     } else {
       modeSel.value = 'server';
       const host = cfg.tokenEndpointHost ? ` (${cfg.tokenEndpointHost})` : '';
       setHint(
-        `Server relay ready · mode: ${cfg.mode}${host}. For generative streaming, switch to SDK mode.`,
+        'Server relay ready · mode: {mode}{host}. For generative streaming, switch to SDK mode.',
         'ok'
+        , { mode: cfg.mode, host }
       );
     }
   } catch {
@@ -433,7 +475,7 @@ async function processSdkRedirect() {
   } catch (e) {
     sessionStorage.removeItem(SDK_RESUME_KEY);
     setStatus('error', 'Sign-in failed');
-    setHint(`✗ Sign-in failed: ${e.message}`, 'err');
+    setHint('✗ Sign-in failed: {message}', 'err', { message: e.message });
   }
 }
 
@@ -535,11 +577,15 @@ function logActivity(activity) {
       <span class="seq">${escapeHtml(seq)} · ${escapeHtml(activity.type)}</span>
     </div>
     ${text ? `<div class="text">${escapeHtml(text)}</div>` : ''}
-    <div class="meta">stream: ${escapeHtml(sid || '—')} · len ${text.length}${
-      malformed ? ' · invalid per schema' : ''
-    }</div>
+    <div class="meta">${escapeHtml(
+      t('stream: {id} · len {length}{suffix}', {
+        id: sid || '—',
+        length: text.length,
+        suffix: malformed ? t(' · invalid per schema') : ''
+      })
+    )}</div>
     <details class="raw">
-      <summary>Raw activity JSON</summary>
+      <summary>${escapeHtml(t('Raw activity JSON'))}</summary>
       <pre>${escapeHtml(rawJson)}</pre>
     </details>
   `;
@@ -556,13 +602,16 @@ function updateDiagnosis() {
   let label;
   if (chunkCount > 0) {
     state = 'ok';
-    label = `Streaming ✓ — ${chunkCount} chunk(s) across ${seenStreamIds.size} livestream(s)`;
+    label = t('Streaming ✓ — {chunks} chunk(s) across {streams} livestream(s)', {
+      chunks: chunkCount,
+      streams: seenStreamIds.size
+    });
   } else if (finalCount > 0) {
     state = 'warn';
-    label = 'Not streaming — only typing + final message (generative streaming not emitted)';
+    label = t('Not streaming — only typing + final message (generative streaming not emitted)');
   } else {
     state = 'idle';
-    label = 'Waiting for bot activity…';
+    label = t('Waiting for bot activity…');
   }
   diagnosisEl.dataset.state = state;
   diagnosisEl.textContent = label;
@@ -613,7 +662,7 @@ function renderThinking() {
     .join('');
   thinkingEl.innerHTML = `
     <div class="plan-head">
-      <span class="plan-title">Thought process</span>
+      <span class="plan-title">${escapeHtml(t('Thought process'))}</span>
     </div>
     <ol class="plan-steps">${steps}</ol>`;
 }
@@ -716,7 +765,7 @@ function wrapWithInspectorTap(conn) {
     upstreamSub = conn.activity$.subscribe({
       next: (activity) => {
         if (conn.conversationId && convoIdLabel) {
-          convoIdLabel.textContent = `conversation: ${conn.conversationId}`;
+          convoIdLabel.textContent = formatConversation(conn.conversationId);
         }
         try {
           logActivity(activity);
@@ -915,7 +964,7 @@ function wrapWithTypewriter(conn) {
     upstreamSub = conn.activity$.subscribe({
       next: (activity) => {
         if (conn.conversationId && convoIdLabel) {
-          convoIdLabel.textContent = `conversation: ${conn.conversationId}`;
+          convoIdLabel.textContent = formatConversation(conn.conversationId);
         }
         try {
           logActivity(activity);
@@ -1048,7 +1097,7 @@ function wrapWithDirectLineStreaming(conn) {
     upstreamSub = conn.activity$.subscribe({
       next: (activity) => {
         if (conn.conversationId && convoIdLabel) {
-          convoIdLabel.textContent = `conversation: ${conn.conversationId}`;
+          convoIdLabel.textContent = formatConversation(conn.conversationId);
         }
         try {
           logActivity(activity);
@@ -1235,7 +1284,7 @@ async function connect() {
                   id: 'user-' + Math.random().toString(36).slice(2),
                   role: 'user'
                 },
-                locale: 'en-US',
+                locale: i18n ? i18n.webChatLocale(currentLang) : 'en-US',
                 channelData: { postBack: true },
                 value: { __version__: '2' },
                 entities: [
@@ -1274,7 +1323,7 @@ async function connect() {
       subscriptions.push(
         directLine.activity$.subscribe((activity) => {
           if (directLine.conversationId && convoIdLabel) {
-            convoIdLabel.textContent = `conversation: ${directLine.conversationId}`;
+            convoIdLabel.textContent = formatConversation(directLine.conversationId);
           }
           try {
             logActivity(activity);
@@ -1339,7 +1388,8 @@ async function connect() {
           sendBoxButtonShadeColor: 'transparent',
           // Subtle typing indicator that matches the new accent palette.
           sendTypingIndicator: true
-        }
+        },
+        locale: i18n ? i18n.webChatLocale(currentLang) : 'en-US'
       },
       mount
     );
@@ -1384,7 +1434,7 @@ async function disconnect() {
   el('webchat').classList.remove('wc-secret-mode');
   el('webchat').appendChild(placeholder);
   placeholder.style.display = 'flex';
-  convoIdLabel.textContent = 'conversation: —';
+  convoIdLabel.textContent = formatConversation('—');
   resetThinking();
   disconnectBtn.disabled = true;
   setStatus('idle', 'Not connected');
@@ -1402,15 +1452,20 @@ async function testConnection() {
       const body = await resp.json();
       if (body.ok) {
         setHint(
-          `✓ Connected via ${body.source}. Conversation ${body.conversationId} ` +
-            `· streamUrl ${body.streamUrl ? 'present' : 'missing'} · ${body.elapsedMs}ms`,
-          'ok'
+          '✓ Connected via {source}. Conversation {conversationId} · streamUrl {streamUrlStatus} · {elapsedMs}ms',
+          'ok',
+          {
+            source: body.source,
+            conversationId: body.conversationId,
+            streamUrlStatus: t(body.streamUrl ? 'present' : 'missing'),
+            elapsedMs: body.elapsedMs
+          }
         );
       } else {
-        setHint(`✗ ${body.error}`, 'err');
+        setHint('✗ {message}', 'err', { message: body.error });
       }
     } catch (err) {
-      setHint(`✗ ${err.message}`, 'err');
+      setHint('✗ {message}', 'err', { message: err.message });
     }
   } else if (modeSel.value === 'sdk') {
     setHint('Checking existing Entra session…');
@@ -1418,20 +1473,23 @@ async function testConnection() {
       const cfg = readSdkConfig();
       const { token } = await acquireSdkTokenSilent(cfg);
       setHint(
-        `✓ Signed in · token acquired (${token.length} chars). Click Connect to chat.`,
-        'ok'
+        '✓ Signed in · token acquired ({chars} chars). Click Connect to chat.',
+        'ok',
+        {
+          chars: token.length
+        }
       );
     } catch (err) {
-      setHint(`✗ ${err.message}`, 'err');
+      setHint('✗ {message}', 'err', { message: err.message });
     }
   } else {
     // Client-side: prove we can mint a token.
     setHint('Testing token acquisition…');
     try {
       const { token } = await acquireToken(modeSel.value);
-      setHint(`✓ Token acquired (${token.length} chars). Click Connect to chat.`, 'ok');
+      setHint('✓ Token acquired ({chars} chars). Click Connect to chat.', 'ok', { chars: token.length });
     } catch (err) {
-      setHint(`✗ ${err.message}`, 'err');
+      setHint('✗ {message}', 'err', { message: err.message });
     }
   }
   testBtn.disabled = false;
@@ -1443,6 +1501,9 @@ async function testConnection() {
 connectBtn.addEventListener('click', connect);
 disconnectBtn.addEventListener('click', disconnect);
 testBtn.addEventListener('click', testConnection);
+if (languageSelect) {
+  languageSelect.addEventListener('change', () => applyLanguage(languageSelect.value));
+}
 
 // Wait until the SDK browser bundle bridge has loaded (it dispatches an event).
 function whenSdkReady() {
@@ -1455,6 +1516,7 @@ function whenSdkReady() {
 }
 
 async function start() {
+  applyLanguage(currentLang);
   await loadServerConfig();
   // Restore any fields the user typed before an interactive redirect.
   restoreSdkConfig();

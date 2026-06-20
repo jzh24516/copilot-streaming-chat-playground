@@ -93,6 +93,19 @@ body {
   gap: 12px;
 }
 
+.language-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.language-switcher select {
+  min-width: 128px;
+  padding: 8px 10px;
+  border-radius: 999px;
+}
+
 .deck-link {
   display: inline-flex;
   align-items: center;

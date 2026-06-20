@@ -6,6 +6,7 @@
 <title>Streaming Responses in Copilot Studio — Tech Note Deck</title>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.min.js"></script>
+<script src="/i18n.js"></script>
 <script>
   (() => {
     const param = new URLSearchParams(window.location.search).get("scoutTheme");
@@ -249,6 +250,21 @@
     z-index: 20;
   }
   .chrome .count { font-size: 13px; color: var(--cp-text-muted); min-width: 56px; text-align: center; font-variant-numeric: tabular-nums; }
+  .deck-language {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--cp-text-muted);
+    font-size: 13px;
+  }
+  .deck-language select {
+    border: 1px solid var(--cp-border);
+    background: var(--cp-surface);
+    color: var(--cp-text);
+    border-radius: 999px;
+    padding: 6px 10px;
+    font: inherit;
+  }
   .nav-btn {
     border: none;
     background: var(--cp-accent);
@@ -319,7 +335,32 @@
     </div>
   </section>
 
-  <!-- 2. Context -->
+  <!-- 2. Why streaming matters (business value) -->
+  <section class="slide">
+    <div class="kicker">Why It Matters</div>
+    <h2>The business case for live streaming responses</h2>
+    <div class="grid2">
+      <div class="card good">
+        <h3>😊 Higher customer satisfaction</h3>
+        <p style="font-size:15px;">Answers appear immediately and grow token-by-token, so the wait feels far shorter even when the total time is unchanged. Users stay engaged instead of staring at a spinner.</p>
+      </div>
+      <div class="card good">
+        <h3>🔍 Transparency builds trust</h3>
+        <p style="font-size:15px;">The inline thought process reveals what the agent is doing behind the scenes — searching, planning, analyzing — so the interaction feels meaningful and the answer feels earned, not guessed.</p>
+      </div>
+      <div class="card good">
+        <h3>📉 Fewer abandoned conversations</h3>
+        <p style="font-size:15px;">Continuous, visible progress keeps people from giving up on longer answers. They see momentum, trust it is working, and wait for the full result.</p>
+      </div>
+      <div class="card good">
+        <h3>⭐ Meets modern expectations</h3>
+        <p style="font-size:15px;">Users now expect the ChatGPT / Copilot style of live reply. A static "pause, then dump a wall of text" response feels dated and lowers confidence in the agent.</p>
+      </div>
+    </div>
+    <div class="takeaway">Streaming is not a UI gimmick — it is a measurable lever on satisfaction, trust, and completion, and the reason this playground was worth building.</div>
+  </section>
+
+  <!-- 3. Context -->
   <section class="slide">
     <div class="kicker">The Goal</div>
     <h2>Render a real, progressive streaming answer</h2>
@@ -346,7 +387,7 @@
     <div class="takeaway">Streaming "just working" out of the box is a myth — Web Chat and the SDK each make assumptions you have to actively reconcile.</div>
   </section>
 
-  <!-- 3. How streaming arrives -->
+  <!-- 4. How streaming arrives -->
   <section class="slide">
     <div class="kicker">The Wire Format</div>
     <h2>How a streamed answer actually arrives</h2>
@@ -380,7 +421,7 @@
     <div class="takeaway">All chunks of one answer share a <b>streamId</b>, but every chunk has its own unique <b>activity id</b>. That single fact causes the biggest gotcha.</div>
   </section>
 
-  <!-- 4. WHAT'S WORKING -->
+  <!-- 5. WHAT'S WORKING -->
   <section class="slide">
     <div class="kicker">The Good News</div>
     <h2>What's working ✅</h2>
@@ -405,40 +446,40 @@
     <div class="takeaway">With the right normalization, the full modern streaming UX is achievable — single bubble, inline reasoning, live scroll.</div>
   </section>
 
-  <!-- 5. WHAT'S NOT WORKING -->
+  <!-- 6. WHAT'S NOT WORKING -->
   <section class="slide">
     <div class="kicker">The Hard Parts</div>
     <h2>What's not working (out of the box) ⚠️</h2>
     <div class="grid2">
       <div class="card bad">
         <h3>⚠️ 152 bubbles, not 1</h3>
-        <p style="font-size:15px;">Web Chat dedupes by activity <b>id</b>. Since every chunk has a unique id, each renders as its own bubble. Long answers exploded into 150+ stacked bubbles.</p>
+        <p style="font-size:15px;">Web Chat dedupes by activity id. Since every chunk has a unique id, each renders as its own bubble. Long answers exploded into 150+ stacked bubbles.</p>
       </div>
       <div class="card bad">
         <h3>⚠️ Cold observable, one subscriber</h3>
-        <p style="font-size:15px;">The SDK's <span class="mono">activity$</span> is cold with a single internal subscriber. Subscribe twice (e.g. for an inspector) and one observer goes <b>blind</b>.</p>
+        <p style="font-size:15px;">The SDK's <span class="mono">activity$</span> is cold with a single internal subscriber. Subscribe twice (e.g. for an inspector) and one observer goes blind.</p>
       </div>
       <div class="card bad">
         <h3>⚠️ No auto-scroll on in-place updates</h3>
-        <p style="font-size:15px;">Web Chat only auto-pins on <b>new</b> activities. A streaming answer updates the same id, so the view stays put while content grows off-screen.</p>
+        <p style="font-size:15px;">Web Chat only auto-pins on new activities. A streaming answer updates the same id, so the view stays put while content grows off-screen.</p>
       </div>
       <div class="card bad">
         <h3>⚠️ Direct Line needs an explicit opt-in</h3>
-        <p style="font-size:15px;">Plain Web Chat over Direct Line paints <b>only the final message</b> — until the client sends <span class="mono">deliveryMode:"stream"</span>. Miss the opt-in and you'll wrongly conclude DL can't stream (we did, at first).</p>
+        <p style="font-size:15px;">Plain Web Chat over Direct Line paints only the final message — until the client sends <span class="mono">deliveryMode:"stream"</span>. Miss the opt-in and you'll wrongly conclude DL can't stream (we did, at first).</p>
       </div>
     </div>
-    <div class="takeaway">None of these are bugs exactly — they're <b>mismatched assumptions</b> between the SDK's streaming model and Web Chat's transcript model.</div>
+    <div class="takeaway">None of these are bugs exactly — they're mismatched assumptions between the SDK's streaming model and Web Chat's transcript model.</div>
   </section>
 
-  <!-- 6. The fixes -->
+  <!-- 7. The fixes -->
   <section class="slide">
     <div class="kicker">The Fixes</div>
     <h2>How we reconciled them</h2>
     <ul>
-      <li><span class="ic" style="color:var(--cp-success)">▸</span><span><b>Stamp <span class="mono">id = streamId</span></b> on every interim chunk so Web Chat groups them into one growing message (also set <span class="mono">from.role = "bot"</span>).</span></li>
-      <li><span class="ic" style="color:var(--cp-success)">▸</span><span><b>Single subscription + tap pattern</b> — wrap the SDK connection once, then tap each activity for both the inspector and Web Chat. Never subscribe to <span class="mono">activity$</span> twice.</span></li>
-      <li><span class="ic" style="color:var(--cp-success)">▸</span><span><b>MutationObserver auto-scroll</b> — watch the transcript DOM and snap to bottom while the user is near the bottom (respects manual scroll-up).</span></li>
-      <li><span class="ic" style="color:var(--cp-success)">▸</span><span><b>Withhold informative chunks</b> from Web Chat — route them to the custom "thought process" card instead, then fade it when <span class="mono">streaming</span> begins.</span></li>
+      <li><span class="ic" style="color:var(--cp-success)">▸</span><span>Stamp <span class="mono">id = streamId</span> on every interim chunk so Web Chat groups them into one growing message (also set <span class="mono">from.role = "bot"</span>).</span></li>
+      <li><span class="ic" style="color:var(--cp-success)">▸</span><span>Single subscription + tap pattern — wrap the SDK connection once, then tap each activity for both the inspector and Web Chat. Never subscribe to <span class="mono">activity$</span> twice.</span></li>
+      <li><span class="ic" style="color:var(--cp-success)">▸</span><span>MutationObserver auto-scroll — watch the transcript DOM and snap to bottom while the user is near the bottom (respects manual scroll-up).</span></li>
+      <li><span class="ic" style="color:var(--cp-success)">▸</span><span>Withhold informative chunks from Web Chat — route them to the custom "thought process" card instead, then fade it when <span class="mono">streaming</span> begins.</span></li>
     </ul>
     <pre style="margin-top:8px;"><span class="tok-com">// The one-line fix that collapsed 152 bubbles → 1</span>
 function normalizeStreamingForWebChat(activity) {
@@ -446,10 +487,10 @@ function normalizeStreamingForWebChat(activity) {
   if (info?.streamId) activity.id = info.streamId;   <span class="tok-com">// group by stream, not chunk</span>
   return activity;
 }</pre>
-    <div class="takeaway">Every fix lives in a thin <b>normalization layer</b> between the SDK connection and Web Chat — no forks, no patched libraries.</div>
+    <div class="takeaway">Every fix lives in a thin normalization layer between the SDK connection and Web Chat — no forks, no patched libraries.</div>
   </section>
 
-  <!-- 7. Two workable streaming paths -->
+  <!-- 8. Two workable streaming paths -->
   <section class="slide">
     <div class="kicker">Two Workable Paths</div>
     <h2>Live streaming works on <em>both</em> transports</h2>
@@ -478,7 +519,7 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
     <div class="takeaway">Verified against the same agent: DtE streams natively; DL streams the instant you send <b>deliveryMode:"stream"</b> <i>(with</i> <span class="mono">Channels_SupportForStreamingEnabled</span> <i>ON)</i> — confirmed <b>1 livestream / 84 chunks / 1 finalized</b>.</div>
   </section>
 
-  <!-- 8. Technical architecture -->
+  <!-- 9. Technical architecture -->
   <section class="slide">
     <div class="kicker">Technical Architecture</div>
     <h2>Components behind the streaming playground</h2>
@@ -511,7 +552,7 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
     <div class="takeaway">Both transports converge on the <b>same agent</b> and the <b>same app.js normalization tap</b> — only the connection + auth layer differs.</div>
   </section>
 
-  <!-- 9. Testing flow -->
+  <!-- 10. Testing flow -->
   <section class="slide">
     <div class="kicker">Testing Flow</div>
     <h2>How the components interact during a test run</h2>
@@ -534,7 +575,7 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
     <div class="takeaway">A passing run = <b>1 livestream / N streaming chunks / 1 finalized</b>, one clean growing bubble, full markdown, and no duplicate final.</div>
   </section>
 
-  <!-- 10. Gotchas / lessons -->
+  <!-- 11. Gotchas / lessons -->
   <section class="slide">
     <div class="kicker">Field Notes</div>
     <h2>Smaller gotchas worth knowing</h2>
@@ -557,7 +598,7 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
     <div class="takeaway">Budget time for the <b>plumbing</b>, not the UI. The visible chat is easy; the activity reconciliation is where the work is.</div>
   </section>
 
-  <!-- 11. Summary -->
+  <!-- 12. Summary -->
   <section class="slide title-slide">
     <span class="badge">TAKEAWAYS</span>
     <h2 style="font-size:34px;">If you remember three things</h2>
@@ -580,8 +621,12 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
 
 <div class="chrome">
   <button class="nav-btn" id="prev" aria-label="Previous slide">‹</button>
-  <span class="count" id="count">1 / 11</span>
+  <span class="count" id="count">1 / 12</span>
   <button class="nav-btn" id="next" aria-label="Next slide">›</button>
+  <label class="deck-language" aria-label="Language">
+    <span>Language</span>
+    <select id="deckLanguageSelect"></select>
+  </label>
   <button class="theme-toggle" id="themeToggle">◑ Theme</button>
 </div>
 <div class="hint">← → arrows · F fullscreen</div>
@@ -593,6 +638,29 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
   const prevBtn = document.getElementById("prev");
   const nextBtn = document.getElementById("next");
   const progress = document.getElementById("progress");
+  const deckLangSelect = document.getElementById("deckLanguageSelect");
+  const i18n = window.StreamingI18n;
+  let currentLang = i18n ? i18n.getInitialLang() : "en";
+
+  function tr(key, vars) {
+    return i18n ? i18n.translate(key, currentLang, vars) : key;
+  }
+
+  function applyDeckLanguage(lang) {
+    currentLang = i18n ? i18n.setStoredLang(lang) : lang;
+    const url = new URL(window.location.href);
+    if (currentLang === "en") url.searchParams.delete("lang");
+    else url.searchParams.set("lang", currentLang);
+    window.history.replaceState({}, "", url);
+    if (i18n) {
+      i18n.populateSelect(deckLangSelect, currentLang);
+      i18n.apply(document.body, currentLang);
+    }
+    document.title = tr("Streaming Responses in Copilot Studio — Tech Note Deck");
+    const title = document.querySelector(".title-slide h1");
+    if (title) title.textContent = tr("Streaming Responses in Copilot Studio");
+    show(idx);
+  }
 
   function show(n) {
     idx = Math.max(0, Math.min(slides.length - 1, n));
@@ -616,6 +684,12 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
       else document.exitFullscreen();
     }
   });
+
+  if (deckLangSelect) {
+    deckLangSelect.onchange = () => applyDeckLanguage(deckLangSelect.value);
+  }
+
+  applyDeckLanguage(currentLang);
 
   document.getElementById("themeToggle").onclick = () => {
     const cur = document.documentElement.getAttribute("data-theme");
@@ -666,7 +740,7 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
     s.addText("2026 \u00B7 Internal \u2014 Streaming Chat Playground", { x: 0.6, y: 7.05, w: 8, h: 0.34, color: SOFT, fontSize: 10 });
     s.addText([
       { text: "Copilot Studio Streaming", options: { color: ACCENT, bold: true } },
-      { text: "    " + n + " / 11", options: { color: SOFT } }
+      { text: "    " + n + " / 12", options: { color: SOFT } }
     ], { x: 7.7, y: 7.05, w: 5.03, h: 0.34, fontSize: 10, align: "right" });
   }
 
@@ -676,12 +750,16 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
     brandMark(s, 0.6, 0.62);
     s.addText("TECH NOTE \u00B7 KNOWLEDGE SHARING", { x: 1.18, y: 0.64, w: 9, h: 0.4, color: ACCENT, bold: true, fontSize: 12, charSpacing: 2 });
     s.addText("Streaming Responses in Copilot Studio", { x: 0.6, y: 1.55, w: 11.8, h: 1.4, color: INK, bold: true, fontSize: 40 });
-    s.addText("What works, what doesn't, and the gotchas we hit building a live token-by-token streaming chat playground — across both Direct Line and the Direct-to-Engine SDK.", { x: 0.6, y: 2.95, w: 10.8, h: 1, color: MUTED, fontSize: 18 });
+    s.addText([
+      { text: "What works, what doesn't, and the gotchas we hit building a live token-by-token streaming chat playground — across ", options: { color: MUTED } },
+      { text: "both", options: { color: MUTED, bold: true } },
+      { text: " Direct Line and the Direct-to-Engine SDK.", options: { color: MUTED } }
+    ], { x: 0.6, y: 2.95, w: 10.8, h: 1, fontSize: 18 });
     pills(s, 0.6, 4.05, ["Copilot Studio", "Web Chat", "Direct Line", "Direct-to-Engine SDK", "MSAL"]);
     s.addText([
-      { text: "Surface:  ", options: { bold: true, color: INK } }, { text: "Copilot Studio agent + Bot Framework Web Chat\n", options: { color: MUTED } },
-      { text: "Transports:  ", options: { bold: true, color: INK } }, { text: "Direct Line (WebSocket) · Direct-to-Engine SDK\n", options: { color: MUTED } },
-      { text: "Date:  ", options: { bold: true, color: INK } }, { text: "June 2026", options: { color: MUTED } }
+      { text: "Surface", options: { bold: true, color: INK } }, { text: ":  ", options: { color: MUTED } }, { text: "Copilot Studio agent + Bot Framework Web Chat", options: { color: MUTED, breakLine: true } },
+      { text: "Transports", options: { bold: true, color: INK } }, { text: ":  ", options: { color: MUTED } }, { text: "Direct Line (WebSocket) · Direct-to-Engine SDK", options: { color: MUTED, breakLine: true } },
+      { text: "Date", options: { bold: true, color: INK } }, { text: ":  ", options: { color: MUTED } }, { text: "June 2026", options: { color: MUTED } }
     ], { x: 0.6, y: 4.75, w: 11.5, h: 1.5, fontSize: 14, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, margin: 14 });
     footer(s, 1);
   }
@@ -711,205 +789,356 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
     // 1
     addTitleSlide(pptx);
 
-    // 2 — Goal
+    // 2 — Why streaming matters (business value)
     let s = pptx.addSlide();
-    header(s, "01 \u00B7 THE GOAL", "Render a real, progressive streaming answer");
-    s.addText(bullets([
-      "A single answer bubble that grows token-by-token in place.",
-      "An inline \u201Cthought process\u201D showing the agent's reasoning while it works.",
-      "The view auto-following the answer as it streams.",
-      "A diagnostics inspector to see raw streaming activities."
-    ]), { x: 0.6, y: 1.95, w: 7.2, h: 3.5 });
-    s.addText([
-      { text: "The stack\n\n", options: { bold: true, color: INK, fontSize: 16 } },
-      { text: "Web Chat: botframework-webchat/latest (CDN)\n\nClient: agents-copilotstudio-client (Direct-to-Engine)\n\nAuth: @azure/msal-browser (Entra)\n\nRelay: Express token server, port 3978", options: { color: MUTED, fontSize: 13 } }
-    ], { x: 8.1, y: 1.95, w: 4.63, h: 3.5, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, margin: 14 });
-    takeaway(s, "Streaming \u201Cjust working\u201D out of the box is a myth \u2014 Web Chat and the SDK each make assumptions you must reconcile.");
-    footer(s, 2);
-
-    // 3 — Wire format
-    s = pptx.addSlide();
-    header(s, "02 \u00B7 THE WIRE FORMAT", "How a streamed answer actually arrives");
-    const steps = [["informative", "Dynamic reasoning steps (\u201CGenerating plan\u2026\u201D)"], ["streaming", "Cumulative growing-text chunks. 150+ per answer."], ["final", "Concluded message that replaces the bubble."]];
-    steps.forEach(([tag, desc], i) => {
-      const x = 0.6 + i * 4.25;
-      s.addShape(ST.roundRect, { x, y: 1.95, w: 3.9, h: 1.5, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.1 });
-      s.addText([
-        { text: tag.toUpperCase() + "\n", options: { bold: true, color: ACCENT, fontSize: 13 } },
-        { text: desc, options: { color: MUTED, fontSize: 12 } }
-      ], { x: x + 0.18, y: 2.05, w: 3.55, h: 1.35, valign: "top" });
-      if (i < 2) s.addText("\u2192", { x: x + 3.9, y: 1.95, w: 0.35, h: 1.5, color: SOFT, fontSize: 24, bold: true, align: "center", valign: "middle" });
-    });
-    s.addText("// Each interim chunk is a typing activity carrying streaminfo\n{\n  \"type\": \"typing\",\n  \"id\": \"e4c33a60\u2026c20-3\",   // UNIQUE per chunk: streamId-sequence\n  \"channelData\": { \"streamType\": \"streaming\", \"streamId\": \"e4c33a60\u2026c20\",\n                    \"streamSequence\": 3, \"webchat:sequence-id\": 14 }\n}", { x: 0.6, y: 3.7, w: 12.13, h: 2.35, fontFace: "Consolas", fontSize: 12, color: INK, fill: { color: CODE_BG }, line: { color: PANEL_BD, width: 1 }, margin: 14 });
-    takeaway(s, "All chunks of one answer share a streamId, but every chunk has its own unique activity id \u2014 the root of the biggest gotcha.");
-    footer(s, 3);
-
-    // 4 — Working
-    s = pptx.addSlide();
-    header(s, "03 \u00B7 THE GOOD NEWS", "What's working \u2705");
-    const good = [
-      ["✅ Token-by-token streaming (DtE + DL)", "Both transports stream: the Direct-to-Engine SDK natively, and Direct Line once the client sends deliveryMode:“stream”."],
-      ["\u2705 Single growing bubble", "Forcing activity id = streamId makes Web Chat update one bubble in place."],
-      ["\u2705 Dynamic thought process", "informative chunks render as a timeline that fades when the answer streams."],
-      ["\u2705 Auto-scroll & diagnostics", "MutationObserver pins the view; inspector saw 439 chunks across 2 livestreams."]
+    header(s, "01 \u00B7 WHY IT MATTERS", "The business case for live streaming responses");
+    const value = [
+      ["\uD83D\uDE0A Higher customer satisfaction", "Answers appear immediately and grow token-by-token, so the wait feels far shorter even when the total time is unchanged. Users stay engaged instead of staring at a spinner."],
+      ["\uD83D\uDD0D Transparency builds trust", "The inline thought process reveals what the agent is doing behind the scenes — searching, planning, analyzing — so the interaction feels meaningful and the answer feels earned, not guessed."],
+      ["\uD83D\uDCC9 Fewer abandoned conversations", "Continuous, visible progress keeps people from giving up on longer answers. They see momentum, trust it is working, and wait for the full result."],
+      ["\u2B50 Meets modern expectations", "Users now expect the ChatGPT / Copilot style of live reply. A static \u201Cpause, then dump a wall of text\u201D response feels dated and lowers confidence in the agent."]
     ];
-    good.forEach(([t, d], i) => {
+    value.forEach(([t, d], i) => {
       const x = 0.6 + (i % 2) * 6.18, y = 1.95 + Math.floor(i / 2) * 2.15;
       s.addShape(ST.roundRect, { x, y, w: 5.85, h: 1.9, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.08 });
       s.addShape(ST.rect, { x, y, w: 0.09, h: 1.9, fill: { color: GREEN }, line: { type: "none" } });
       s.addText([{ text: t + "\n", options: { bold: true, color: INK, fontSize: 15 } }, { text: d, options: { color: MUTED, fontSize: 12 } }], { x: x + 0.28, y: y + 0.15, w: 5.45, h: 1.6, valign: "top" });
     });
-    takeaway(s, "With the right normalization, the full modern streaming UX is achievable \u2014 single bubble, inline reasoning, live scroll.");
+    takeaway(s, "Streaming is not a UI gimmick — it is a measurable lever on satisfaction, trust, and completion, and the reason this playground was worth building.");
+    footer(s, 2);
+
+    // 3 — Goal
+    s = pptx.addSlide();
+    header(s, "02 \u00B7 THE GOAL", "Render a real, progressive streaming answer");
+    const goalRuns = [
+      { text: "We wanted the same experience users expect from modern AI chat:", options: { color: MUTED, fontSize: 15, breakLine: true, paraSpaceAfter: 12 } },
+      { text: "A", options: { color: MUTED, fontSize: 15, bullet: { code: "2022", indent: 14 } } }, { text: " single answer bubble", options: { color: INK, fontSize: 15, bold: true } }, { text: " that grows token-by-token in place.", options: { color: MUTED, fontSize: 15, breakLine: true, paraSpaceAfter: 10 } },
+      { text: "An inline", options: { color: MUTED, fontSize: 15, bullet: { code: "2022", indent: 14 } } }, { text: " \"thought process\"", options: { color: INK, fontSize: 15, bold: true } }, { text: " showing the agent's reasoning steps while it works.", options: { color: MUTED, fontSize: 15, breakLine: true, paraSpaceAfter: 10 } },
+      { text: "The view", options: { color: MUTED, fontSize: 15, bullet: { code: "2022", indent: 14 } } }, { text: " auto-following", options: { color: INK, fontSize: 15, bold: true } }, { text: " the answer as it streams.", options: { color: MUTED, fontSize: 15, breakLine: true, paraSpaceAfter: 10 } },
+      { text: "A diagnostics", options: { color: MUTED, fontSize: 15, bullet: { code: "2022", indent: 14 } } }, { text: " inspector", options: { color: INK, fontSize: 15, bold: true } }, { text: " to see raw streaming activities.", options: { color: MUTED, fontSize: 15, breakLine: true } }
+    ];
+    s.addText(goalRuns, { x: 0.6, y: 1.95, w: 7.2, h: 3.5, valign: "top" });
+    s.addText([
+      { text: "The stack", options: { bold: true, color: INK, fontSize: 16, breakLine: true, paraSpaceAfter: 12 } },
+      { text: "Web Chat:", options: { bold: true, color: INK, fontSize: 13 } }, { text: " CDN ", options: { color: MUTED, fontSize: 13 } }, { text: "botframework-webchat/latest", options: { color: MUTED, fontSize: 13, fontFace: "Consolas", breakLine: true, paraSpaceAfter: 10 } },
+      { text: "Client:", options: { bold: true, color: INK, fontSize: 13 } }, { text: " agents-copilotstudio-client", options: { color: MUTED, fontSize: 13, fontFace: "Consolas" } }, { text: " (Direct-to-Engine)", options: { color: MUTED, fontSize: 13, breakLine: true, paraSpaceAfter: 10 } },
+      { text: "Auth:", options: { bold: true, color: INK, fontSize: 13 } }, { text: " @azure/msal-browser", options: { color: MUTED, fontSize: 13, fontFace: "Consolas" } }, { text: " (Entra redirect)", options: { color: MUTED, fontSize: 13, breakLine: true, paraSpaceAfter: 10 } },
+      { text: "Relay:", options: { bold: true, color: INK, fontSize: 13 } }, { text: " Express token server, port 3978", options: { color: MUTED, fontSize: 13 } }
+    ], { x: 8.1, y: 1.95, w: 4.63, h: 3.5, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, margin: 14, valign: "top" });
+    takeaway(s, "Streaming \"just working\" out of the box is a myth \u2014 Web Chat and the SDK each make assumptions you have to actively reconcile.");
+    footer(s, 3);
+
+    // 4 — Wire format
+    s = pptx.addSlide();
+    header(s, "03 \u00B7 THE WIRE FORMAT", "How a streamed answer actually arrives");
+    const steps = [
+      { tag: "informative", desc: [{ text: "Dynamic reasoning steps (\"Generating plan\u2026\", \"Processing\", \"Analyzing data\u2026\")." }], mono: "type: typing" },
+      { tag: "streaming", desc: [{ text: "Interim chunks with" }, { text: " cumulative growing text", bold: true }, { text: ". Many per answer (we saw 150+)." }], mono: "type: typing" },
+      { tag: "final", desc: [{ text: "The concluded message that replaces the growing bubble." }], mono: "type: message" }
+    ];
+    steps.forEach((stp, i) => {
+      const x = 0.6 + i * 4.25;
+      s.addShape(ST.roundRect, { x, y: 1.95, w: 3.9, h: 1.5, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.1 });
+      const runs = [{ text: stp.tag.toUpperCase(), options: { bold: true, color: ACCENT, fontSize: 13, breakLine: true } }];
+      stp.desc.forEach((r, j) => runs.push({ text: r.text, options: { color: MUTED, fontSize: 12, ...(r.bold ? { bold: true, color: INK } : {}), ...(j === stp.desc.length - 1 ? { breakLine: true } : {}) } }));
+      runs.push({ text: stp.mono, options: { color: SOFT, fontSize: 11, fontFace: "Consolas" } });
+      s.addText(runs, { x: x + 0.18, y: 2.05, w: 3.55, h: 1.35, valign: "top" });
+      if (i < 2) s.addText("\u2192", { x: x + 3.9, y: 1.95, w: 0.35, h: 1.5, color: SOFT, fontSize: 24, bold: true, align: "center", valign: "middle" });
+    });
+    s.addText("// Each interim chunk is a typing activity carrying streaminfo\n{\n  \"type\": \"typing\",\n  \"id\": \"e4c33a60\u2026c20-3\",   // UNIQUE per chunk: streamId-sequence\n  \"channelData\": { \"streamType\": \"streaming\", \"streamId\": \"e4c33a60\u2026c20\",\n                    \"streamSequence\": 3, \"webchat:sequence-id\": 14 },\n  \"entities\": [{ \"type\": \"streaminfo\", \u2026 }]   // mirrored copy\n}", { x: 0.6, y: 3.7, w: 12.13, h: 2.35, fontFace: "Consolas", fontSize: 12, color: INK, fill: { color: CODE_BG }, line: { color: PANEL_BD, width: 1 }, margin: 14 });
+    takeaway(s, [
+      { text: "All chunks of one answer share a " },
+      { text: "streamId", options: { bold: true } },
+      { text: ", but every chunk has its own unique " },
+      { text: "activity id", options: { bold: true } },
+      { text: ". That single fact causes the biggest gotcha." }
+    ]);
     footer(s, 4);
 
-    // 5 — Not working
+    // 5 — Working
     s = pptx.addSlide();
-    header(s, "04 \u00B7 THE HARD PARTS", "What's not working out of the box \u26A0\uFE0F");
+    header(s, "04 \u00B7 THE GOOD NEWS", "What's working \u2705");
+    const good = [
+      { title: [{ text: "\u2705 Token-by-token streaming (DtE" }, { text: " and", italic: true }, { text: " DL)" }], desc: [{ text: "Both transports stream: the Direct-to-Engine SDK" }, { text: " natively", bold: true }, { text: ", and Direct Line once the client sends" }, { text: " deliveryMode:\"stream\"", mono: true }, { text: ". Same informative \u2192 streaming \u2192 final chunks either way." }] },
+      { title: [{ text: "\u2705 Single growing bubble" }], desc: [{ text: "Forcing the activity" }, { text: " id = streamId", mono: true }, { text: " makes Web Chat update" }, { text: " one", bold: true }, { text: " bubble in place \u2014 verified growing 8 \u2192 1385 chars in a single message." }] },
+      { title: [{ text: "\u2705 Dynamic \"thought process\"" }], desc: [{ text: "The" }, { text: " informative", mono: true }, { text: " chunks are real reasoning steps. We render them as a styled timeline that disappears the moment the answer streams." }] },
+      { title: [{ text: "\u2705 Auto-scroll & diagnostics" }], desc: [{ text: "A MutationObserver keeps the view pinned to the growing answer. The inspector confirmed 439 chunks across 2 livestreams end-to-end." }] }
+    ];
+    good.forEach((c, i) => {
+      const x = 0.6 + (i % 2) * 6.18, y = 1.95 + Math.floor(i / 2) * 2.15;
+      s.addShape(ST.roundRect, { x, y, w: 5.85, h: 1.9, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.08 });
+      s.addShape(ST.rect, { x, y, w: 0.09, h: 1.9, fill: { color: GREEN }, line: { type: "none" } });
+      const runs = c.title.map((r, j) => ({ text: r.text, options: { bold: true, color: INK, fontSize: 15, ...(r.italic ? { italic: true } : {}), ...(j === c.title.length - 1 ? { breakLine: true } : {}) } }));
+      c.desc.forEach((r) => runs.push({ text: r.text, options: { color: MUTED, fontSize: 12, ...(r.mono ? { fontFace: "Consolas", color: INK } : {}), ...(r.bold ? { bold: true, color: INK } : {}) } }));
+      s.addText(runs, { x: x + 0.28, y: y + 0.15, w: 5.45, h: 1.6, valign: "top" });
+    });
+    takeaway(s, "With the right normalization, the full modern streaming UX is achievable \u2014 single bubble, inline reasoning, live scroll.");
+    footer(s, 5);
+
+    // 6 — Not working
+    s = pptx.addSlide();
+    header(s, "05 \u00B7 THE HARD PARTS", "What's not working (out of the box) \u26A0\uFE0F");
     const bad = [
-      ["\u26A0\uFE0F 152 bubbles, not 1", "Web Chat dedupes by activity id; unique chunk ids stack into 150+ bubbles."],
-      ["\u26A0\uFE0F Cold observable, 1 subscriber", "SDK activity$ is cold; subscribing twice blinds one observer."],
-      ["\u26A0\uFE0F No auto-scroll on updates", "Web Chat only auto-pins on new activities, not in-place stream updates."],
-      ["\u26A0\uFE0F Direct Line needs an opt-in", "Plain Web Chat over DL paints only the final message until the client sends deliveryMode:\u201Cstream\u201D."]
+      ["\u26A0\uFE0F 152 bubbles, not 1", "Web Chat dedupes by activity id. Since every chunk has a unique id, each renders as its own bubble. Long answers exploded into 150+ stacked bubbles."],
+      ["\u26A0\uFE0F Cold observable, one subscriber", [
+        { text: "The SDK's " },
+        { text: "activity$", options: { fontFace: "Consolas" } },
+        { text: " is cold with a single internal subscriber. Subscribe twice (e.g. for an inspector) and one observer goes blind." }
+      ]],
+      ["\u26A0\uFE0F No auto-scroll on in-place updates", "Web Chat only auto-pins on new activities. A streaming answer updates the same id, so the view stays put while content grows off-screen."],
+      ["\u26A0\uFE0F Direct Line needs an explicit opt-in", [
+        { text: "Plain Web Chat over Direct Line paints only the final message \u2014 until the client sends " },
+        { text: "deliveryMode:\"stream\"", options: { fontFace: "Consolas" } },
+        { text: ". Miss the opt-in and you'll wrongly conclude DL can't stream (we did, at first)." }
+      ]]
     ];
     bad.forEach(([t, d], i) => {
       const x = 0.6 + (i % 2) * 6.18, y = 1.95 + Math.floor(i / 2) * 2.15;
       s.addShape(ST.roundRect, { x, y, w: 5.85, h: 1.9, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.08 });
       s.addShape(ST.rect, { x, y, w: 0.09, h: 1.9, fill: { color: RED }, line: { type: "none" } });
-      s.addText([{ text: t + "\n", options: { bold: true, color: INK, fontSize: 15 } }, { text: d, options: { color: MUTED, fontSize: 12 } }], { x: x + 0.28, y: y + 0.15, w: 5.45, h: 1.6, valign: "top" });
+      const descRuns = (Array.isArray(d) ? d : [{ text: d }]).map((r) => ({ text: r.text, options: { color: MUTED, fontSize: 12, ...(r.options || {}) } }));
+      s.addText([{ text: t + "\n", options: { bold: true, color: INK, fontSize: 15 } }, ...descRuns], { x: x + 0.28, y: y + 0.15, w: 5.45, h: 1.6, valign: "top" });
     });
-    takeaway(s, "Not bugs \u2014 mismatched assumptions between the SDK's streaming model and Web Chat's transcript model.");
-    footer(s, 5);
-
-    // 6 — Fixes
-    s = pptx.addSlide();
-    header(s, "05 \u00B7 THE FIXES", "How we reconciled them");
-    s.addText(bullets([
-      "Stamp id = streamId on every interim chunk so Web Chat groups them into one message.",
-      "Single subscription + tap pattern \u2014 wrap the connection once; never subscribe to activity$ twice.",
-      "MutationObserver auto-scroll \u2014 snap to bottom while the user is near the bottom.",
-      "Withhold informative chunks from Web Chat \u2014 route them to the custom thought-process card."
-    ]), { x: 0.6, y: 1.95, w: 12.13, h: 2.5 });
-    s.addText("function normalizeStreamingForWebChat(activity) {\n  const info = getStreamInfo(activity);\n  if (info?.streamId) activity.id = info.streamId;  // group by stream, not chunk\n  return activity;\n}", { x: 0.6, y: 4.55, w: 12.13, h: 1.6, fontFace: "Consolas", fontSize: 13, color: INK, fill: { color: CODE_BG }, line: { color: PANEL_BD, width: 1 }, margin: 14 });
-    takeaway(s, "Every fix lives in a thin normalization layer between the SDK connection and Web Chat \u2014 no forks, no patched libraries.");
+    takeaway(s, "None of these are bugs exactly \u2014 they're mismatched assumptions between the SDK's streaming model and Web Chat's transcript model.");
     footer(s, 6);
 
-    // 7 — Two workable streaming paths
+    // 7 — Fixes
     s = pptx.addSlide();
-    header(s, "06 \u00B7 TWO WORKABLE PATHS", "Live streaming works on both transports");
-    const paths = [
-      ["\u2705 Direct-to-Engine (DtE) SDK", "Native streaming. CopilotStudioWebChat.createConnection emits generative chunks with no extra opt-in. Entra (MSAL) sign-in; no secret in the browser."],
-      ["\u2705 Direct Line (DL) + opt-in", "Plain Web Chat paints only the final message until the client sends deliveryMode:\u201Cstream\u201D \u2014 then the same streaming chunks flow over the WebSocket. \u26A0\uFE0F Requires the agent flag Channels_SupportForStreamingEnabled = ON."]
+    header(s, "06 \u00B7 THE FIXES", "How we reconciled them");
+    const fixParas = [
+      [{ text: "Stamp " }, { text: "id = streamId", mono: true }, { text: " on every interim chunk so Web Chat groups them into one growing message (also set " }, { text: "from.role = \"bot\"", mono: true }, { text: ")." }],
+      [{ text: "Single subscription + tap pattern \u2014 wrap the SDK connection once, then tap each activity for both the inspector and Web Chat. Never subscribe to " }, { text: "activity$", mono: true }, { text: " twice." }],
+      [{ text: "MutationObserver auto-scroll \u2014 watch the transcript DOM and snap to bottom while the user is near the bottom (respects manual scroll-up)." }],
+      [{ text: "Withhold informative chunks from Web Chat \u2014 route them to the custom \"thought process\" card instead, then fade it when " }, { text: "streaming", mono: true }, { text: " begins." }]
     ];
-    paths.forEach(([t, d], i) => {
-      const x = 0.6 + i * 6.18;
-      s.addShape(ST.roundRect, { x, y: 1.95, w: 5.85, h: 1.75, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.08 });
-      s.addShape(ST.rect, { x, y: 1.95, w: 0.09, h: 1.75, fill: { color: GREEN }, line: { type: "none" } });
-      s.addText([{ text: t + "\n", options: { bold: true, color: INK, fontSize: 15 } }, { text: d, options: { color: MUTED, fontSize: 12 } }], { x: x + 0.28, y: 2.08, w: 5.45, h: 1.5, valign: "top" });
+    const fixText = [];
+    fixParas.forEach((runs) => {
+      runs.forEach((r, j) => {
+        fixText.push({
+          text: r.text,
+          options: {
+            color: MUTED, fontSize: 15,
+            ...(r.mono ? { fontFace: "Consolas", color: INK } : {}),
+            ...(j === 0 ? { bullet: { code: "2022", indent: 16 } } : {}),
+            ...(j === runs.length - 1 ? { breakLine: true, paraSpaceAfter: 8 } : {})
+          }
+        });
+      });
     });
-    s.addText("// PREREQUISITE: enable the agent flag Channels_SupportForStreamingEnabled\n// DL opt-in \u2014 exactly what the official test canvas sends\n// 1) once, when the connection goes online:\ndirectLine.postActivity({ type:\"event\", name:\"startConversation\",\n  deliveryMode:\"stream\",\n  entities:[{ type:\"ClientCapabilities\", requiresBotState:true,\n              supportsListening:true, supportsTts:true }] });\n// 2) on every outgoing user message:\npostActivity({ ...activity, deliveryMode:\"stream\" });   // 0 \u2192 84 chunks", { x: 0.6, y: 3.9, w: 12.13, h: 2.3, fontFace: "Consolas", fontSize: 12, color: INK, fill: { color: CODE_BG }, line: { color: PANEL_BD, width: 1 }, margin: 14 });
-    takeaway(s, "Verified on the same agent: DtE streams natively; DL streams the instant you send deliveryMode:\u201Cstream\u201D (with Channels_SupportForStreamingEnabled ON) \u2014 1 livestream / 84 chunks / 1 finalized.");
+    s.addText(fixText, { x: 0.6, y: 1.95, w: 12.13, h: 2.5, valign: "top" });
+    s.addText("// The one-line fix that collapsed 152 bubbles \u2192 1\nfunction normalizeStreamingForWebChat(activity) {\n  const info = getStreamInfo(activity);\n  if (info?.streamId) activity.id = info.streamId;   // group by stream, not chunk\n  return activity;\n}", { x: 0.6, y: 4.55, w: 12.13, h: 1.6, fontFace: "Consolas", fontSize: 13, color: INK, fill: { color: CODE_BG }, line: { color: PANEL_BD, width: 1 }, margin: 14 });
+    takeaway(s, "Every fix lives in a thin normalization layer between the SDK connection and Web Chat \u2014 no forks, no patched libraries.");
     footer(s, 7);
 
-    // 8 — Technical architecture
+    // 8 — Two workable streaming paths
     s = pptx.addSlide();
-    header(s, "07 \u00B7 ARCHITECTURE", "Components behind the streaming playground");
-    s.addShape(ST.roundRect, { x: 0.6, y: 1.8, w: 12.13, h: 0.62, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.06 });
-    s.addText([{ text: "Browser   ", options: { bold: true, color: INK } }, { text: "Bot Framework Web Chat (CDN) + app.js normalization tap \u00B7 stream coalescing \u00B7 diagnostics inspector \u00B7 auto-scroll", options: { color: MUTED } }], { x: 0.85, y: 1.8, w: 11.6, h: 0.62, fontSize: 12, valign: "middle", align: "center" });
-    const arch = [
-      ["Direct-to-Engine (DtE)", ["sdk-client.js \u2014 agents-copilotstudio-client", "\u2193  MSAL browser \u2014 Entra access token", "\u2193  HTTPS", "Direct-to-Engine endpoint  /conversations"], "Native streaming \u2014 no client opt-in."],
-      ["Direct Line (DL)", ["DirectLine.js (Web Chat) + deliveryMode opt-in", "\u2193  token: Express relay :3978 or token-endpoint URL", "\u2193  WebSocket", "Direct Line channel"], "Needs Channels_SupportForStreamingEnabled = ON."]
+    header(s, "07 \u00B7 TWO WORKABLE PATHS", "Live streaming works on both transports");
+    const mkBody = (runs, extra) => runs.map((r) => ({ text: r.text, options: { color: MUTED, fontSize: 12, ...(r.mono ? { fontFace: "Consolas", color: INK } : {}), ...extra } }));
+    const dteBody = [
+      { text: "Native streaming. " },
+      { text: "CopilotStudioWebChat.createConnection(client, { showTyping:true })", mono: true },
+      { text: " emits generative chunks with " },
+      { text: "no extra opt-in" },
+      { text: ". Entra (MSAL) sign-in; no secret in the browser." }
     ];
-    arch.forEach(([t, chain, note], i) => {
+    const dlBody = [
+      { text: "Streams once you ask for it. " },
+      { text: "Standard Web Chat over Direct Line paints only the final message " },
+      { text: "until " },
+      { text: "the client signals " },
+      { text: "deliveryMode:\"stream\"", mono: true },
+      { text: " \u2014 then the same " },
+      { text: "streamType:streaming", mono: true },
+      { text: " chunks flow over the WebSocket." }
+    ];
+    const dlWarn = [
+      { text: "\u26A0\uFE0F " },
+      { text: "Agent prerequisite: " },
+      { text: "the agent flag " },
+      { text: "Channels_SupportForStreamingEnabled", mono: true },
+      { text: " must be " },
+      { text: "ON" },
+      { text: ", or Direct Line never emits streaming chunks no matter what the client sends." }
+    ];
+    const pathCards = [
+      { title: "\u2705 Direct-to-Engine (DtE) SDK", body: dteBody, best: "Best for: signed-in users, richest reasoning steps, zero secret exposure." },
+      { title: "\u2705 Direct Line (DL) + opt-in", body: dlBody, warn: dlWarn, best: "Best for: anonymous / token-endpoint embedding, parity with the official test canvas." }
+    ];
+    pathCards.forEach((c, i) => {
+      const x = 0.6 + i * 6.18;
+      s.addShape(ST.roundRect, { x, y: 1.8, w: 5.85, h: 2.5, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.08 });
+      s.addShape(ST.rect, { x, y: 1.8, w: 0.09, h: 2.5, fill: { color: GREEN }, line: { type: "none" } });
+      s.addText([{ text: c.title, options: { bold: true, color: INK, fontSize: 14, breakLine: true } }, ...mkBody(c.body)], { x: x + 0.28, y: 1.9, w: 5.45, h: c.warn ? 1.3 : 1.7, valign: "top" });
+      if (c.warn) s.addText(mkBody(c.warn, { fontSize: 10.5 }), { x: x + 0.28, y: 3.18, w: 5.45, h: 0.66, valign: "top" });
+      s.addText(c.best, { x: x + 0.28, y: c.warn ? 3.86 : 3.6, w: 5.45, h: 0.4, color: SOFT, fontSize: 11 });
+    });
+    s.addText("// PREREQUISITE: enable the agent flag Channels_SupportForStreamingEnabled\n// DL opt-in \u2014 exactly what the official test canvas sends\n// 1) once, when the connection goes online:\ndirectLine.postActivity({ type:\"event\", name:\"startConversation\",\n  deliveryMode:\"stream\",\n  entities:[{ type:\"ClientCapabilities\", requiresBotState:true,\n              supportsListening:true, supportsTts:true }] });\n// 2) on every outgoing user message:\npostActivity({ ...activity, deliveryMode:\"stream\" });   // 0 \u2192 84 chunks", { x: 0.6, y: 4.42, w: 12.13, h: 1.82, fontFace: "Consolas", fontSize: 11, color: INK, fill: { color: CODE_BG }, line: { color: PANEL_BD, width: 1 }, margin: 12 });
+    takeaway(s, [
+      { text: "Verified against the same agent: DtE streams natively; DL streams the instant you send " },
+      { text: "deliveryMode:\"stream\"", options: { bold: true } },
+      { text: " (with " },
+      { text: "Channels_SupportForStreamingEnabled", options: { fontFace: "Consolas" } },
+      { text: " ON) " },
+      { text: "\u2014 confirmed " },
+      { text: "1 livestream / 84 chunks / 1 finalized" },
+      { text: "." }
+    ]);
+    footer(s, 8);
+
+    // 9 — Technical architecture
+    s = pptx.addSlide();
+    header(s, "08 \u00B7 ARCHITECTURE", "Components behind the streaming playground");
+    s.addShape(ST.roundRect, { x: 0.6, y: 1.8, w: 12.13, h: 0.62, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.06 });
+    s.addText([
+      { text: "Browser", options: { bold: true, color: INK } },
+      { text: " \u00B7 Bot Framework Web Chat (CDN) + ", options: { color: MUTED } },
+      { text: "app.js", options: { color: MUTED, fontFace: "Consolas" } },
+      { text: " normalization tap \u00B7 stream coalescing \u00B7 diagnostics inspector \u00B7 auto-scroll", options: { color: MUTED } }
+    ], { x: 0.85, y: 1.8, w: 11.6, h: 0.62, fontSize: 12, valign: "middle", align: "center" });
+    const archCards = [
+      { title: "Direct-to-Engine (DtE)", chain: [
+        [{ text: "sdk-client.js", mono: true }, { text: " \u2014 agents-copilotstudio-client" }],
+        [{ text: "\u2193 token" }],
+        [{ text: "MSAL browser \u2014 Entra access token" }],
+        [{ text: "\u2193 HTTPS" }],
+        [{ text: "Direct-to-Engine endpoint " }, { text: "/conversations", mono: true }]
+      ], note: [{ text: "Native streaming \u2014 no client opt-in." }] },
+      { title: "Direct Line (DL)", chain: [
+        [{ text: "DirectLine.js", mono: true }, { text: " (Web Chat) + " }, { text: "deliveryMode", mono: true }, { text: " opt-in" }],
+        [{ text: "\u2193 token" }],
+        [{ text: "Express relay " }, { text: ":3978", mono: true }, { text: " (secret\u2192token) \u00B7 or token-endpoint URL" }],
+        [{ text: "\u2193 WebSocket" }],
+        [{ text: "Direct Line channel" }]
+      ], note: [{ text: "Needs " }, { text: "Channels_SupportForStreamingEnabled", mono: true }, { text: " = ON." }] }
+    ];
+    archCards.forEach((c, i) => {
       const x = 0.6 + i * 6.18;
       s.addShape(ST.roundRect, { x, y: 2.62, w: 5.85, h: 2.95, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.06 });
       s.addShape(ST.rect, { x, y: 2.62, w: 0.09, h: 2.95, fill: { color: GREEN }, line: { type: "none" } });
-      s.addText(t, { x: x + 0.28, y: 2.72, w: 5.45, h: 0.4, bold: true, color: INK, fontSize: 14 });
-      s.addText(chain.map((c) => ({ text: c + "\n", options: { color: MUTED, fontSize: 11, fontFace: "Consolas", paraSpaceAfter: 4 } })), { x: x + 0.28, y: 3.14, w: 5.45, h: 1.85, valign: "top" });
-      s.addText(note, { x: x + 0.28, y: 5.08, w: 5.45, h: 0.4, italic: true, color: SOFT, fontSize: 11 });
+      s.addText(c.title, { x: x + 0.28, y: 2.72, w: 5.45, h: 0.4, bold: true, color: INK, fontSize: 14 });
+      const flat = [];
+      c.chain.forEach((node) => node.forEach((r, j) => flat.push({ text: r.text, options: { color: MUTED, fontSize: 11, ...(r.mono ? { fontFace: "Consolas" } : {}), ...(j === node.length - 1 ? { breakLine: true, paraSpaceAfter: 4 } : {}) } })));
+      s.addText(flat, { x: x + 0.28, y: 3.14, w: 5.45, h: 1.85, valign: "top" });
+      s.addText(c.note.map((r) => ({ text: r.text, options: { color: SOFT, fontSize: 11, italic: !r.mono, ...(r.mono ? { fontFace: "Consolas" } : {}) } })), { x: x + 0.28, y: 5.08, w: 5.45, h: 0.4, valign: "top" });
     });
     s.addShape(ST.roundRect, { x: 0.6, y: 5.7, w: 12.13, h: 0.5, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.06 });
-    s.addText([{ text: "Copilot Studio agent   ", options: { bold: true, color: INK } }, { text: "emits informative \u2192 streaming \u2192 final activities", options: { color: MUTED } }], { x: 0.85, y: 5.7, w: 11.6, h: 0.5, fontSize: 12, valign: "middle", align: "center" });
-    takeaway(s, "Both transports converge on the same agent and the same app.js normalization tap \u2014 only the connection + auth layer differs.");
-    footer(s, 8);
+    s.addText([
+      { text: "Copilot Studio agent", options: { bold: true, color: INK } },
+      { text: " \u2014 emits ", options: { color: MUTED } },
+      { text: "informative \u2192 streaming \u2192 final", options: { color: MUTED, fontFace: "Consolas" } },
+      { text: " activities", options: { color: MUTED } }
+    ], { x: 0.85, y: 5.7, w: 11.6, h: 0.5, fontSize: 12, valign: "middle", align: "center" });
+    takeaway(s, [
+      { text: "Both transports converge on the " },
+      { text: "same agent", options: { bold: true } },
+      { text: " and the " },
+      { text: "same app.js normalization tap", options: { bold: true } },
+      { text: " \u2014 only the connection + auth layer differs." }
+    ]);
+    footer(s, 9);
 
-    // 9 — Testing flow
+    // 10 — Testing flow
     s = pptx.addSlide();
-    header(s, "08 \u00B7 TESTING FLOW", "How the components interact during a test run");
+    header(s, "09 \u00B7 TESTING FLOW", "How the components interact during a test run");
     const tsteps = [
-      ["1 \u00B7 RUN", "Start Express :3978 \u2014 serves the playground.", "npm start"],
-      ["2 \u00B7 PICK MODE", "Open the playground; choose SDK (DtE) or token / secret / dlStream (DL).", "localhost:3978"],
-      ["3 \u00B7 TOKEN", "DtE: MSAL Entra redirect. DL: Express mints a Direct Line token.", "/api/config"],
-      ["4 \u00B7 CONNECT", "Web Chat connects; DL posts startConversation deliveryMode:\u201Cstream\u201D.", ""],
-      ["5 \u00B7 PROMPT", "Send a generative prompt \u2014 only LLM answers stream.", ""],
-      ["6 \u00B7 STREAM", "Agent emits informative \u2192 streaming \u2192 final into one growing bubble.", ""],
-      ["7 \u00B7 VERIFY", "Inspector confirms chunk count, streamId grouping & sequence order.", ""]
+      { tag: "1 \u00B7 run", desc: [{ text: "Start Express " }, { text: ":3978", mono: true }, { text: " \u2014 serves the playground." }], token: "npm start" },
+      { tag: "2 \u00B7 pick mode", desc: [{ text: "Open the playground, choose SDK (DtE) or token / secret / dlStream (DL)." }], token: "localhost:3978" },
+      { tag: "3 \u00B7 token", desc: [{ text: "DtE: MSAL Entra redirect. DL: Express mints a Direct Line token." }], token: "/api/config" },
+      { tag: "4 \u00B7 connect", desc: [{ text: "Web Chat connects; DL also posts " }, { text: "startConversation", mono: true }, { text: " with " }, { text: "deliveryMode:\"stream\"", mono: true }, { text: "." }], token: "" },
+      { tag: "5 \u00B7 prompt", desc: [{ text: "Send a " }, { text: "generative", bold: true }, { text: " prompt \u2014 only LLM answers stream (not canned topic replies)." }], token: "" },
+      { tag: "6 \u00B7 stream", desc: [{ text: "Agent emits informative \u2192 streaming \u2192 final into " }, { text: "one growing bubble", bold: true }, { text: "." }], token: "" },
+      { tag: "7 \u00B7 verify", desc: [{ text: "Inspector confirms chunk count, " }, { text: "streamId", mono: true }, { text: " grouping & sequence order." }], token: "" }
     ];
-    tsteps.forEach(([tag, desc, mono], i) => {
+    tsteps.forEach((stp, i) => {
       const col = i % 4, row = Math.floor(i / 4);
       const x = 0.6 + col * 3.06, y = 2.05 + row * 1.95;
       s.addShape(ST.roundRect, { x, y, w: 2.86, h: 1.68, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.08 });
-      s.addText([
-        { text: tag + "\n", options: { bold: true, color: ACCENT, fontSize: 11.5 } },
-        { text: desc + (mono ? "\n" : ""), options: { color: MUTED, fontSize: 10.5 } },
-        ...(mono ? [{ text: mono, options: { color: SOFT, fontSize: 10, fontFace: "Consolas" } }] : [])
-      ], { x: x + 0.16, y: y + 0.12, w: 2.6, h: 1.46, valign: "top" });
+      const runs = [{ text: stp.tag, options: { bold: true, color: ACCENT, fontSize: 11.5, breakLine: true } }];
+      stp.desc.forEach((r, j) => runs.push({ text: r.text, options: { color: MUTED, fontSize: 10.5, ...(r.mono ? { fontFace: "Consolas", color: INK } : {}), ...(r.bold ? { bold: true, color: INK } : {}), ...(j === stp.desc.length - 1 && stp.token ? { breakLine: true } : {}) } }));
+      if (stp.token) runs.push({ text: stp.token, options: { color: SOFT, fontSize: 10, fontFace: "Consolas" } });
+      s.addText(runs, { x: x + 0.16, y: y + 0.12, w: 2.6, h: 1.46, valign: "top" });
       if (col < 3 && i < tsteps.length - 1) s.addText("\u2192", { x: x + 2.86, y, w: 0.2, h: 1.68, color: SOFT, fontSize: 18, bold: true, align: "center", valign: "middle" });
     });
-    takeaway(s, "A passing run = 1 livestream / N streaming chunks / 1 finalized, one clean growing bubble, full markdown, no duplicate final.");
-    footer(s, 9);
-
-    // 10 — Field notes
-    s = pptx.addSlide();
-    header(s, "09 \u00B7 FIELD NOTES", "Smaller gotchas worth knowing");
-    s.addText(bullets([
-      "Web Chat sorts the transcript by webchat:sequence-id \u2014 wrong values render bubbles out of order.",
-      "net::ERR_ABORTED on the conversations POST is benign \u2014 it's the SSE stream closing.",
-      "Token is cached by MSAL, so reconnects are silent (no second sign-in).",
-      "Informative chunks carry a lower sequence-id than streaming chunks \u2014 they precede the answer.",
-      "Browser caching bites during dev \u2014 hard-reload after edits.",
-      "showTyping: true on the connection polishes the latency loader UX."
-    ]), { x: 0.6, y: 1.95, w: 12.13, h: 4 });
-    takeaway(s, "Budget time for the plumbing, not the UI. The visible chat is easy; activity reconciliation is the work.");
+    takeaway(s, [
+      { text: "A passing run = " },
+      { text: "1 livestream / N streaming chunks / 1 finalized", options: { bold: true } },
+      { text: ", one clean growing bubble, full markdown, and no duplicate final." }
+    ]);
     footer(s, 10);
 
-    // 11 — Takeaways
+    // 11 — Field notes
     s = pptx.addSlide();
-    header(s, "10 \u00B7 TAKEAWAYS", "If you remember three things");
-    const tk = [
-      "Both Direct Line and Direct-to-Engine stream — DtE is native; DL needs deliveryMode:“stream”.",
-      "Web Chat groups bubbles by activity id; force id = streamId for one growing bubble.",
-      "Do all reconciliation in a normalization tap \u2014 single subscription, no library forks."
+    header(s, "10 \u00B7 FIELD NOTES", "Smaller gotchas worth knowing");
+    const noteBullets = [
+      [{ text: "Web Chat " }, { text: "sorts the transcript", bold: true }, { text: " by " }, { text: "webchat:sequence-id", mono: true }, { text: " \u2014 get this wrong and bubbles render out of order." }],
+      [{ text: "net::ERR_ABORTED", mono: true }, { text: " on the conversations POST is " }, { text: "benign", bold: true }, { text: " \u2014 it's the SSE stream closing." }],
+      [{ text: "Token is cached by MSAL, so reconnects are " }, { text: "silent", bold: true }, { text: " (no second sign-in)." }],
+      [{ text: "Informative chunks carry a " }, { text: "lower sequence-id", bold: true }, { text: " than streaming chunks \u2014 they genuinely precede the answer." }],
+      [{ text: "Browser " }, { text: "caching", bold: true }, { text: " bites hard during dev \u2014 hard-reload after edits." }],
+      [{ text: "showTyping: true", mono: true }, { text: " on the connection polishes the latency loader UX." }]
     ];
-    tk.forEach((t, i) => {
+    const noteText = [];
+    noteBullets.forEach((runs) => {
+      runs.forEach((r, j) => {
+        noteText.push({ text: r.text, options: { color: MUTED, fontSize: 14, ...(r.mono ? { fontFace: "Consolas", color: INK } : {}), ...(r.bold ? { bold: true, color: INK } : {}), ...(j === 0 ? { bullet: { code: "2022", indent: 16 } } : {}), ...(j === runs.length - 1 ? { breakLine: true, paraSpaceAfter: 9 } : {}) } });
+      });
+    });
+    s.addText(noteText, { x: 0.6, y: 1.95, w: 12.13, h: 4, valign: "top" });
+    takeaway(s, [
+      { text: "Budget time for the " },
+      { text: "plumbing", options: { bold: true } },
+      { text: ", not the UI. The visible chat is easy; the activity reconciliation is where the work is." }
+    ]);
+    footer(s, 11);
+
+    // 12 — Takeaways
+    s = pptx.addSlide();
+    header(s, "11 \u00B7 TAKEAWAYS", "If you remember three things");
+    const tk = [
+      [{ text: "Both " }, { text: "Direct Line", bold: true }, { text: " and " }, { text: "Direct-to-Engine", bold: true }, { text: " stream \u2014 DtE is native; DL needs " }, { text: "deliveryMode:\"stream\"", mono: true }, { text: "." }],
+      [{ text: "Web Chat groups bubbles by activity " }, { text: "id", bold: true }, { text: "; force " }, { text: "id = streamId", mono: true }, { text: " for one growing bubble." }],
+      [{ text: "Do all reconciliation in a " }, { text: "normalization tap", bold: true }, { text: " \u2014 single subscription, no library forks." }]
+    ];
+    tk.forEach((runs, i) => {
       const y = 1.95 + i * 1.25;
       s.addShape(ST.roundRect, { x: 0.6, y, w: 12.13, h: 1.05, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.06 });
       s.addShape(ST.roundRect, { x: 0.8, y: y + 0.22, w: 0.62, h: 0.62, fill: { color: ACCENT }, line: { type: "none" }, rectRadius: 0.31 });
       s.addText(String(i + 1), { x: 0.8, y: y + 0.2, w: 0.62, h: 0.62, color: "FFFFFF", bold: true, fontSize: 22, align: "center", valign: "middle" });
-      s.addText(t, { x: 1.7, y, w: 10.7, h: 1.05, color: INK, fontSize: 16, valign: "middle" });
+      s.addText(runs.map((r) => ({ text: r.text, options: { color: INK, fontSize: 16, ...(r.mono ? { fontFace: "Consolas" } : {}), ...(r.bold ? { bold: true } : {}) } })), { x: 1.7, y, w: 10.7, h: 1.05, valign: "middle" });
     });
-    s.addText("Repo: github.com/jzh24516/copilot-streaming-chat-playground", { x: 0.6, y: 6.4, w: 12, h: 0.45, color: SOFT, fontSize: 13 });
-    footer(s, 11);
+    s.addText([
+      { text: "Repo", options: { bold: true, color: INK } },
+      { text: ": github.com/jzh24516/copilot-streaming-chat-playground", options: { color: SOFT } }
+    ], { x: 0.6, y: 6.35, w: 12, h: 0.4, fontSize: 13 });
+    s.addText([
+      { text: "Questions?", options: { bold: true, color: INK } },
+      { text: " Reach out \u2014 happy to walk through the inspector live.", options: { color: SOFT } }
+    ], { x: 0.6, y: 6.74, w: 12, h: 0.4, fontSize: 13 });
+    footer(s, 12);
   }
 
   const exportBtn = document.getElementById("exportPptx");
   const exportStatus = document.getElementById("exportStatus");
   exportBtn.onclick = async () => {
     if (typeof PptxGenJS === "undefined") {
-      exportStatus.textContent = "PowerPoint library failed to load (check your network).";
+      exportStatus.textContent = tr("PowerPoint library failed to load (check your network).");
       return;
     }
     exportBtn.disabled = true;
-    exportStatus.textContent = "Generating PowerPoint\u2026";
+    exportStatus.textContent = tr("Generating PowerPoint…");
     try {
       const pptx = new PptxGenJS();
       pptx.author = "Streaming Chat Playground";
-      pptx.title = "Streaming Responses in Copilot Studio";
+      pptx.title = tr("Streaming Responses in Copilot Studio");
+      if (i18n) i18n.localizePptx(pptx, currentLang);
       buildSlides(pptx);
       await pptx.writeFile({ fileName: "Streaming-Responses-in-Copilot-Studio.pptx" });
-      exportStatus.textContent = "Done \u2014 saved Streaming-Responses-in-Copilot-Studio.pptx";
+      exportStatus.textContent = tr("Done — saved Streaming-Responses-in-Copilot-Studio.pptx");
     } catch (err) {
       console.error(err);
-      exportStatus.textContent = "Export failed: " + (err && err.message ? err.message : err);
+      exportStatus.textContent = tr("Export failed: {message}", {
+        message: err && err.message ? err.message : err
+      });
     } finally {
       exportBtn.disabled = false;
     }
