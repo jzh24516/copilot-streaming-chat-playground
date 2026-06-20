@@ -333,6 +333,14 @@
       <div><b>Transports</b>Direct Line (WebSocket) · Direct-to-Engine SDK</div>
       <div><b>Date</b>June 2026</div>
     </div>
+    <div style="display: flex; align-items: center; gap: 16px; margin-top: auto; padding-top: 20px; border-top: 1px solid var(--cp-border);">
+      <img src="maker-avatar.jpg" alt="Michael Jiang" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover; flex-shrink: 0;" />
+      <div style="font-size: 13px; line-height: 1.4;">
+        <div style="font-weight: 600; color: var(--cp-text);">Prepared by: Michael Jiang</div>
+        <div style="color: var(--cp-text-soft);">michael.jiang@microsoft.com</div>
+        <div style="color: var(--cp-text-soft);">Microsoft GBB Asia Region</div>
+      </div>
+    </div>
   </section>
 
   <!-- 2. Why streaming matters (business value) -->
@@ -789,6 +797,11 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
       { text: "Transports", options: { bold: true, color: INK } }, { text: ":  ", options: { color: MUTED } }, { text: "Direct Line (WebSocket) · Direct-to-Engine SDK", options: { color: MUTED, breakLine: true } },
       { text: "Date", options: { bold: true, color: INK } }, { text: ":  ", options: { color: MUTED } }, { text: "June 2026", options: { color: MUTED } }
     ], { x: 0.6, y: 4.75, w: 11.5, h: 1.5, fontSize: 14, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, margin: 14 });
+    s.addText([
+      { text: "Prepared by: Michael Jiang", options: { bold: true, color: INK } },
+      { text: "\nmichael.jiang@microsoft.com", options: { color: MUTED } },
+      { text: "\nMicrosoft GBB Asia Region", options: { color: MUTED } }
+    ], { x: 0.6, y: 6.35, w: 5, h: 0.9, fontSize: 13 });
     footer(s, 1);
   }
 
