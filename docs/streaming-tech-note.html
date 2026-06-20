@@ -617,11 +617,38 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
     <span class="export-status" id="exportStatus"></span>
   </section>
 
+  <!-- 13. Community sharing -->
+  <section class="slide">
+    <div class="kicker">Community Share</div>
+    <h2>Discover more and test with your own agent</h2>
+    <p class="lead" style="margin-bottom:16px;">We shared this streaming reference publicly so teams can quickly reproduce token-by-token UX in both Direct Line and Direct-to-Engine, then validate behavior with the same inspector patterns.</p>
+    <div class="grid2" style="align-items:start;">
+      <div class="card">
+        <h3>Repository snapshot</h3>
+        <img
+          src="https://opengraph.githubassets.com/1/jzh24516/copilot-streaming-chat-playground"
+          alt="copilot-streaming-chat-playground GitHub repository preview"
+          style="width:100%; border:1px solid var(--cp-border); border-radius:10px; margin-top:8px;"
+        />
+        <p class="muted" style="margin-top:8px;">Shared repo home with latest commits, README, docs, and deployment status.</p>
+      </div>
+      <div class="card">
+        <h3>Where to discover more</h3>
+        <ul style="margin-top:8px; gap:12px;">
+          <li><span class="ic">🔗</span><span><b>GitHub repository:</b><br /><span class="mono">github.com/jzh24516/copilot-streaming-chat-playground</span></span></li>
+          <li><span class="ic">📘</span><span><b>Streaming tech note (HTML):</b><br /><span class="mono">/docs/streaming-tech-note.html</span></span></li>
+          <li><span class="ic">🧪</span><span><b>Multilingual playground:</b><br />Use the language switcher and connect your own agent to test Direct Line vs Direct-to-Engine behavior.</span></li>
+        </ul>
+        <div class="takeaway" style="margin-top:16px;">Start from the repo, run locally, and use this deck + inspector to shorten streaming rollout time for your own Copilot Studio projects.</div>
+      </div>
+    </div>
+  </section>
+
 </div>
 
 <div class="chrome">
   <button class="nav-btn" id="prev" aria-label="Previous slide">‹</button>
-  <span class="count" id="count">1 / 12</span>
+  <span class="count" id="count">1 / 13</span>
   <button class="nav-btn" id="next" aria-label="Next slide">›</button>
   <label class="deck-language" aria-label="Language">
     <span>Language</span>
@@ -740,7 +767,7 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
     s.addText("2026 \u00B7 Internal \u2014 Streaming Chat Playground", { x: 0.6, y: 7.05, w: 8, h: 0.34, color: SOFT, fontSize: 10 });
     s.addText([
       { text: "Copilot Studio Streaming", options: { color: ACCENT, bold: true } },
-      { text: "    " + n + " / 12", options: { color: SOFT } }
+      { text: "    " + n + " / 13", options: { color: SOFT } }
     ], { x: 7.7, y: 7.05, w: 5.03, h: 0.34, fontSize: 10, align: "right" });
   }
 
@@ -1115,6 +1142,32 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
       { text: " Reach out \u2014 happy to walk through the inspector live.", options: { color: SOFT } }
     ], { x: 0.6, y: 6.74, w: 12, h: 0.4, fontSize: 13 });
     footer(s, 12);
+
+    // 13 — Community share
+    s = pptx.addSlide();
+    header(s, "12 \u00B7 COMMUNITY SHARE", "Discover more and test with your own agent");
+    s.addText("We shared this streaming reference publicly so teams can quickly reproduce token-by-token UX in both Direct Line and Direct-to-Engine, then validate behavior with the same inspector patterns.", { x: 0.6, y: 1.8, w: 12.13, h: 0.9, color: MUTED, fontSize: 14 });
+    s.addShape(ST.roundRect, { x: 0.6, y: 2.7, w: 7.2, h: 3.2, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.08 });
+    s.addText("Repository snapshot", { x: 0.85, y: 2.9, w: 6.7, h: 0.4, color: INK, bold: true, fontSize: 15 });
+    s.addText("GitHub: copilot-streaming-chat-playground", { x: 0.85, y: 3.32, w: 6.7, h: 0.35, color: SOFT, fontSize: 11 });
+    s.addShape(ST.roundRect, { x: 0.85, y: 3.72, w: 6.7, h: 1.95, fill: { color: "FFFFFF" }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.06 });
+    s.addText("Open the repository online to see source, README, docs, and deployment status.", { x: 1.1, y: 4.45, w: 6.2, h: 0.6, color: MUTED, fontSize: 12, align: "center" });
+
+    s.addShape(ST.roundRect, { x: 8.0, y: 2.7, w: 4.73, h: 3.2, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.08 });
+    const shareBullets = [
+      [{ text: "GitHub repository: " }, { text: "github.com/jzh24516/copilot-streaming-chat-playground", mono: true }],
+      [{ text: "Tech arch note: " }, { text: "docs/streaming-tech-note.html", mono: true }],
+      [{ text: "Multilingual playground: test your own agent across Direct Line and Direct-to-Engine." }]
+    ];
+    const shareText = [{ text: "Where to discover more", options: { bold: true, color: INK, fontSize: 14, breakLine: true, paraSpaceAfter: 10 } }];
+    shareBullets.forEach((runs) => {
+      runs.forEach((r, j) => {
+        shareText.push({ text: r.text, options: { color: MUTED, fontSize: 11.5, ...(r.mono ? { fontFace: "Consolas", color: INK } : {}), ...(j === 0 ? { bullet: { code: "2022", indent: 14 } } : {}), ...(j === runs.length - 1 ? { breakLine: true, paraSpaceAfter: 8 } : {}) } });
+      });
+    });
+    s.addText(shareText, { x: 8.23, y: 2.92, w: 4.28, h: 2.5, valign: "top" });
+    takeaway(s, "Start from the repo, run locally, and use this deck + inspector to shorten streaming rollout time for your own Copilot Studio projects.");
+    footer(s, 13);
   }
 
   const exportBtn = document.getElementById("exportPptx");
