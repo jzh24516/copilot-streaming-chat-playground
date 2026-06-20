@@ -699,11 +699,10 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
   }
 
   function show(n) {
-    idx = Math.max(0, Math.min(slides.length - 1, n));
+    // Loop navigation: wrap around at both ends
+    idx = ((n % slides.length) + slides.length) % slides.length;
     slides.forEach((s, i) => s.classList.toggle("active", i === idx));
     countEl.textContent = `${idx + 1} / ${slides.length}`;
-    prevBtn.disabled = idx === 0;
-    nextBtn.disabled = idx === slides.length - 1;
     progress.style.width = `${((idx + 1) / slides.length) * 100}%`;
   }
 
