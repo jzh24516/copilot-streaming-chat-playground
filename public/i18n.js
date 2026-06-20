@@ -570,8 +570,27 @@
     '; force': { 'zh-CN': ' 分组气泡；强制', 'zh-TW': ' 分組泡泡；強制', ja: ' でバブルをグループ化。強制:', ko: '으로 버블을 그룹화; 강제:' },
     'for one growing bubble.': { 'zh-CN': '以获得一个不断增长的气泡。', 'zh-TW': '以獲得一個不斷增長的泡泡。', ja: 'して 1 つの成長するバブルにします。', ko: '하여 하나의 커지는 버블을 만듭니다.' },
     'Do all reconciliation in a': { 'zh-CN': '在', 'zh-TW': '在', ja: 'すべての調整を', ko: '모든 조정을' },
-    'normalization tap': { 'zh-CN': '规范化 tap', 'zh-TW': '正規化 tap', ja: '正規化 tap', ko: '정규화 tap' },
-    '— single subscription, no library forks.': { 'zh-CN': '中完成所有协调 —— 单一订阅，不分叉任何库。', 'zh-TW': '中完成所有協調 —— 單一訂閱，不分支任何程式庫。', ja: 'で行います — 単一サブスクリプション、ライブラリのフォークなし。', ko: '에서 수행합니다 — 단일 구독, 라이브러리 포크 없음.' }
+    'normalization tap': { 'zh-CN': '规范化 tap', 'zh-TW': '正規化 tap', ja: '正規化 tap', ko: '정規化 tap' },
+    '— single subscription, no library forks.': { 'zh-CN': '中完成所有协调 —— 单一订阅，不分叉任何库。', 'zh-TW': '中完成所有協調 —— 單一訂閱，不分支任何程式庫。', ja: 'で行います — 単一サブスクリプション、ライブラリのフォークなし。', ko: '에서 수행합니다 — 단일 구독, 라이브러리 포크 없음.' },
+    // --- Slide 1 (Title - Maker info) ---
+    'Prepared by: Michael Jiang': { 'zh-CN': '编制者：Michael Jiang', 'zh-TW': '編製者：Michael Jiang', ja: '作成者: Michael Jiang', ko: '작성자: Michael Jiang' },
+    'michael.jiang@microsoft.com': { 'zh-CN': 'michael.jiang@microsoft.com', 'zh-TW': 'michael.jiang@microsoft.com', ja: 'michael.jiang@microsoft.com', ko: 'michael.jiang@microsoft.com' },
+    'Microsoft GBB Asia Region': { 'zh-CN': 'Microsoft GBB 亚洲地区', 'zh-TW': 'Microsoft GBB 亞洲地區', ja: 'Microsoft GBB アジア地域', ko: 'Microsoft GBB 아시아 지역' },
+    // --- Slide 13 (Community Sharing) ---
+    'Community Share': { 'zh-CN': '社区分享', 'zh-TW': '社區分享', ja: 'コミュニティ共有', ko: '커뮤니티 공유' },
+    'Discover more and test with your own agent': { 'zh-CN': '探索更多并使用你自己的代理进行测试', 'zh-TW': '探索更多並使用你自己的代理程式進行測試', ja: 'さらに探索して、独自のエージェントでテストします', ko: '더 많이 탐색하고 자신의 에이전트로 테스트' },
+    'We shared this streaming reference publicly so teams can quickly reproduce token-by-token UX in both Direct Line and Direct-to-Engine, then validate behavior with the same inspector patterns.': { 'zh-CN': '我们公开共享了这个流式响应参考，以便团队能在 Direct Line 和 Direct-to-Engine 中快速复现逐 token 的用户体验，然后使用相同的检查器模式验证行为。', 'zh-TW': '我們公開共享了這個串流回應參考，以便團隊能在 Direct Line 和 Direct-to-Engine 中快速複現逐 token 的使用者體驗，然後使用相同的檢查器模式驗證行為。', ja: 'このストリーミング リファレンスを公開して、チームが Direct Line と Direct-to-Engine の両方でトークン単位の UX をすばやく再現し、同じインスペクター パターンで動作を検証できるようにしました。', ko: '이 스트리밍 참조를 공개하여 팀이 Direct Line과 Direct-to-Engine에서 토큰 단위 UX를 빠르게 재현하고 동일한 검사기 패턴으로 동작을 검증할 수 있도록 했습니다.' },
+    'Repository snapshot': { 'zh-CN': '存储库快照', 'zh-TW': '存放庫快照', ja: 'リポジトリ スナップショット', ko: '저장소 스냅샷' },
+    'Maker: Michael Jiang (michael.jiang@microsoft.com), Microsoft GBB Asia': { 'zh-CN': '编制者：Michael Jiang (michael.jiang@microsoft.com)，Microsoft GBB 亚洲地区', 'zh-TW': '編製者：Michael Jiang (michael.jiang@microsoft.com)，Microsoft GBB 亞洲地區', ja: '作成者: Michael Jiang (michael.jiang@microsoft.com)、Microsoft GBB アジア地域', ko: '작성자: Michael Jiang(michael.jiang@microsoft.com), Microsoft GBB 아시아 지역' },
+    'Shared repo home with latest commits, README, docs, and deployment status.': { 'zh-CN': '共享的存储库主页，包含最新提交、README、文档和部署状态。', 'zh-TW': '共享的存放庫主頁，包含最新提交、README、文檔和部署狀態。', ja: '最新のコミット、README、ドキュメント、デプロイ状態を含む共有リポジトリホーム。', ko: '최신 커밋, README, 문서 및 배포 상태가 포함된 공유 저장소 홈.' },
+    'Where to discover more': { 'zh-CN': '在哪里了解更多', 'zh-TW': '在哪裡了解更多', ja: 'さらに詳しくはどこで', ko: '더 많이 알아볼 곳' },
+    'GitHub repository:': { 'zh-CN': 'GitHub 存储库：', 'zh-TW': 'GitHub 存放庫：', ja: 'GitHub リポジトリ:', ko: 'GitHub 저장소:' },
+    'github.com/jzh24516/copilot-streaming-chat-playground': { 'zh-CN': 'github.com/jzh24516/copilot-streaming-chat-playground', 'zh-TW': 'github.com/jzh24516/copilot-streaming-chat-playground', ja: 'github.com/jzh24516/copilot-streaming-chat-playground', ko: 'github.com/jzh24516/copilot-streaming-chat-playground' },
+    'Streaming tech note (HTML):': { 'zh-CN': '流式响应技术说明 (HTML)：', 'zh-TW': '串流回應技術說明 (HTML)：', ja: 'ストリーミング技術ノート (HTML):', ko: '스트리밍 기술 노트(HTML):' },
+    '/docs/streaming-tech-note.html': { 'zh-CN': '/docs/streaming-tech-note.html', 'zh-TW': '/docs/streaming-tech-note.html', ja: '/docs/streaming-tech-note.html', ko: '/docs/streaming-tech-note.html' },
+    'Multilingual playground:': { 'zh-CN': '多语言体验场：', 'zh-TW': '多語言體驗場：', ja: '多言語プレイグラウンド:', ko: '다국어 플레이그라운드:' },
+    'Use the language switcher and connect your own agent to test Direct Line vs Direct-to-Engine behavior.': { 'zh-CN': '使用语言切换器并连接自己的代理来测试 Direct Line 与 Direct-to-Engine 的行为。', 'zh-TW': '使用語言切換器並連接自己的代理程式來測試 Direct Line 與 Direct-to-Engine 的行為。', ja: '言語スイッチャーを使用して、独自のエージェントを接続し、Direct Line と Direct-to-Engine の動作をテストします。', ko: '언어 전환기를 사용하여 자신의 에이전트를 연결하고 Direct Line과 Direct-to-Engine 동작을 테스트합니다.' },
+    'Start from the repo, run locally, and use this deck + inspector to shorten streaming rollout time for your own Copilot Studio projects.': { 'zh-CN': '从存储库开始，在本地运行，并使用此演示文稿 + 检查器来缩短 Copilot Studio 项目的流式响应推出时间。', 'zh-TW': '從存放庫開始，在本機執行，並使用此簡報 + 檢查器來縮短 Copilot Studio 專案的串流回應推出時間。', ja: 'リポジトリから開始し、ローカルで実行し、このデッキ + インスペクターを使用して、Copilot Studio プロジェクトのストリーミング ロールアウト時間を短縮します。', ko: '저장소에서 시작하여 로컬로 실행하고 이 데크 + 검사기를 사용하여 Copilot Studio 프로젝트의 스트리밍 롤아웃 시간을 단축합니다.' }
   };
 
   function normalizeLang(lang) {
