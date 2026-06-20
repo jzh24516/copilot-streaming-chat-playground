@@ -441,10 +441,12 @@ function normalizeStreamingForWebChat(activity) {
       <div class="card good">
         <h3>✅ Direct Line (DL) + opt-in</h3>
         <p style="font-size:15px;"><b>Streams once you ask for it.</b> Standard Web Chat over Direct Line paints only the final message <i>until</i> the client signals <span class="mono">deliveryMode:"stream"</span> — then the same <span class="mono">streamType:streaming</span> chunks flow over the WebSocket.</p>
+        <p style="font-size:13.5px; margin-top:10px; padding:8px 10px; border-radius:8px; background:rgba(255,176,32,0.12); border:1px solid rgba(255,176,32,0.35);">⚠️ <b>Agent prerequisite:</b> the agent flag <span class="mono">Channels_SupportForStreamingEnabled</span> must be <b>ON</b>, or Direct Line never emits streaming chunks no matter what the client sends.</p>
         <p style="font-size:14px; margin-top:10px; color:var(--cp-text-muted)">Best for: anonymous / token-endpoint embedding, parity with the official test canvas.</p>
       </div>
     </div>
-    <pre style="margin-top:18px;"><span class="tok-com">// DL opt-in — exactly what the official test canvas sends</span>
+    <pre style="margin-top:18px;"><span class="tok-com">// PREREQUISITE: enable the agent flag Channels_SupportForStreamingEnabled</span>
+<span class="tok-com">// DL opt-in — exactly what the official test canvas sends</span>
 <span class="tok-com">// 1) once, when the connection goes online:</span>
 directLine.postActivity({ <span class="tok-key">type</span>:<span class="tok-key">"event"</span>, <span class="tok-key">name</span>:<span class="tok-key">"startConversation"</span>,
   <span class="tok-key">deliveryMode</span>:<span class="tok-key">"stream"</span>,
@@ -452,7 +454,7 @@ directLine.postActivity({ <span class="tok-key">type</span>:<span class="tok-key
               <span class="tok-key">supportsListening</span>:true, <span class="tok-key">supportsTts</span>:true }] });
 <span class="tok-com">// 2) on every outgoing user message:</span>
 postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span class="tok-key">"stream"</span> });   <span class="tok-com">// 0 → 84 chunks</span></pre>
-    <div class="takeaway">Verified against the same agent: DtE streams natively; DL streams the instant you send <b>deliveryMode:"stream"</b> — confirmed <b>1 livestream / 84 chunks / 1 finalized</b>.</div>
+    <div class="takeaway">Verified against the same agent: DtE streams natively; DL streams the instant you send <b>deliveryMode:"stream"</b> <i>(with</i> <span class="mono">Channels_SupportForStreamingEnabled</span> <i>ON)</i> — confirmed <b>1 livestream / 84 chunks / 1 finalized</b>.</div>
   </section>
 
   <!-- 8. Gotchas / lessons -->
@@ -719,7 +721,7 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
     header(s, "06 \u00B7 TWO WORKABLE PATHS", "Live streaming works on both transports");
     const paths = [
       ["\u2705 Direct-to-Engine (DtE) SDK", "Native streaming. CopilotStudioWebChat.createConnection emits generative chunks with no extra opt-in. Entra (MSAL) sign-in; no secret in the browser."],
-      ["\u2705 Direct Line (DL) + opt-in", "Plain Web Chat paints only the final message until the client sends deliveryMode:\u201Cstream\u201D \u2014 then the same streaming chunks flow over the WebSocket."]
+      ["\u2705 Direct Line (DL) + opt-in", "Plain Web Chat paints only the final message until the client sends deliveryMode:\u201Cstream\u201D \u2014 then the same streaming chunks flow over the WebSocket. \u26A0\uFE0F Requires the agent flag Channels_SupportForStreamingEnabled = ON."]
     ];
     paths.forEach(([t, d], i) => {
       const x = 0.6 + i * 6.18;
@@ -727,8 +729,8 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
       s.addShape(ST.rect, { x, y: 1.95, w: 0.09, h: 1.75, fill: { color: GREEN }, line: { type: "none" } });
       s.addText([{ text: t + "\n", options: { bold: true, color: INK, fontSize: 15 } }, { text: d, options: { color: MUTED, fontSize: 12 } }], { x: x + 0.28, y: 2.08, w: 5.45, h: 1.5, valign: "top" });
     });
-    s.addText("// DL opt-in \u2014 exactly what the official test canvas sends\n// 1) once, when the connection goes online:\ndirectLine.postActivity({ type:\"event\", name:\"startConversation\",\n  deliveryMode:\"stream\",\n  entities:[{ type:\"ClientCapabilities\", requiresBotState:true,\n              supportsListening:true, supportsTts:true }] });\n// 2) on every outgoing user message:\npostActivity({ ...activity, deliveryMode:\"stream\" });   // 0 \u2192 84 chunks", { x: 0.6, y: 3.9, w: 12.13, h: 2.3, fontFace: "Consolas", fontSize: 12, color: INK, fill: { color: CODE_BG }, line: { color: PANEL_BD, width: 1 }, margin: 14 });
-    takeaway(s, "Verified on the same agent: DtE streams natively; DL streams the instant you send deliveryMode:\u201Cstream\u201D \u2014 1 livestream / 84 chunks / 1 finalized.");
+    s.addText("// PREREQUISITE: enable the agent flag Channels_SupportForStreamingEnabled\n// DL opt-in \u2014 exactly what the official test canvas sends\n// 1) once, when the connection goes online:\ndirectLine.postActivity({ type:\"event\", name:\"startConversation\",\n  deliveryMode:\"stream\",\n  entities:[{ type:\"ClientCapabilities\", requiresBotState:true,\n              supportsListening:true, supportsTts:true }] });\n// 2) on every outgoing user message:\npostActivity({ ...activity, deliveryMode:\"stream\" });   // 0 \u2192 84 chunks", { x: 0.6, y: 3.9, w: 12.13, h: 2.3, fontFace: "Consolas", fontSize: 12, color: INK, fill: { color: CODE_BG }, line: { color: PANEL_BD, width: 1 }, margin: 14 });
+    takeaway(s, "Verified on the same agent: DtE streams natively; DL streams the instant you send deliveryMode:\u201Cstream\u201D (with Channels_SupportForStreamingEnabled ON) \u2014 1 livestream / 84 chunks / 1 finalized.");
     footer(s, 7);
 
     // 8 — Field notes
