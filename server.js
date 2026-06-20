@@ -67,6 +67,9 @@ const COPILOT_AGENT_CLOUD = process.env.COPILOT_AGENT_CLOUD?.trim() || sdkFileCo
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+// Also expose public assets under /public so docs pages can reference them with
+// a relative path (../public/...) that also works on static hosts (GitHub Pages).
+app.use('/public', express.static(path.join(__dirname, 'public')));
 // Serve the knowledge-sharing tech note deck (and any future docs).
 app.use('/docs', express.static(path.join(__dirname, 'docs')));
 
