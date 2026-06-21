@@ -39,7 +39,7 @@
       ko: '스트리밍 채팅 플레이그라운드'
     },
     'Live-streaming responses from a Microsoft Copilot Studio agent · SDK Direct-to-Engine with Direct Line diagnostics': {
-      'zh-CN': '来自 Microsoft Copilot Studio 代理的实时流式回复 · SDK Direct-to-Engine 与 Direct Line 诊断',
+      'zh-CN': '来自 Microsoft Copilot Studio 智能体的实时流式回复 · SDK Direct-to-Engine 与 Direct Line 诊断',
       'zh-TW': '來自 Microsoft Copilot Studio 代理程式的即時串流回應 · SDK Direct-to-Engine 與 Direct Line 診斷',
       ja: 'Microsoft Copilot Studio エージェントからのライブ ストリーミング応答 · SDK Direct-to-Engine と Direct Line 診断',
       ko: 'Microsoft Copilot Studio 에이전트의 실시간 스트리밍 응답 · SDK Direct-to-Engine 및 Direct Line 진단'
@@ -84,7 +84,7 @@
     'delegated permission.': { 'zh-CN': '委托权限的 SPA 应用注册。', 'zh-TW': '委派權限的 SPA 應用程式註冊。', ja: '委任アクセス許可を付与します。', ko: '위임 권한을 부여합니다.' },
     'Directory (tenant) ID': { 'zh-CN': '目录（租户）ID', 'zh-TW': '目錄（租用戶）ID', ja: 'ディレクトリ（テナント）ID', ko: '디렉터리(테넌트) ID' },
     'Environment ID': { 'zh-CN': '环境 ID', 'zh-TW': '環境 ID', ja: '環境 ID', ko: '환경 ID' },
-    'Agent schema name': { 'zh-CN': '代理架构名称', 'zh-TW': '代理程式結構描述名稱', ja: 'エージェント スキーマ名', ko: '에이전트 스키마 이름' },
+    'Agent schema name': { 'zh-CN': '智能体架构名称', 'zh-TW': '代理程式結構描述名稱', ja: 'エージェント スキーマ名', ko: '에이전트 스키마 이름' },
     'You sign in with your own Entra account; no secret leaves the browser. This is the only mode that surfaces token-by-token generative streaming.': {
       'zh-CN': '使用你自己的 Entra 帐户登录；没有密钥离开浏览器。这是呈现逐 token 生成式流式响应的模式。',
       'zh-TW': '使用你自己的 Entra 帳戶登入；不會有密鑰離開瀏覽器。這是呈現逐 token 生成式串流的模式。',
@@ -114,7 +114,7 @@
     },
     'chunks into one growing bubble by': { 'zh-CN': '分块，按', 'zh-TW': '區塊，依', ja: 'チャンクを', ko: '청크를' },
     ', dropping the trailing duplicate final message. Accepts a secret, a Direct Line token, or a token-endpoint URL — whichever “connection string” you have for the agent.': {
-      'zh-CN': '合并到一个不断增长的气泡，并丢弃尾随的重复最终消息。可接受密钥、Direct Line 令牌或令牌终结点 URL，也就是你手头的代理“连接字符串”。',
+      'zh-CN': '合并到一个不断增长的气泡，并丢弃尾随的重复最终消息。可接受密钥、Direct Line 令牌或令牌终结点 URL，也就是你手头的智能体“连接字符串”。',
       'zh-TW': '合併成一個持續增長的泡泡，並丟棄尾端重複的最終訊息。可接受密鑰、Direct Line 權杖或權杖端點 URL，也就是你手邊的代理程式「連線字串」。',
       ja: 'に基づいて 1 つの成長するバブルに集約し、末尾の重複 final メッセージを破棄します。エージェント用の「接続文字列」として、シークレット、Direct Line トークン、トークン エンドポイント URL を受け付けます。',
       ko: '기준으로 하나의 커지는 버블로 병합하고 마지막 중복 final 메시지를 버립니다. 에이전트에 사용할 수 있는 “연결 문자열”로 비밀, Direct Line 토큰 또는 토큰 엔드포인트 URL을 허용합니다.'
@@ -135,7 +135,7 @@
     'conversation: —': { 'zh-CN': '对话：—', 'zh-TW': '交談：—', ja: '会話: —', ko: '대화: —' },
     'conversation: {id}': { 'zh-CN': '对话：{id}', 'zh-TW': '交談：{id}', ja: '会話: {id}', ko: '대화: {id}' },
     'Connect to your Copilot Studio agent to start streaming.': {
-      'zh-CN': '连接到你的 Copilot Studio 代理以开始流式响应。',
+      'zh-CN': '连接到你的 Copilot Studio 智能体以开始流式响应。',
       'zh-TW': '連線到你的 Copilot Studio 代理程式以開始串流。',
       ja: 'Copilot Studio エージェントに接続してストリーミングを開始します。',
       ko: 'Copilot Studio 에이전트에 연결하여 스트리밍을 시작하세요.'
@@ -251,7 +251,7 @@
     'both': { 'zh-CN': '两种', 'zh-TW': '兩種', ja: '両方の', ko: '두 가지' },
     'Direct Line and the Direct-to-Engine SDK.': { 'zh-CN': 'Direct Line 和 Direct-to-Engine SDK。', 'zh-TW': 'Direct Line 和 Direct-to-Engine SDK。', ja: 'Direct Line と Direct-to-Engine SDK です。', ko: 'Direct Line 및 Direct-to-Engine SDK입니다.' },
     'Surface': { 'zh-CN': '界面', 'zh-TW': '介面', ja: 'サーフェス', ko: '화면' },
-    'Copilot Studio agent + Bot Framework Web Chat': { 'zh-CN': 'Copilot Studio 代理 + Bot Framework Web Chat', 'zh-TW': 'Copilot Studio 代理程式 + Bot Framework Web Chat', ja: 'Copilot Studio エージェント + Bot Framework Web Chat', ko: 'Copilot Studio 에이전트 + Bot Framework Web Chat' },
+    'Copilot Studio agent + Bot Framework Web Chat': { 'zh-CN': 'Copilot Studio 智能体 + Bot Framework Web Chat', 'zh-TW': 'Copilot Studio 代理程式 + Bot Framework Web Chat', ja: 'Copilot Studio エージェント + Bot Framework Web Chat', ko: 'Copilot Studio 에이전트 + Bot Framework Web Chat' },
     'Transports': { 'zh-CN': '传输', 'zh-TW': '傳輸', ja: 'トランスポート', ko: '전송' },
     'Date': { 'zh-CN': '日期', 'zh-TW': '日期', ja: '日付', ko: '날짜' },
     'June 2026': { 'zh-CN': '2026 年 6 月', 'zh-TW': '2026 年 6 月', ja: '2026 年 6 月', ko: '2026년 6월' },
@@ -266,7 +266,7 @@
     },
     '🔍 Transparency builds trust': { 'zh-CN': '🔍 透明度建立信任', 'zh-TW': '🔍 透明度建立信任', ja: '🔍 透明性が信頼を生む', ko: '🔍 투명성이 신뢰를 만든다' },
     'The inline thought process reveals what the agent is doing behind the scenes — searching, planning, analyzing — so the interaction feels meaningful and the answer feels earned, not guessed.': {
-      'zh-CN': '内联的思考过程展示了代理在幕后所做的事 — 搜索、规划、分析 — 让交互更有意义，答案也显得有据可循，而非凭空猜测。',
+      'zh-CN': '内联的思考过程展示了智能体在幕后所做的事 — 搜索、规划、分析 — 让交互更有意义，答案也显得有据可循，而非凭空猜测。',
       'zh-TW': '內嵌的思考過程展示了代理程式在幕後所做的事 — 搜尋、規劃、分析 — 讓互動更有意義，答案也顯得有憑有據，而非憑空猜測。',
       ja: 'インラインの思考プロセスが、エージェントが裏側で行っていること（検索・計画・分析）を明らかにします。これにより対話が意味あるものになり、回答は当て推量ではなく根拠あるものに感じられます。',
       ko: '인라인 사고 과정은 에이전트가 보이지 않는 곳에서 하는 일(검색, 계획, 분석)을 드러내어 상호작용이 의미 있게 느껴지고 답변이 추측이 아니라 근거 있는 것으로 느껴집니다.'
@@ -280,7 +280,7 @@
     },
     '⭐ Meets modern expectations': { 'zh-CN': '⭐ 符合现代预期', 'zh-TW': '⭐ 符合現代期待', ja: '⭐ 最新の期待に応える', ko: '⭐ 최신 기대에 부응' },
     'Users now expect the ChatGPT / Copilot style of live reply. A static "pause, then dump a wall of text" response feels dated and lowers confidence in the agent.': {
-      'zh-CN': '用户如今期待 ChatGPT / Copilot 那样的实时回复。先停顿、再一次性抛出大段文字的静态响应显得过时，并降低对代理的信任。',
+      'zh-CN': '用户如今期待 ChatGPT / Copilot 那样的实时回复。先停顿、再一次性抛出大段文字的静态响应显得过时，并降低对智能体的信任。',
       'zh-TW': '使用者如今期待 ChatGPT / Copilot 那樣的即時回覆。先停頓、再一次拋出大段文字的靜態回應顯得過時，並降低對代理程式的信任。',
       ja: 'ユーザーは今や ChatGPT / Copilot のようなライブ応答を期待します。いったん止まってから大量のテキストを一度に出す静的な応答は時代遅れで、エージェントへの信頼を下げます。',
       ko: '이제 사용자는 ChatGPT / Copilot 스타일의 실시간 응답을 기대합니다. 멈췄다가 한꺼번에 긴 텍스트를 쏟아내는 정적 응답은 구식으로 느껴지고 에이전트에 대한 신뢰를 낮춥니다.'
@@ -299,7 +299,7 @@
     'that grows token-by-token in place.': { 'zh-CN': '在原位逐 token 增长。', 'zh-TW': '在原位逐 token 增長。', ja: 'その場で token 単位に成長します。', ko: '제자리에서 토큰 단위로 커집니다.' },
     'An inline': { 'zh-CN': '内联', 'zh-TW': '內嵌', ja: 'インラインの', ko: '인라인' },
     '"thought process"': { 'zh-CN': '“思考过程”', 'zh-TW': '「思考過程」', ja: '「思考プロセス」', ko: '“사고 과정”' },
-    'showing the agent\'s reasoning steps while it works.': { 'zh-CN': '在代理工作时显示推理步骤。', 'zh-TW': '在代理程式工作時顯示推理步驟。', ja: 'エージェントの推論ステップを処理中に表示します。', ko: '에이전트가 작업하는 동안 추론 단계를 표시합니다.' },
+    'showing the agent\'s reasoning steps while it works.': { 'zh-CN': '在智能体工作时显示推理步骤。', 'zh-TW': '在代理程式工作時顯示推理步驟。', ja: 'エージェントの推論ステップを処理中に表示します。', ko: '에이전트가 작업하는 동안 추론 단계를 표시합니다.' },
     'The view': { 'zh-CN': '视图', 'zh-TW': '檢視', ja: 'ビューが', ko: '보기' },
     'auto-following': { 'zh-CN': '自动跟随', 'zh-TW': '自動跟隨', ja: '自動追従', ko: '자동으로 따라감' },
     'the answer as it streams.': { 'zh-CN': '正在流式输出的回答。', 'zh-TW': '正在串流輸出的回答。', ja: 'ストリーミング中の回答に追従します。', ko: '스트리밍되는 답변을 따라갑니다.' },
@@ -372,8 +372,8 @@
     'Best for: signed-in users, richest reasoning steps, zero secret exposure.': { 'zh-CN': '最适合：已登录用户、最丰富的推理步骤、零密钥暴露。', 'zh-TW': '最適合：已登入使用者、最豐富的推理步驟、零密鑰暴露。', ja: '最適: サインイン済みユーザー、最も豊かな推論ステップ、シークレット露出ゼロ。', ko: '최적: 로그인 사용자, 가장 풍부한 추론 단계, 비밀 노출 없음.' },
     '✅ Direct Line (DL) + opt-in': { 'zh-CN': '✅ Direct Line (DL) + opt-in', 'zh-TW': '✅ Direct Line (DL) + opt-in', ja: '✅ Direct Line (DL) + opt-in', ko: '✅ Direct Line(DL) + opt-in' },
     'Streams once you ask for it.': { 'zh-CN': '只要请求它，就会流式响应。', 'zh-TW': '只要請求它，就會串流。', ja: '要求すればストリーミングします。', ko: '요청하면 스트리밍됩니다.' },
-    'Agent prerequisite:': { 'zh-CN': '代理前提条件：', 'zh-TW': '代理程式前提條件：', ja: 'エージェント前提条件:', ko: '에이전트 전제 조건:' },
-    'the agent flag': { 'zh-CN': '代理标志', 'zh-TW': '代理程式旗標', ja: 'エージェント フラグ', ko: '에이전트 플래그' },
+    'Agent prerequisite:': { 'zh-CN': '智能体前提条件：', 'zh-TW': '代理程式前提條件：', ja: 'エージェント前提条件:', ko: '에이전트 전제 조건:' },
+    'the agent flag': { 'zh-CN': '智能体标志', 'zh-TW': '代理程式旗標', ja: 'エージェント フラグ', ko: '에이전트 플래그' },
     'must be': { 'zh-CN': '必须为', 'zh-TW': '必須為', ja: 'は', ko: '는' },
     'ON': { 'zh-CN': '开启', 'zh-TW': '開啟', ja: 'オン', ko: '켜짐' },
     ', or Direct Line never emits streaming chunks no matter what the client sends.': { 'zh-CN': '，否则无论客户端发送什么，Direct Line 都不会发出流式分块。', 'zh-TW': '，否則無論用戶端傳送什麼，Direct Line 都不會發出串流區塊。', ja: 'である必要があります。そうでないと、クライアントが何を送っても Direct Line はストリーミング チャンクを出しません。', ko: '이어야 합니다. 그렇지 않으면 클라이언트가 무엇을 보내도 Direct Line은 스트리밍 청크를 내보내지 않습니다.' },
@@ -387,7 +387,7 @@
     'Native streaming — no client opt-in.': { 'zh-CN': '原生流式响应 — 无需客户端 opt-in。', 'zh-TW': '原生串流 — 不需要用戶端 opt-in。', ja: 'ネイティブ ストリーミング — クライアント opt-in 不要。', ko: '기본 스트리밍 — 클라이언트 opt-in 불필요.' },
     'Needs': { 'zh-CN': '需要', 'zh-TW': '需要', ja: '必要:', ko: '필요:' },
     '= ON.': { 'zh-CN': '= 开启。', 'zh-TW': '= 開啟。', ja: '= オン。', ko: '= 켜짐.' },
-    'Copilot Studio agent': { 'zh-CN': 'Copilot Studio 代理', 'zh-TW': 'Copilot Studio 代理程式', ja: 'Copilot Studio エージェント', ko: 'Copilot Studio 에이전트' },
+    'Copilot Studio agent': { 'zh-CN': 'Copilot Studio 智能体', 'zh-TW': 'Copilot Studio 代理程式', ja: 'Copilot Studio エージェント', ko: 'Copilot Studio 에이전트' },
     'emits': { 'zh-CN': '发出', 'zh-TW': '發出', ja: '送出:', ko: '내보냄:' },
     'activities': { 'zh-CN': '活动', 'zh-TW': '活動', ja: 'アクティビティ', ko: '활동' },
     'Testing Flow': { 'zh-CN': '测试流程', 'zh-TW': '測試流程', ja: 'テスト フロー', ko: '테스트 흐름' },
@@ -409,6 +409,8 @@
     'Questions?': { 'zh-CN': '有问题？', 'zh-TW': '有問題？', ja: '質問は？', ko: '질문이 있나요?' },
     'Reach out — happy to walk through the inspector live.': { 'zh-CN': '欢迎联系 — 很乐意现场演示检查器。', 'zh-TW': '歡迎聯絡 — 很樂意現場示範檢查器。', ja: 'ご連絡ください — インスペクターをライブで一緒に見られます。', ko: '연락 주세요 — 검사기를 라이브로 함께 살펴보겠습니다.' },
     'Export this deck as PowerPoint (.pptx)': { 'zh-CN': '将此演示文稿导出为 PowerPoint (.pptx)', 'zh-TW': '將此簡報匯出為 PowerPoint (.pptx)', ja: 'このデッキを PowerPoint (.pptx) としてエクスポート', ko: '이 데크를 PowerPoint(.pptx)로 내보내기' },
+    'Export PPT': { 'zh-CN': '导出 PPT', 'zh-TW': '匯出 PPT', ja: 'PPT を出力', ko: 'PPT 내보내기' },
+    'Export deck to PowerPoint (.pptx)': { 'zh-CN': '将演示文稿导出为 PowerPoint (.pptx)', 'zh-TW': '將簡報匯出為 PowerPoint (.pptx)', ja: 'デッキを PowerPoint (.pptx) にエクスポート', ko: '데크를 PowerPoint(.pptx)로 내보내기' },
     '◑ Theme': { 'zh-CN': '◑ 主题', 'zh-TW': '◑ 佈景主題', ja: '◑ テーマ', ko: '◑ 테마' },
     'Theme': { 'zh-CN': '主题', 'zh-TW': '佈景主題', ja: 'テーマ', ko: '테마' },
     'Previous slide': { 'zh-CN': '上一张幻灯片', 'zh-TW': '上一張投影片', ja: '前のスライド', ko: '이전 슬라이드' },
@@ -503,7 +505,7 @@
     '— then the same': { 'zh-CN': '—— 然后相同的', 'zh-TW': '—— 然後相同的', ja: '— その後、同じ', ko: '— 그런 다음 동일한' },
     'chunks flow over the WebSocket.': { 'zh-CN': '分块通过 WebSocket 流动。', 'zh-TW': '區塊透過 WebSocket 流動。', ja: 'チャンクが WebSocket を流れます。', ko: '청크가 WebSocket을 통해 흐릅니다.' },
     'Verified against the same agent: DtE streams natively; DL streams the instant you send': {
-      'zh-CN': '针对同一个代理验证：DtE 原生流式响应；DL 在你发送',
+      'zh-CN': '针对同一个智能体验证：DtE 原生流式响应；DL 在你发送',
       'zh-TW': '針對同一個代理程式驗證：DtE 原生串流；DL 在你傳送',
       ja: '同じエージェントで検証済み: DtE はネイティブにストリーミング。DL は次を送信した瞬間にストリーミング:',
       ko: '동일한 에이전트로 검증: DtE는 기본 스트리밍, DL은 다음을 보내는 즉시 스트리밍:'
@@ -524,7 +526,7 @@
     'Direct Line channel': { 'zh-CN': 'Direct Line 通道', 'zh-TW': 'Direct Line 通道', ja: 'Direct Line チャネル', ko: 'Direct Line 채널' },
     '— emits': { 'zh-CN': '— 发出', 'zh-TW': '— 發出', ja: '— 送出:', ko: '— 내보냄:' },
     'Both transports converge on the': { 'zh-CN': '两种传输都汇聚到', 'zh-TW': '兩種傳輸都匯聚到', ja: '両方のトランスポートは', ko: '두 전송 모두' },
-    'same agent': { 'zh-CN': '同一个代理', 'zh-TW': '同一個代理程式', ja: '同じエージェント', ko: '동일한 에이전트' },
+    'same agent': { 'zh-CN': '同一个智能体', 'zh-TW': '同一個代理程式', ja: '同じエージェント', ko: '동일한 에이전트' },
     'and the': { 'zh-CN': '和', 'zh-TW': '和', ja: 'と', ko: '및' },
     'same app.js normalization tap': { 'zh-CN': '同一个 app.js 规范化 tap', 'zh-TW': '同一個 app.js 正規化 tap', ja: '同じ app.js 正規化 tap', ko: '동일한 app.js 정규화 tap' },
     '— only the connection + auth layer differs.': { 'zh-CN': '上 —— 只有连接 + 认证层不同。', 'zh-TW': '上 —— 只有連線 + 驗證層不同。', ja: 'に収束します — 異なるのは接続 + 認証レイヤーだけです。', ko: '에 수렴합니다 — 다른 것은 연결 + 인증 레이어뿐입니다.' },
@@ -538,7 +540,7 @@
     'Send a': { 'zh-CN': '发送一个', 'zh-TW': '傳送一個', ja: '次を送信:', ko: '다음을 전송:' },
     'generative': { 'zh-CN': '生成式', 'zh-TW': '生成式', ja: '生成', ko: '생성형' },
     'prompt — only LLM answers stream (not canned topic replies).': { 'zh-CN': '提示词 —— 只有 LLM 答案会流式输出（预设主题回复不会）。', 'zh-TW': '提示詞 —— 只有 LLM 答案會串流（預設主題回覆不會）。', ja: 'プロンプト — ストリーミングされるのは LLM の回答のみです（定型トピック応答は対象外）。', ko: '프롬프트 — LLM 답변만 스트리밍됩니다(미리 정의된 토픽 응답 제외).' },
-    'Agent emits informative → streaming → final into': { 'zh-CN': '代理将 informative → streaming → final 发送到', 'zh-TW': '代理程式將 informative → streaming → final 發送到', ja: 'エージェントは informative → streaming → final を出力:', ko: '에이전트가 informative → streaming → final을 출력:' },
+    'Agent emits informative → streaming → final into': { 'zh-CN': '智能体将 informative → streaming → final 发送到', 'zh-TW': '代理程式將 informative → streaming → final 發送到', ja: 'エージェントは informative → streaming → final を出力:', ko: '에이전트가 informative → streaming → final을 출력:' },
     'one growing bubble': { 'zh-CN': '一个不断增长的气泡', 'zh-TW': '一個不斷增長的泡泡', ja: '1 つの成長するバブル', ko: '하나의 커지는 버블' },
     'Inspector confirms chunk count,': { 'zh-CN': '检查器确认分块计数、', 'zh-TW': '檢查器確認區塊計數、', ja: 'インスペクターはチャンク数、', ko: '검사기가 청크 수,' },
     'grouping & sequence order.': { 'zh-CN': '分组与序列顺序。', 'zh-TW': '分組與序列順序。', ja: 'グループ化、シーケンス順序を確認します。', ko: '그룹화 및 시퀀스 순서를 확인합니다.' },
@@ -575,13 +577,13 @@
     // --- Slide 1 (Title - Maker info) ---
     'Prepared by: Michael Jiang': { 'zh-CN': '编制者：Michael Jiang', 'zh-TW': '編製者：Michael Jiang', ja: '作成者: Michael Jiang', ko: '작성자: Michael Jiang' },
     'michael.jiang@microsoft.com': { 'zh-CN': 'michael.jiang@microsoft.com', 'zh-TW': 'michael.jiang@microsoft.com', ja: 'michael.jiang@microsoft.com', ko: 'michael.jiang@microsoft.com' },
-    'Microsoft GBB Asia Region': { 'zh-CN': 'Microsoft GBB 亚洲地区', 'zh-TW': 'Microsoft GBB 亞洲地區', ja: 'Microsoft GBB アジア地域', ko: 'Microsoft GBB 아시아 지역' },
+    'Microsoft AI Business Process GBB Asia': { 'zh-CN': 'Microsoft AI Business Process GBB 亚洲地区', 'zh-TW': 'Microsoft AI Business Process GBB 亞洲地區', ja: 'Microsoft AI Business Process GBB アジア地域', ko: 'Microsoft AI Business Process GBB 아시아 지역' },
     // --- Slide 13 (Community Sharing) ---
     'Community Share': { 'zh-CN': '社区分享', 'zh-TW': '社區分享', ja: 'コミュニティ共有', ko: '커뮤니티 공유' },
-    'Discover more and test with your own agent': { 'zh-CN': '探索更多并使用你自己的代理进行测试', 'zh-TW': '探索更多並使用你自己的代理程式進行測試', ja: 'さらに探索して、独自のエージェントでテストします', ko: '더 많이 탐색하고 자신의 에이전트로 테스트' },
+    'Discover more and test with your own agent': { 'zh-CN': '探索更多并使用你自己的智能体进行测试', 'zh-TW': '探索更多並使用你自己的代理程式進行測試', ja: 'さらに探索して、独自のエージェントでテストします', ko: '더 많이 탐색하고 자신의 에이전트로 테스트' },
     'We shared this streaming reference publicly so teams can quickly reproduce token-by-token UX in both Direct Line and Direct-to-Engine, then validate behavior with the same inspector patterns.': { 'zh-CN': '我们公开共享了这个流式响应参考，以便团队能在 Direct Line 和 Direct-to-Engine 中快速复现逐 token 的用户体验，然后使用相同的检查器模式验证行为。', 'zh-TW': '我們公開共享了這個串流回應參考，以便團隊能在 Direct Line 和 Direct-to-Engine 中快速複現逐 token 的使用者體驗，然後使用相同的檢查器模式驗證行為。', ja: 'このストリーミング リファレンスを公開して、チームが Direct Line と Direct-to-Engine の両方でトークン単位の UX をすばやく再現し、同じインスペクター パターンで動作を検証できるようにしました。', ko: '이 스트리밍 참조를 공개하여 팀이 Direct Line과 Direct-to-Engine에서 토큰 단위 UX를 빠르게 재현하고 동일한 검사기 패턴으로 동작을 검증할 수 있도록 했습니다.' },
     'Repository snapshot': { 'zh-CN': '存储库快照', 'zh-TW': '存放庫快照', ja: 'リポジトリ スナップショット', ko: '저장소 스냅샷' },
-    'Maker: Michael Jiang (michael.jiang@microsoft.com), Microsoft GBB Asia': { 'zh-CN': '编制者：Michael Jiang (michael.jiang@microsoft.com)，Microsoft GBB 亚洲地区', 'zh-TW': '編製者：Michael Jiang (michael.jiang@microsoft.com)，Microsoft GBB 亞洲地區', ja: '作成者: Michael Jiang (michael.jiang@microsoft.com)、Microsoft GBB アジア地域', ko: '작성자: Michael Jiang(michael.jiang@microsoft.com), Microsoft GBB 아시아 지역' },
+    'Maker: Michael Jiang (michael.jiang@microsoft.com), Microsoft AI Business Process GBB Asia': { 'zh-CN': '编制者：Michael Jiang (michael.jiang@microsoft.com)，Microsoft AI Business Process GBB 亚洲地区', 'zh-TW': '編製者：Michael Jiang (michael.jiang@microsoft.com)，Microsoft AI Business Process GBB 亞洲地區', ja: '作成者: Michael Jiang (michael.jiang@microsoft.com)、Microsoft AI Business Process GBB アジア地域', ko: '작성자: Michael Jiang(michael.jiang@microsoft.com), Microsoft AI Business Process GBB 아시아 지역' },
     'Shared repo home with latest commits, README, docs, and deployment status.': { 'zh-CN': '共享的存储库主页，包含最新提交、README、文档和部署状态。', 'zh-TW': '共享的存放庫主頁，包含最新提交、README、文檔和部署狀態。', ja: '最新のコミット、README、ドキュメント、デプロイ状態を含む共有リポジトリホーム。', ko: '최신 커밋, README, 문서 및 배포 상태가 포함된 공유 저장소 홈.' },
     'Where to discover more': { 'zh-CN': '在哪里了解更多', 'zh-TW': '在哪裡了解更多', ja: 'さらに詳しくはどこで', ko: '더 많이 알아볼 곳' },
     'GitHub repository:': { 'zh-CN': 'GitHub 存储库：', 'zh-TW': 'GitHub 存放庫：', ja: 'GitHub リポジトリ:', ko: 'GitHub 저장소:' },
@@ -589,7 +591,7 @@
     'Streaming tech note (HTML):': { 'zh-CN': '流式响应技术说明 (HTML)：', 'zh-TW': '串流回應技術說明 (HTML)：', ja: 'ストリーミング技術ノート (HTML):', ko: '스트리밍 기술 노트(HTML):' },
     '/docs/streaming-tech-note.html': { 'zh-CN': '/docs/streaming-tech-note.html', 'zh-TW': '/docs/streaming-tech-note.html', ja: '/docs/streaming-tech-note.html', ko: '/docs/streaming-tech-note.html' },
     'Multilingual playground:': { 'zh-CN': '多语言体验场：', 'zh-TW': '多語言體驗場：', ja: '多言語プレイグラウンド:', ko: '다국어 플레이그라운드:' },
-    'Use the language switcher and connect your own agent to test Direct Line vs Direct-to-Engine behavior.': { 'zh-CN': '使用语言切换器并连接自己的代理来测试 Direct Line 与 Direct-to-Engine 的行为。', 'zh-TW': '使用語言切換器並連接自己的代理程式來測試 Direct Line 與 Direct-to-Engine 的行為。', ja: '言語スイッチャーを使用して、独自のエージェントを接続し、Direct Line と Direct-to-Engine の動作をテストします。', ko: '언어 전환기를 사용하여 자신의 에이전트를 연결하고 Direct Line과 Direct-to-Engine 동작을 테스트합니다.' },
+    'Use the language switcher and connect your own agent to test Direct Line vs Direct-to-Engine behavior.': { 'zh-CN': '使用语言切换器并连接自己的智能体来测试 Direct Line 与 Direct-to-Engine 的行为。', 'zh-TW': '使用語言切換器並連接自己的代理程式來測試 Direct Line 與 Direct-to-Engine 的行為。', ja: '言語スイッチャーを使用して、独自のエージェントを接続し、Direct Line と Direct-to-Engine の動作をテストします。', ko: '언어 전환기를 사용하여 자신의 에이전트를 연결하고 Direct Line과 Direct-to-Engine 동작을 테스트합니다.' },
     'Start from the repo, run locally, and use this deck + inspector to shorten streaming rollout time for your own Copilot Studio projects.': { 'zh-CN': '从存储库开始，在本地运行，并使用此演示文稿 + 检查器来缩短 Copilot Studio 项目的流式响应推出时间。', 'zh-TW': '從存放庫開始，在本機執行，並使用此簡報 + 檢查器來縮短 Copilot Studio 專案的串流回應推出時間。', ja: 'リポジトリから開始し、ローカルで実行し、このデッキ + インスペクターを使用して、Copilot Studio プロジェクトのストリーミング ロールアウト時間を短縮します。', ko: '저장소에서 시작하여 로컬로 실행하고 이 데크 + 검사기를 사용하여 Copilot Studio 프로젝트의 스트리밍 롤아웃 시간을 단축합니다.' }
   };
 

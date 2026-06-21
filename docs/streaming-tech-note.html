@@ -275,6 +275,8 @@
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     transition: background 0.15s;
+    white-space: nowrap;
+    line-height: 1;
   }
   .nav-btn:hover { background: var(--cp-accent-hover); }
   .nav-btn:disabled { opacity: 0.4; cursor: default; }
@@ -287,6 +289,31 @@
     font-size: 13px;
     cursor: pointer;
     font-family: inherit;
+    white-space: nowrap;
+    line-height: 1;
+  }
+  .nav-export-btn {
+    border: 1px solid var(--cp-border);
+    background: var(--cp-surface);
+    color: var(--cp-text);
+    border-radius: 999px;
+    height: 34px;
+    padding: 0 12px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+  .nav-export-btn:hover { background: var(--cp-surface-soft); }
+  .nav-export-btn:disabled { opacity: 0.6; cursor: default; }
+  .chrome-status {
+    font-size: 12px;
+    color: var(--cp-text-soft);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .progress {
     position: fixed; top: 0; left: 0; height: 3px;
@@ -338,7 +365,7 @@
       <div style="font-size: 13px; line-height: 1.4;">
         <div data-i18nTextSource="Prepared by: Michael Jiang" style="font-weight: 600; color: var(--cp-text);">Prepared by: Michael Jiang</div>
         <div data-i18nTextSource="michael.jiang@microsoft.com" style="color: var(--cp-text-soft);">michael.jiang@microsoft.com</div>
-        <div data-i18nTextSource="Microsoft GBB Asia Region" style="color: var(--cp-text-soft);">Microsoft GBB Asia Region</div>
+        <div data-i18nTextSource="Microsoft AI Business Process GBB Asia" style="color: var(--cp-text-soft);">Microsoft AI Business Process GBB Asia</div>
       </div>
     </div>
   </section>
@@ -515,7 +542,7 @@ function normalizeStreamingForWebChat(activity) {
         <p style="font-size:14px; margin-top:10px; color:var(--cp-text-muted)">Best for: anonymous / token-endpoint embedding, parity with the official test canvas.</p>
       </div>
     </div>
-    <pre style="margin-top:18px;"><span class="tok-com">// PREREQUISITE: enable the agent flag Channels_SupportForStreamingEnabled</span>
+    <pre style="margin-top:16px; font-size:12px; line-height:1.35; flex:1;"><span class="tok-com">// PREREQUISITE: enable the agent flag Channels_SupportForStreamingEnabled</span>
 <span class="tok-com">// DL opt-in — exactly what the official test canvas sends</span>
 <span class="tok-com">// 1) once, when the connection goes online:</span>
 directLine.postActivity({ <span class="tok-key">type</span>:<span class="tok-key">"event"</span>, <span class="tok-key">name</span>:<span class="tok-key">"startConversation"</span>,
@@ -524,7 +551,6 @@ directLine.postActivity({ <span class="tok-key">type</span>:<span class="tok-key
               <span class="tok-key">supportsListening</span>:true, <span class="tok-key">supportsTts</span>:true }] });
 <span class="tok-com">// 2) on every outgoing user message:</span>
 postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span class="tok-key">"stream"</span> });   <span class="tok-com">// 0 → 84 chunks</span></pre>
-    <div class="takeaway">Verified against the same agent: DtE streams natively; DL streams the instant you send <b>deliveryMode:"stream"</b> <i>(with</i> <span class="mono">Channels_SupportForStreamingEnabled</span> <i>ON)</i> — confirmed <b>1 livestream / 84 chunks / 1 finalized</b>.</div>
   </section>
 
   <!-- 9. Technical architecture -->
@@ -619,17 +645,13 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
       <div><b>Repo</b>github.com/jzh24516/copilot-streaming-chat-playground</div>
       <div><b>Questions?</b>Reach out — happy to walk through the inspector live.</div>
     </div>
-    <button class="export-btn" id="exportPptx" style="margin-top:30px;">
-      <span aria-hidden="true">⤓</span> Export this deck as PowerPoint (.pptx)
-    </button>
-    <span class="export-status" id="exportStatus"></span>
   </section>
 
   <!-- 13. Community sharing -->
   <section class="slide">
     <div class="kicker" data-i18nTextSource="Community Share">Community Share</div>
     <h2 data-i18nTextSource="Discover more and test with your own agent">Discover more and test with your own agent</h2>
-    <p class="lead" data-i18nTextSource="We shared this streaming reference publicly so teams can quickly reproduce token-by-token UX in both Direct Line and Direct-to-Engine, then validate behavior with the same inspector patterns." style="margin-bottom:16px;">We shared this streaming reference publicly so teams can quickly reproduce token-by-token UX in both Direct Line and Direct-to-Engine, then validate behavior with the same inspector patterns.</p>
+    <p class="lead" data-i18nTextSource="We shared this streaming reference publicly so teams can quickly reproduce token-by-token UX in both Direct Line and Direct-to-Engine, then validate behavior with the same inspector patterns." style="margin-bottom:10px;">We shared this streaming reference publicly so teams can quickly reproduce token-by-token UX in both Direct Line and Direct-to-Engine, then validate behavior with the same inspector patterns.</p>
     <div class="grid2" style="align-items:start;">
       <div class="card">
         <h3 data-i18nTextSource="Repository snapshot">Repository snapshot</h3>
@@ -638,7 +660,7 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
           alt="copilot-streaming-chat-playground GitHub repository preview"
           style="width:100%; border:1px solid var(--cp-border); border-radius:10px; margin-top:8px;"
         />
-        <p data-i18nTextSource="Maker: Michael Jiang (michael.jiang@microsoft.com), Microsoft GBB Asia" style="font-size:14px; margin-top:10px;"><b>Maker:</b> Michael Jiang (michael.jiang@microsoft.com), Microsoft GBB Asia</p>
+        <p data-i18nTextSource="Maker: Michael Jiang (michael.jiang@microsoft.com), Microsoft AI Business Process GBB Asia" style="font-size:14px; margin-top:10px;"><b>Maker:</b> Michael Jiang (michael.jiang@microsoft.com), Microsoft AI Business Process GBB Asia</p>
         <p data-i18nTextSource="Shared repo home with latest commits, README, docs, and deployment status." class="muted" style="margin-top:8px;">Shared repo home with latest commits, README, docs, and deployment status.</p>
       </div>
       <div class="card">
@@ -664,6 +686,8 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
     <select id="deckLanguageSelect"></select>
   </label>
   <button class="theme-toggle" id="themeToggle">◑ Theme</button>
+  <button class="nav-export-btn" id="exportPptx" aria-label="Export deck to PowerPoint (.pptx)">Export PPT</button>
+  <span class="chrome-status" id="exportStatus" aria-live="polite"></span>
 </div>
 <div class="hint">← → arrows · F fullscreen</div>
 
@@ -799,7 +823,7 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
     s.addText([
       { text: "Prepared by: Michael Jiang", options: { bold: true, color: INK } },
       { text: "\nmichael.jiang@microsoft.com", options: { color: MUTED } },
-      { text: "\nMicrosoft GBB Asia Region", options: { color: MUTED } }
+      { text: "\nMicrosoft AI Business Process GBB Asia", options: { color: MUTED } }
     ], { x: 0.6, y: 6.35, w: 5, h: 0.9, fontSize: 13 });
     footer(s, 1);
   }
@@ -1165,7 +1189,7 @@ postActivity({ ...activity, <span class="tok-key">deliveryMode</span>:<span clas
     s.addText("GitHub: copilot-streaming-chat-playground", { x: 0.85, y: 3.32, w: 6.7, h: 0.35, color: SOFT, fontSize: 11 });
     s.addShape(ST.roundRect, { x: 0.85, y: 3.72, w: 6.7, h: 1.95, fill: { color: "FFFFFF" }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.06 });
     s.addText("Open the repository online to see source, README, docs, and deployment status.", { x: 1.1, y: 4.3, w: 6.2, h: 0.5, color: MUTED, fontSize: 12, align: "center" });
-    s.addText("Maker: Michael Jiang (michael.jiang@microsoft.com), Microsoft GBB Asia", { x: 1.0, y: 5.0, w: 6.4, h: 0.45, color: INK, fontSize: 10.5, bold: true, align: "center" });
+    s.addText("Maker: Michael Jiang (michael.jiang@microsoft.com), Microsoft AI Business Process GBB Asia", { x: 1.0, y: 5.0, w: 6.4, h: 0.45, color: INK, fontSize: 10.5, bold: true, align: "center" });
 
     s.addShape(ST.roundRect, { x: 8.0, y: 2.7, w: 4.73, h: 3.2, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.08 });
     const shareBullets = [
