@@ -79,6 +79,25 @@
       ja: 'Direct Line · ライブ ストリーミング（カスタム集約）· 試験的',
       ko: 'Direct Line · 실시간 스트리밍(사용자 지정 병합) · 실험적'
     },
+    'No-auth agent · Agentic Direct Line (WebSocket diagnostic · may be final-only)': {
+      'zh-CN': '无身份验证智能体 · Agentic Direct Line（WebSocket 诊断 · 可能仅返回最终消息）',
+      'zh-TW': '無驗證代理程式 · Agentic Direct Line（WebSocket 診斷 · 可能僅傳回最終訊息）',
+      ja: '認証なしエージェント · Agentic Direct Line（WebSocket 診断 · final のみの場合あり）',
+      ko: '인증 없는 에이전트 · Agentic Direct Line(WebSocket 진단 · 최종 메시지만 반환할 수 있음)'
+    },
+    'Published-bot DTE · isolated diagnostic (standard harness)': { 'zh-CN': '已发布 Bot DTE · 隔离诊断（标准框架）', 'zh-TW': '已發佈 Bot DTE · 隔離診斷（標準框架）', ja: '公開 Bot DTE · 分離診断（標準ハーネス）', ko: '게시 봇 DTE · 격리 진단(표준 하네스)' },
+    'Published-bot DTE · island sidecar diagnostic (Entra · non-GHCP)': { 'zh-CN': '已发布 Bot DTE · island 边车诊断（Entra · 非 GHCP）', 'zh-TW': '已發佈 Bot DTE · island sidecar 診斷（Entra · 非 GHCP）', ja: '公開 Bot DTE · island サイドカー診断（Entra · GHCP 以外）', ko: '게시 봇 DTE · island 사이드카 진단(Entra · 비 GHCP)' },
+    'Generated hosts currently support commercial': { 'zh-CN': '当前生成的主机仅支持商业', 'zh-TW': '目前產生的主機僅支援商業', ja: '生成ホストが現在対応するのは商用', ko: '현재 생성 호스트는 상용' },
+    'environments only.': { 'zh-CN': '环境。', 'zh-TW': '環境。', ja: '環境のみです。', ko: '환경만 지원합니다.' },
+    'Experimental diagnostic for a': { 'zh-CN': '用于', 'zh-TW': '用於', ja: '対象:', ko: '대상:' },
+    'no-auth Copilot Studio agent': { 'zh-CN': '无身份验证的 Copilot Studio 智能体的实验性诊断', 'zh-TW': '無驗證 Copilot Studio 代理程式的實驗性診斷', ja: '認証なし Copilot Studio エージェントの試験的診断', ko: '인증 없는 Copilot Studio 에이전트의 실험적 진단' },
+    '. It mints a Direct Line token from the': { 'zh-CN': '。它从', 'zh-TW': '。它從', ja: '。次から Direct Line トークンを発行します:', ko: '. 다음에서 Direct Line 토큰을 발급합니다:' },
+    'endpoint, opens a Direct Line 3.0 WebSocket on the regional host, and sends the empirical': { 'zh-CN': '终结点铸造 Direct Line 令牌，在区域主机上打开 Direct Line 3.0 WebSocket，并发送实测的', 'zh-TW': '端點鑄造 Direct Line 權杖，在區域主機上開啟 Direct Line 3.0 WebSocket，並傳送實測的', ja: 'エンドポイントを使い、リージョン ホストで Direct Line 3.0 WebSocket を開き、実測した', ko: '엔드포인트를 사용하고 지역 호스트에서 Direct Line 3.0 WebSocket을 연 뒤 실측된' },
+    'opt-in. The channel is stream-capable, but the agent runtime may still return one final message; our tested no-auth new agent did exactly that.': { 'zh-CN': 'opt-in。该通道具备流式传输能力，但智能体运行时仍可能只返回一个最终消息；我们测试的无身份验证新智能体就是如此。', 'zh-TW': 'opt-in。此通道具備串流能力，但代理程式執行階段仍可能只傳回一個最終訊息；我們測試的無驗證新代理程式正是如此。', ja: 'opt-in を送ります。チャネルはストリーム対応ですが、エージェント ランタイムが final メッセージを 1 件だけ返す場合があります。検証した認証なしの新しいエージェントがまさにそうでした。', ko: 'opt-in을 보냅니다. 채널은 스트림을 지원하지만 에이전트 런타임이 최종 메시지 하나만 반환할 수 있습니다. 테스트한 인증 없는 새 에이전트가 정확히 그랬습니다.' },
+    'Not for a GHCP harness agent.': { 'zh-CN': '不适用于 GHCP 框架智能体。', 'zh-TW': '不適用於 GHCP 框架代理程式。', ja: 'GHCP ハーネス エージェントには使用しません。', ko: 'GHCP 하네스 에이전트용이 아닙니다.' },
+    'Current GHCP documentation lists Web app iframe support but no Native app / Direct Line channel. For a Microsoft-authenticated GHCP agent, use the separate experimental': { 'zh-CN': '当前 GHCP 文档列出 Web app iframe 支持，但没有 Native app / Direct Line 通道。对于 Microsoft 身份验证的 GHCP 智能体，请使用单独的实验性', 'zh-TW': '目前 GHCP 文件列出 Web app iframe 支援，但沒有 Native app / Direct Line 通道。對於 Microsoft 驗證的 GHCP 代理程式，請使用獨立的實驗性', ja: '現在の GHCP ドキュメントでは Web app iframe はサポートされていますが、Native app / Direct Line チャネルはありません。Microsoft 認証 GHCP エージェントでは、別の試験的な', ko: '현재 GHCP 문서는 Web app iframe을 지원하지만 Native app / Direct Line 채널은 제공하지 않습니다. Microsoft 인증 GHCP 에이전트에는 별도의 실험적' },
+    'GHCP harness · /3p': { 'zh-CN': 'GHCP 框架 · /3p', 'zh-TW': 'GHCP 框架 · /3p', ja: 'GHCP ハーネス · /3p', ko: 'GHCP 하네스 · /3p' },
+    'mode.': { 'zh-CN': '模式。', 'zh-TW': '模式。', ja: 'モードを使用します。', ko: '모드를 사용하세요.' },
     'Entra application (client) ID': { 'zh-CN': 'Entra 应用程序（客户端）ID', 'zh-TW': 'Entra 應用程式（用戶端）ID', ja: 'Entra アプリケーション（クライアント）ID', ko: 'Entra 애플리케이션(클라이언트) ID' },
     'SPA app registration with the': { 'zh-CN': '具有', 'zh-TW': '具備', ja: 'SPA アプリ登録に', ko: 'SPA 앱 등록에' },
     'delegated permission.': { 'zh-CN': '委托权限的 SPA 应用注册。', 'zh-TW': '委派權限的 SPA 應用程式註冊。', ja: '委任アクセス許可を付与します。', ko: '위임 권한을 부여합니다.' },
@@ -149,6 +168,7 @@
     'Initializing…': { 'zh-CN': '正在初始化…', 'zh-TW': '正在初始化…', ja: '初期化中…', ko: '초기화 중…' },
     'Connecting…': { 'zh-CN': '正在连接…', 'zh-TW': '正在連線…', ja: '接続中…', ko: '연결 중…' },
     'Online · streaming ready': { 'zh-CN': '在线 · 已可流式响应', 'zh-TW': '線上 · 已可串流', ja: 'オンライン · ストリーミング準備完了', ko: '온라인 · 스트리밍 준비됨' },
+    'Online · Direct Line connected': { 'zh-CN': '在线 · Direct Line 已连接', 'zh-TW': '線上 · Direct Line 已連線', ja: 'オンライン · Direct Line 接続済み', ko: '온라인 · Direct Line 연결됨' },
     'Token expired': { 'zh-CN': '令牌已过期', 'zh-TW': '權杖已過期', ja: 'トークンの有効期限切れ', ko: '토큰 만료됨' },
     'Failed to connect': { 'zh-CN': '连接失败', 'zh-TW': '連線失敗', ja: '接続に失敗しました', ko: '연결 실패' },
     'Conversation ended': { 'zh-CN': '对话已结束', 'zh-TW': '交談已結束', ja: '会話が終了しました', ko: '대화 종료됨' },
@@ -163,11 +183,23 @@
       ja: '接続しました。メッセージを送るとストリーミング チャンクが届きます。',
       ko: '연결되었습니다. 메시지를 보내 스트리밍 청크가 도착하는지 확인하세요.'
     },
+    'Connected to no-auth Agentic Direct Line. The runtime may return final-only.': {
+      'zh-CN': '已连接到无身份验证的 Agentic Direct Line。运行时可能仅返回最终消息。',
+      'zh-TW': '已連線到無驗證的 Agentic Direct Line。執行階段可能僅傳回最終訊息。',
+      ja: '認証なし Agentic Direct Line に接続しました。ランタイムは final のみを返す場合があります。',
+      ko: '인증 없는 Agentic Direct Line에 연결되었습니다. 런타임이 최종 메시지만 반환할 수 있습니다.'
+    },
     'Streaming opt-in sent (deliveryMode:"stream") — send a message to see chunks.': {
       'zh-CN': '已发送流式响应 opt-in（deliveryMode:"stream"）— 发送消息查看分块。',
       'zh-TW': '已傳送串流 opt-in（deliveryMode:"stream"）— 傳送訊息查看區塊。',
       ja: 'ストリーミング opt-in（deliveryMode:"stream"）を送信しました — メッセージを送るとチャンクを確認できます。',
       ko: '스트리밍 opt-in(deliveryMode:"stream")을 보냈습니다 — 메시지를 보내 청크를 확인하세요.'
+    },
+    'Livestream opt-in sent; the runtime still decides whether chunks are emitted.': {
+      'zh-CN': '已发送实时流式 opt-in；是否发出分块仍由运行时决定。',
+      'zh-TW': '已傳送即時串流 opt-in；是否發出區塊仍由執行階段決定。',
+      ja: 'ライブストリーム opt-in を送信しました。チャンクを出すかどうかはランタイムが決定します。',
+      ko: '라이브스트림 opt-in을 보냈습니다. 청크 방출 여부는 런타임이 결정합니다.'
     },
     'Copilot Studio SDK ready · Direct-to-Engine. Click Connect to sign in and stream.': {
       'zh-CN': 'Copilot Studio SDK 已就绪 · Direct-to-Engine。点击“连接”登录并开始流式响应。',
@@ -207,6 +239,24 @@
       ja: 'ストリーミング中 ✓ — {streams} 件のライブストリームで {chunks} チャンク',
       ko: '스트리밍 중 ✓ — {streams}개 라이브스트림, {chunks}개 청크'
     },
+    'Progressive answer ✓ — {chunks} streaming chunk(s) across {streams} livestream(s)': {
+      'zh-CN': '渐进式回答 ✓ — {streams} 个实时流中有 {chunks} 个流式分块',
+      'zh-TW': '漸進式回答 ✓ — {streams} 個即時串流中有 {chunks} 個串流區塊',
+      ja: '段階的な回答 ✓ — {streams} 件のライブストリームで {chunks} ストリーミング チャンク',
+      ko: '점진적 답변 ✓ — {streams}개 라이브스트림에서 {chunks}개 스트리밍 청크'
+    },
+    'Livestream protocol observed — progressive answer text not proven ({informative} informative, {chunks} streaming)': {
+      'zh-CN': '已观察到实时流式协议 — 尚未证明回答文本为渐进式（{informative} 个 informative，{chunks} 个 streaming）',
+      'zh-TW': '已觀察到即時串流通訊協定 — 尚未證明回答文字為漸進式（{informative} 個 informative，{chunks} 個 streaming）',
+      ja: 'ライブストリーム プロトコルを観測 — 段階的な回答テキストは未確認（informative {informative}、streaming {chunks}）',
+      ko: '라이브스트림 프로토콜 관측 — 점진적 답변 텍스트는 확인되지 않음(informative {informative}, streaming {chunks})'
+    },
+    'Final-only response — no livestream metadata emitted': {
+      'zh-CN': '仅最终响应 — 未发出实时流式元数据',
+      'zh-TW': '僅最終回應 — 未發出即時串流中繼資料',
+      ja: 'final のみの応答 — ライブストリーム メタデータなし',
+      ko: '최종 응답만 있음 — 라이브스트림 메타데이터 없음'
+    },
     'Not streaming — only typing + final message (generative streaming not emitted)': {
       'zh-CN': '未流式响应 — 只有 typing + final 消息（未发出生成式流式响应）',
       'zh-TW': '未串流 — 只有 typing + final 訊息（未發出生成式串流）',
@@ -217,6 +267,7 @@
     'Raw activity JSON': { 'zh-CN': '原始活动 JSON', 'zh-TW': '原始活動 JSON', ja: '生のアクティビティ JSON', ko: '원시 활동 JSON' },
     'stream: {id} · len {length}{suffix}': { 'zh-CN': '流：{id} · 长度 {length}{suffix}', 'zh-TW': '串流：{id} · 長度 {length}{suffix}', ja: 'ストリーム: {id} · 長さ {length}{suffix}', ko: '스트림: {id} · 길이 {length}{suffix}' },
     ' · invalid per schema': { 'zh-CN': ' · 不符合架构', 'zh-TW': ' · 不符合結構描述', ja: ' · スキーマ上無効', ko: ' · 스키마 기준 유효하지 않음' },
+      ' · stale or out of order': { 'zh-CN': ' · 已过时或乱序', 'zh-TW': ' · 已過時或順序錯誤', ja: ' · 古いか順序違反', ko: ' · 오래되었거나 순서가 잘못됨' },
     'Checking existing Entra session…': { 'zh-CN': '正在检查现有 Entra 会话…', 'zh-TW': '正在檢查現有 Entra 工作階段…', ja: '既存の Entra セッションを確認中…', ko: '기존 Entra 세션 확인 중…' },
     'Testing token acquisition…': { 'zh-CN': '正在测试令牌获取…', 'zh-TW': '正在測試權杖取得…', ja: 'トークン取得をテスト中…', ko: '토큰 획득 테스트 중…' },
     'Testing server connection…': { 'zh-CN': '正在测试服务器连接…', 'zh-TW': '正在測試伺服器連線…', ja: 'サーバー接続をテスト中…', ko: '서버 연결 테스트 중…' },
@@ -248,6 +299,12 @@
       ja: 'token 単位のライブ ストリーミング チャット プレイグラウンドを構築して分かったこと、動かないこと、落とし穴 — 対象は',
       ko: '토큰 단위 실시간 스트리밍 채팅 플레이그라운드를 만들며 확인한 동작, 비동작, 주의점 — 대상은'
     },
+    'What works, what doesn\'t, and the gotchas we hit building a live progressive-response chat playground — across': {
+      'zh-CN': '构建实时渐进式响应聊天体验场时的可行方案、不可行点和踩坑记录 — 覆盖',
+      'zh-TW': '建置即時漸進式回應聊天體驗場時的可行方案、不可行點與踩坑紀錄 — 涵蓋',
+      ja: 'ライブで段階的に応答するチャット プレイグラウンドを構築して分かったこと、動かないこと、落とし穴 — 対象は',
+      ko: '실시간 점진적 응답 채팅 플레이그라운드를 만들며 확인한 동작, 비동작, 주의점 — 대상은'
+    },
     'both': { 'zh-CN': '两种', 'zh-TW': '兩種', ja: '両方の', ko: '두 가지' },
     'Direct Line and the Direct-to-Engine SDK.': { 'zh-CN': 'Direct Line 和 Direct-to-Engine SDK。', 'zh-TW': 'Direct Line 和 Direct-to-Engine SDK。', ja: 'Direct Line と Direct-to-Engine SDK です。', ko: 'Direct Line 및 Direct-to-Engine SDK입니다.' },
     'Surface': { 'zh-CN': '界面', 'zh-TW': '介面', ja: 'サーフェス', ko: '화면' },
@@ -263,6 +320,12 @@
       'zh-TW': '回答立即出現並逐 token 增長，即使總耗時不變，等待也感覺短得多。使用者保持投入，而不是盯著載入圈。',
       ja: '回答が即座に表示され token 単位で増えていくため、総時間が同じでも待ち時間がはるかに短く感じられます。ユーザーはスピナーを眺める代わりに関心を保ちます。',
       ko: '답변이 즉시 나타나 토큰 단위로 커지므로 전체 시간이 같아도 대기가 훨씬 짧게 느껴집니다. 사용자는 스피너를 바라보는 대신 집중을 유지합니다.'
+    },
+    'Answers appear immediately and grow progressively, so the wait feels far shorter even when the total time is unchanged. Users stay engaged instead of staring at a spinner.': {
+      'zh-CN': '回答立即出现并逐步增长，即使总耗时不变，等待也感觉短得多。用户保持投入，而不是盯着加载圈。',
+      'zh-TW': '回答立即出現並逐步增長，即使總耗時不變，等待也感覺短得多。使用者保持投入，而不是盯著載入圈。',
+      ja: '回答がすぐに表示され段階的に増えるため、総時間が同じでも待ち時間が短く感じられます。ユーザーはスピナーを眺めず関心を保てます。',
+      ko: '답변이 즉시 나타나 점진적으로 커지므로 전체 시간이 같아도 대기가 훨씬 짧게 느껴집니다. 사용자는 스피너를 바라보는 대신 집중을 유지합니다.'
     },
     '🔍 Transparency builds trust': { 'zh-CN': '🔍 透明度建立信任', 'zh-TW': '🔍 透明度建立信任', ja: '🔍 透明性が信頼を生む', ko: '🔍 투명성이 신뢰를 만든다' },
     'The inline thought process reveals what the agent is doing behind the scenes — searching, planning, analyzing — so the interaction feels meaningful and the answer feels earned, not guessed.': {
@@ -297,6 +360,7 @@
     'A': { 'zh-CN': '一个', 'zh-TW': '一個', ja: '1 つの', ko: '하나의' },
     'single answer bubble': { 'zh-CN': '单一回答气泡', 'zh-TW': '單一回答泡泡', ja: '単一の回答バブル', ko: '하나의 답변 버블' },
     'that grows token-by-token in place.': { 'zh-CN': '在原位逐 token 增长。', 'zh-TW': '在原位逐 token 增長。', ja: 'その場で token 単位に成長します。', ko: '제자리에서 토큰 단위로 커집니다.' },
+    'that grows progressively in place.': { 'zh-CN': '在原位逐步增长。', 'zh-TW': '在原位逐步增長。', ja: 'その場で段階的に成長します。', ko: '제자리에서 점진적으로 커집니다.' },
     'An inline': { 'zh-CN': '内联', 'zh-TW': '內嵌', ja: 'インラインの', ko: '인라인' },
     '"thought process"': { 'zh-CN': '“思考过程”', 'zh-TW': '「思考過程」', ja: '「思考プロセス」', ko: '“사고 과정”' },
     'showing the agent\'s reasoning steps while it works.': { 'zh-CN': '在智能体工作时显示推理步骤。', 'zh-TW': '在代理程式工作時顯示推理步驟。', ja: 'エージェントの推論ステップを処理中に表示します。', ko: '에이전트가 작업하는 동안 추론 단계를 표시합니다.' },
@@ -362,16 +426,43 @@
     'The Fixes': { 'zh-CN': '修复方案', 'zh-TW': '修復方案', ja: '修正方法', ko: '수정 방법' },
     'How we reconciled them': { 'zh-CN': '我们如何调和这些差异', 'zh-TW': '我們如何調和這些差異', ja: 'それらをどう調整したか', ko: '이를 조정한 방법' },
     'Two Workable Paths': { 'zh-CN': '两条可行路径', 'zh-TW': '兩條可行路徑', ja: '2 つの実用的なパス', ko: '두 가지 실행 가능한 경로' },
+    'Both transports can carry livestream activities': { 'zh-CN': '两种传输都能承载实时流式活动', 'zh-TW': '兩種傳輸都能承載即時串流活動', ja: '両方のトランスポートでライブストリーム アクティビティを運べる', ko: '두 전송 모두 라이브스트림 활동을 전달할 수 있음' },
+    '✅ Token streaming verified on DtE and DL': { 'zh-CN': '✅ 已在 DtE 和 DL 上验证 token 流式响应', 'zh-TW': '✅ 已在 DtE 和 DL 上驗證 token 串流', ja: '✅ DtE と DL で token ストリーミングを検証済み', ko: '✅ DtE와 DL에서 토큰 스트리밍 검증' },
+    'With a runtime that emits livestream activities, Direct-to-Engine streams natively and Direct Line WebSocket carries the same informative → streaming → final protocol. The client opt-in alone cannot force chunks.': {
+      'zh-CN': '当运行时会发出实时流式活动时，Direct-to-Engine 原生流式输出，Direct Line WebSocket 承载相同的 informative → streaming → final 协议。仅靠客户端 opt-in 无法强制产生分块。',
+      'zh-TW': '當執行階段會發出即時串流活動時，Direct-to-Engine 原生串流，Direct Line WebSocket 承載相同的 informative → streaming → final 通訊協定。僅靠用戶端 opt-in 無法強制產生區塊。',
+      ja: 'ランタイムがライブストリーム アクティビティを送出する場合、Direct-to-Engine はネイティブにストリーミングし、Direct Line WebSocket も同じ informative → streaming → final プロトコルを運びます。クライアントの opt-in だけでチャンクを強制することはできません。',
+      ko: '런타임이 라이브스트림 활동을 내보내면 Direct-to-Engine은 기본 스트리밍하고 Direct Line WebSocket은 동일한 informative → streaming → final 프로토콜을 전달합니다. 클라이언트 opt-in만으로 청크를 강제할 수는 없습니다.'
+    },
     'Live streaming works on': { 'zh-CN': '实时流式响应适用于', 'zh-TW': '即時串流適用於', ja: 'ライブ ストリーミングは', ko: '실시간 스트리밍은' },
     'transports': { 'zh-CN': '传输', 'zh-TW': '傳輸', ja: 'トランスポートで動作します', ko: '전송에서 동작합니다' },
     '✅ Direct-to-Engine (DtE) SDK': { 'zh-CN': '✅ Direct-to-Engine (DtE) SDK', 'zh-TW': '✅ Direct-to-Engine (DtE) SDK', ja: '✅ Direct-to-Engine (DtE) SDK', ko: '✅ Direct-to-Engine(DtE) SDK' },
-    'Native streaming.': { 'zh-CN': '原生流式响应。', 'zh-TW': '原生串流。', ja: 'ネイティブ ストリーミング。', ko: '기본 스트리밍.' },
-    'emits generative chunks with': { 'zh-CN': '发出生成式分块，', 'zh-TW': '發出生成式區塊，', ja: '生成チャンクを送出し、', ko: '생성형 청크를 내보내며' },
-    'no extra opt-in': { 'zh-CN': '无需额外 opt-in', 'zh-TW': '不需要額外 opt-in', ja: '追加 opt-in は不要', ko: '추가 opt-in 필요 없음' },
-    '. Entra (MSAL) sign-in; no secret in the browser.': { 'zh-CN': '。Entra (MSAL) 登录；浏览器中没有密钥。', 'zh-TW': '。Entra (MSAL) 登入；瀏覽器中沒有密鑰。', ja: '。Entra (MSAL) サインイン。ブラウザーにシークレットはありません。', ko: '. Entra(MSAL) 로그인; 브라우저에 비밀이 없습니다.' },
+    'No extra client opt-in.': { 'zh-CN': '无需额外的客户端 opt-in。', 'zh-TW': '不需要額外的用戶端 opt-in。', ja: 'クライアント側の追加 opt-in は不要です。', ko: '추가 클라이언트 opt-in이 필요하지 않습니다.' },
+    'is the native SDK path. The selected agent/runtime may still return final-only. Entra (MSAL) sign-in; no secret in the browser.': {
+      'zh-CN': '是原生 SDK 路径。所选智能体/运行时仍可能仅返回最终消息。Entra (MSAL) 登录；浏览器中没有密钥。',
+      'zh-TW': '是原生 SDK 路徑。所選代理程式/執行階段仍可能僅傳回最終訊息。Entra (MSAL) 登入；瀏覽器中沒有密鑰。',
+      ja: 'はネイティブ SDK の経路です。選択したエージェント/ランタイムが final のみを返す場合もあります。Entra (MSAL) サインインを使い、ブラウザーにシークレットはありません。',
+      ko: '는 기본 SDK 경로입니다. 선택한 에이전트/런타임이 최종 메시지만 반환할 수도 있습니다. Entra(MSAL) 로그인을 사용하며 브라우저에 비밀이 없습니다.'
+    },
     'Best for: signed-in users, richest reasoning steps, zero secret exposure.': { 'zh-CN': '最适合：已登录用户、最丰富的推理步骤、零密钥暴露。', 'zh-TW': '最適合：已登入使用者、最豐富的推理步驟、零密鑰暴露。', ja: '最適: サインイン済みユーザー、最も豊かな推論ステップ、シークレット露出ゼロ。', ko: '최적: 로그인 사용자, 가장 풍부한 추론 단계, 비밀 노출 없음.' },
     '✅ Direct Line (DL) + opt-in': { 'zh-CN': '✅ Direct Line (DL) + opt-in', 'zh-TW': '✅ Direct Line (DL) + opt-in', ja: '✅ Direct Line (DL) + opt-in', ko: '✅ Direct Line(DL) + opt-in' },
-    'Streams once you ask for it.': { 'zh-CN': '只要请求它，就会流式响应。', 'zh-TW': '只要請求它，就會串流。', ja: '要求すればストリーミングします。', ko: '요청하면 스트리밍됩니다.' },
+    '✅ Direct Line WebSocket + empirical opt-in': { 'zh-CN': '✅ Direct Line WebSocket + 实测 opt-in', 'zh-TW': '✅ Direct Line WebSocket + 實測 opt-in', ja: '✅ Direct Line WebSocket + 実測 opt-in', ko: '✅ Direct Line WebSocket + 실측 opt-in' },
+    'WebSocket is a supported livestreaming channel. The playground also sends the': {
+      'zh-CN': 'WebSocket 是受支持的实时流式通道。体验场还会发送',
+      'zh-TW': 'WebSocket 是受支援的即時串流通道。體驗場還會傳送',
+      ja: 'WebSocket はサポートされるライブストリーミング チャネルです。プレイグラウンドは',
+      ko: 'WebSocket은 지원되는 라이브스트리밍 채널입니다. 플레이그라운드는'
+    },
+    'opt-in observed in the Copilot Studio canvas. Actual chunks still depend on the selected agent/runtime emitting valid livestream activities.': {
+      'zh-CN': '在 Copilot Studio 画布中观察到的 opt-in。是否真正产生分块仍取决于所选智能体/运行时是否发出有效的实时流式活动。',
+      'zh-TW': '在 Copilot Studio 畫布中觀察到的 opt-in。是否真正產生區塊仍取決於所選代理程式/執行階段是否發出有效的即時串流活動。',
+      ja: 'という Copilot Studio キャンバスで観測した opt-in も送ります。実際のチャンクは、選択したエージェント/ランタイムが有効なライブストリーム アクティビティを送出するかどうかに依存します。',
+      ko: '이라는 Copilot Studio 캔버스에서 관측된 opt-in도 보냅니다. 실제 청크는 선택한 에이전트/런타임이 유효한 라이브스트림 활동을 내보내는지에 달려 있습니다.'
+    },
+    'GHCP boundary:': { 'zh-CN': 'GHCP 边界：', 'zh-TW': 'GHCP 界線：', ja: 'GHCP の境界:', ko: 'GHCP 경계:' },
+    'current GHCP docs list Web app iframe support, but Native app / Direct Line is unavailable. Use authenticated': { 'zh-CN': '当前 GHCP 文档列出 Web app iframe 支持，但 Native app / Direct Line 不可用。请使用经过身份验证的', 'zh-TW': '目前 GHCP 文件列出 Web app iframe 支援，但 Native app / Direct Line 不可用。請使用經過驗證的', ja: '現在の GHCP ドキュメントでは Web app iframe はサポートされていますが、Native app / Direct Line は利用できません。認証付き', ko: '현재 GHCP 문서는 Web app iframe을 지원하지만 Native app / Direct Line은 사용할 수 없다고 명시합니다. 인증된' },
+    'for experimental GHCP testing.': { 'zh-CN': '进行实验性 GHCP 测试。', 'zh-TW': '進行實驗性 GHCP 測試。', ja: 'を試験的な GHCP テストに使用します。', ko: '를 실험적 GHCP 테스트에 사용하세요.' },
+    'Best for: standard-harness or no-auth Direct Line diagnostics.': { 'zh-CN': '最适合：标准框架或无身份验证的 Direct Line 诊断。', 'zh-TW': '最適合：標準框架或無驗證的 Direct Line 診斷。', ja: '最適: 標準ハーネスまたは認証なし Direct Line の診断。', ko: '최적: 표준 하네스 또는 인증 없는 Direct Line 진단.' },
     'Agent prerequisite:': { 'zh-CN': '智能体前提条件：', 'zh-TW': '代理程式前提條件：', ja: 'エージェント前提条件:', ko: '에이전트 전제 조건:' },
     'the agent flag': { 'zh-CN': '智能体标志', 'zh-TW': '代理程式旗標', ja: 'エージェント フラグ', ko: '에이전트 플래그' },
     'must be': { 'zh-CN': '必须为', 'zh-TW': '必須為', ja: 'は', ko: '는' },
@@ -385,6 +476,8 @@
     'Direct-to-Engine (DtE)': { 'zh-CN': 'Direct-to-Engine (DtE)', 'zh-TW': 'Direct-to-Engine (DtE)', ja: 'Direct-to-Engine (DtE)', ko: 'Direct-to-Engine(DtE)' },
     'Direct Line (DL)': { 'zh-CN': 'Direct Line (DL)', 'zh-TW': 'Direct Line (DL)', ja: 'Direct Line (DL)', ko: 'Direct Line(DL)' },
     'Native streaming — no client opt-in.': { 'zh-CN': '原生流式响应 — 无需客户端 opt-in。', 'zh-TW': '原生串流 — 不需要用戶端 opt-in。', ja: 'ネイティブ ストリーミング — クライアント opt-in 不要。', ko: '기본 스트리밍 — 클라이언트 opt-in 불필요.' },
+    'WebSocket carries chunks only when the runtime emits valid livestream activities.': { 'zh-CN': '只有当运行时发出有效的实时流式活动时，WebSocket 才会承载分块。', 'zh-TW': '只有當執行階段發出有效的即時串流活動時，WebSocket 才會承載區塊。', ja: 'WebSocket がチャンクを運ぶのは、ランタイムが有効なライブストリーム アクティビティを送出する場合だけです。', ko: 'WebSocket은 런타임이 유효한 라이브스트림 활동을 내보낼 때만 청크를 전달합니다.' },
+    'Transport capability is necessary, not sufficient: the activity inspector is the proof. No streamType metadata means the response was final-only.': { 'zh-CN': '传输能力是必要条件，但不是充分条件：活动检查器才是证据。没有 streamType 元数据意味着响应仅包含最终消息。', 'zh-TW': '傳輸能力是必要條件，但不是充分條件：活動檢查器才是證據。沒有 streamType 中繼資料代表回應僅包含最終訊息。', ja: 'トランスポート対応は必要条件ですが十分条件ではありません。証拠はアクティビティ インスペクターです。streamType メタデータがなければ、応答は final のみです。', ko: '전송 기능은 필요조건일 뿐 충분조건이 아닙니다. 활동 검사기가 증거입니다. streamType 메타데이터가 없으면 응답은 최종 메시지만 전달된 것입니다.' },
     'Needs': { 'zh-CN': '需要', 'zh-TW': '需要', ja: '必要:', ko: '필요:' },
     '= ON.': { 'zh-CN': '= 开启。', 'zh-TW': '= 開啟。', ja: '= オン。', ko: '= 켜짐.' },
     'Copilot Studio agent': { 'zh-CN': 'Copilot Studio 智能体', 'zh-TW': 'Copilot Studio 代理程式', ja: 'Copilot Studio エージェント', ko: 'Copilot Studio 에이전트' },
@@ -564,7 +657,104 @@
     'Budget time for the': { 'zh-CN': '把时间预算花在', 'zh-TW': '把時間預算花在', ja: '時間を確保すべきは', ko: '시간을 들여야 할 곳은' },
     'plumbing': { 'zh-CN': '底层管道', 'zh-TW': '底層管線', ja: '配管 (plumbing)', ko: '배관(plumbing)' },
     ', not the UI. The visible chat is easy; the activity reconciliation is where the work is.': { 'zh-CN': '上，而不是 UI。可见的聊天很简单；活动的协调才是真正的工作所在。', 'zh-TW': '上，而不是 UI。可見的聊天很簡單；活動的協調才是真正的工作所在。', ja: 'であって UI ではありません。見えるチャットは簡単で、アクティビティの調整こそが本当の作業です。', ko: '이며 UI가 아닙니다. 보이는 채팅은 쉽고, 활동 조정이 진짜 작업입니다.' },
-    // --- Slide 12 (Takeaways) ---
+    // --- Slides 12-15 (new-agent runtimes, GHCP /3p, takeaways) ---
+    'Updated August 2026': { 'zh-CN': '更新于 2026 年 8 月', 'zh-TW': '更新於 2026 年 8 月', ja: '2026 年 8 月更新', ko: '2026년 8월 업데이트' },
+    'Runtime Split': { 'zh-CN': '运行时分流', 'zh-TW': '執行階段分流', ja: 'ランタイムの分岐', ko: '런타임 분기' },
+    'Choose the route by harness and authentication': { 'zh-CN': '按框架和身份验证选择路由', 'zh-TW': '依框架和驗證方式選擇路由', ja: 'ハーネスと認証方式でルートを選ぶ', ko: '하네스와 인증 방식에 따라 경로 선택' },
+    '“New agent” is not one protocol. Standard-harness agents, no-auth agentic agents, and GitHub Copilot harness agents are served by different runtime routes.': {
+      'zh-CN': '“新智能体”并非一种协议。标准框架智能体、无身份验证的智能体式智能体和 GitHub Copilot 框架智能体由不同的运行时路由提供服务。',
+      'zh-TW': '「新代理程式」並非單一通訊協定。標準框架代理程式、無驗證的代理型代理程式，以及 GitHub Copilot 框架代理程式由不同的執行階段路由提供服務。',
+      ja: '「新しいエージェント」は 1 つのプロトコルではありません。標準ハーネス、認証なしのエージェント型、GitHub Copilot ハーネスでは、それぞれ異なるランタイム ルートが使われます。',
+      ko: '“새 에이전트”는 하나의 프로토콜이 아닙니다. 표준 하네스 에이전트, 인증 없는 에이전틱 에이전트, GitHub Copilot 하네스 에이전트는 서로 다른 런타임 경로에서 제공됩니다.'
+    },
+    '⚠️ Legacy published-bot DTE is the wrong GHCP route': { 'zh-CN': '⚠️ 旧版已发布 Bot DTE 不是 GHCP 的正确路由', 'zh-TW': '⚠️ 舊版已發佈 Bot DTE 不是 GHCP 的正確路由', ja: '⚠️ 従来の公開 Bot DTE は GHCP 用のルートではない', ko: '⚠️ 레거시 게시 봇 DTE는 GHCP 경로가 아님' },
+    'Environment ID + schema alone makes the SDK call /copilotstudio/dataverse-backed/authenticated/bots/{schema} with the preview API version. A CLI/GHCP agent can fall into the classic “no related topic” behavior because this is not its agentic-loop controller.': {
+      'zh-CN': '仅使用 Environment ID + schema 会使 SDK 通过预览版 API 调用 /copilotstudio/dataverse-backed/authenticated/bots/{schema}。由于这不是其智能体循环控制器，CLI/GHCP 智能体可能落入经典的“找不到相关主题”行为。',
+      'zh-TW': '只使用 Environment ID + schema 會讓 SDK 透過預覽版 API 呼叫 /copilotstudio/dataverse-backed/authenticated/bots/{schema}。由於這不是其代理迴圈控制器，CLI/GHCP 代理程式可能落入傳統的「找不到相關主題」行為。',
+      ja: 'Environment ID + schema だけを指定すると、SDK はプレビュー API で /copilotstudio/dataverse-backed/authenticated/bots/{schema} を呼び出します。これはエージェント ループのコントローラーではないため、CLI/GHCP エージェントは従来の「関連トピックがない」動作に入る場合があります。',
+      ko: 'Environment ID + schema만 사용하면 SDK가 미리 보기 API 버전으로 /copilotstudio/dataverse-backed/authenticated/bots/{schema}를 호출합니다. 이 경로는 에이전틱 루프 컨트롤러가 아니므로 CLI/GHCP 에이전트가 기존 “관련 토픽 없음” 동작으로 빠질 수 있습니다.'
+    },
+    '✅ Agentic Runtime has two distinct integration families': { 'zh-CN': '✅ Agentic Runtime 有两类不同的集成方式', 'zh-TW': '✅ Agentic Runtime 有兩類不同的整合方式', ja: '✅ Agentic Runtime には 2 つの異なる統合方式がある', ko: '✅ Agentic Runtime에는 두 가지 통합 계열이 있음' },
+    'No-auth agent: mint an agenticruntime/.../directline/token and use Direct Line. Integrated GHCP agent: send the delegated user token to agenticruntime/3p/.../bots/{schema} through CopilotStudioClient over SSE.': {
+      'zh-CN': '无身份验证智能体：通过 agenticruntime/.../directline/token 铸造令牌并使用 Direct Line。集成身份验证的 GHCP 智能体：通过 CopilotStudioClient 和 SSE，将用户委托令牌发送到 agenticruntime/3p/.../bots/{schema}。',
+      'zh-TW': '無驗證代理程式：透過 agenticruntime/.../directline/token 鑄造權杖並使用 Direct Line。整合驗證的 GHCP 代理程式：透過 CopilotStudioClient 和 SSE，將使用者委派權杖傳送到 agenticruntime/3p/.../bots/{schema}。',
+      ja: '認証なしエージェント: agenticruntime/.../directline/token でトークンを発行し、Direct Line を使います。統合認証 GHCP エージェント: CopilotStudioClient と SSE を介して、委任ユーザー トークンを agenticruntime/3p/.../bots/{schema} に送ります。',
+      ko: '인증 없는 에이전트: agenticruntime/.../directline/token에서 토큰을 발급해 Direct Line을 사용합니다. 통합 인증 GHCP 에이전트: CopilotStudioClient와 SSE를 통해 위임된 사용자 토큰을 agenticruntime/3p/.../bots/{schema}로 보냅니다.'
+    },
+    'The deciding input is the harness + authentication mode: no-auth can use agentic Direct Line; Microsoft-authenticated GHCP uses the authenticated /3p Direct-to-Engine route.': {
+      'zh-CN': '决定性输入是框架 + 身份验证模式：无身份验证可使用 agentic Direct Line；Microsoft 身份验证的 GHCP 使用经过身份验证的 /3p Direct-to-Engine 路由。',
+      'zh-TW': '決定性輸入是框架 + 驗證模式：無驗證可使用 agentic Direct Line；Microsoft 驗證的 GHCP 使用經過驗證的 /3p Direct-to-Engine 路由。',
+      ja: '決め手はハーネス + 認証モードです。認証なしでは agentic Direct Line、Microsoft 認証 GHCP では認証付き /3p Direct-to-Engine ルートを使います。',
+      ko: '결정 요소는 하네스 + 인증 모드입니다. 인증 없음은 agentic Direct Line을, Microsoft 인증 GHCP는 인증된 /3p Direct-to-Engine 경로를 사용합니다.'
+    },
+    'No-Auth Alternative': { 'zh-CN': '无身份验证替代方案', 'zh-TW': '無驗證替代方案', ja: '認証なしの代替経路', ko: '인증 없음 대안' },
+    'The agenticruntime Direct Line bootstrap': { 'zh-CN': 'agenticruntime Direct Line 启动流程', 'zh-TW': 'agenticruntime Direct Line 啟動流程', ja: 'agenticruntime Direct Line のブートストラップ', ko: 'agenticruntime Direct Line 부트스트랩' },
+    'This path was verified for a no-auth new agent. Direct Line does not carry the integrated Microsoft user context required by a GHCP employee agent; use the authenticated /3p route on the next slide.': {
+      'zh-CN': '此路径已在无身份验证的新智能体上验证。Direct Line 不携带 GHCP 员工智能体所需的集成 Microsoft 用户上下文；请使用下一页中的经过身份验证的 /3p 路由。',
+      'zh-TW': '此路徑已在無驗證的新代理程式上驗證。Direct Line 不會攜帶 GHCP 員工代理程式所需的整合 Microsoft 使用者內容；請使用下一頁中經過驗證的 /3p 路由。',
+      ja: 'この経路は認証なしの新しいエージェントで検証済みです。Direct Line は GHCP 社内向けエージェントに必要な Microsoft ユーザー コンテキストを渡せないため、次のスライドの認証付き /3p ルートを使います。',
+      ko: '이 경로는 인증 없는 새 에이전트에서 검증되었습니다. Direct Line은 GHCP 직원용 에이전트에 필요한 통합 Microsoft 사용자 컨텍스트를 전달하지 못하므로 다음 슬라이드의 인증된 /3p 경로를 사용하세요.'
+    },
+    'AUTH LIMIT — Verified only for a no-auth new agent. Direct Line does not carry the integrated Microsoft user context required by a GHCP employee agent; use authenticated /3p instead.': {
+      'zh-CN': '身份验证限制 — 仅在无身份验证的新智能体上验证。Direct Line 不携带 GHCP 员工智能体所需的集成 Microsoft 用户上下文；请改用经过身份验证的 /3p。',
+      'zh-TW': '驗證限制 — 僅在無驗證的新代理程式上驗證。Direct Line 不會攜帶 GHCP 員工代理程式所需的整合 Microsoft 使用者內容；請改用經過驗證的 /3p。',
+      ja: '認証上の制限 — 認証なしの新しいエージェントでのみ検証済みです。Direct Line は GHCP 社内向けエージェントに必要な Microsoft ユーザー コンテキストを渡せないため、認証付き /3p を使ってください。',
+      ko: '인증 제한 — 인증 없는 새 에이전트에서만 검증되었습니다. Direct Line은 GHCP 직원용 에이전트에 필요한 통합 Microsoft 사용자 컨텍스트를 전달하지 못하므로 인증된 /3p를 사용하세요.'
+    },
+    'New Agent Experience · Live Finding': { 'zh-CN': '新智能体体验 · 实测发现', 'zh-TW': '新代理程式體驗 · 實測發現', ja: '新しいエージェント エクスペリエンス · 実測結果', ko: '새 에이전트 환경 · 실측 결과' },
+    'Authenticated GHCP streaming works through /3p': { 'zh-CN': '经过身份验证的 GHCP 可通过 /3p 实现流式响应', 'zh-TW': '經過驗證的 GHCP 可透過 /3p 實現串流', ja: '認証付き GHCP ストリーミングは /3p で動作する', ko: '인증된 GHCP 스트리밍은 /3p를 통해 동작' },
+    'Authenticated GHCP streaming through /3p (experimental)': { 'zh-CN': '经过身份验证的 GHCP 通过 /3p 实现流式响应（实验性）', 'zh-TW': '經過驗證的 GHCP 透過 /3p 實現串流（實驗性）', ja: '認証付き GHCP ストリーミングを /3p で実現（試験的）', ko: '인증된 GHCP 스트리밍을 /3p로 구현(실험적)' },
+    'Live-verified on August 5, 2026: a published GitHub Copilot harness agent with Microsoft authentication returned its real progressive response when the client targeted the Agentic Runtime 3P controller.': {
+      'zh-CN': '2026 年 8 月 5 日实测验证：当客户端指向 Agentic Runtime 3P 控制器时，一个已发布且使用 Microsoft 身份验证的 GitHub Copilot 框架智能体返回了真实的渐进式响应。',
+      'zh-TW': '2026 年 8 月 5 日實測驗證：當用戶端指向 Agentic Runtime 3P 控制器時，一個已發佈且使用 Microsoft 驗證的 GitHub Copilot 框架代理程式傳回了真實的漸進式回應。',
+      ja: '2026 年 8 月 5 日に実環境で検証済みです。クライアントが Agentic Runtime 3P コントローラーを指定すると、Microsoft 認証を使う公開済み GitHub Copilot ハーネス エージェントから実際の段階的応答が返りました。',
+      ko: '2026년 8월 5일 실환경 검증: 클라이언트가 Agentic Runtime 3P 컨트롤러를 대상으로 하자 Microsoft 인증을 사용하는 게시된 GitHub Copilot 하네스 에이전트가 실제 점진적 응답을 반환했습니다.'
+    },
+    'Live-verified August 5, 2026 against a published, Microsoft-authenticated GHCP agent. The /3p controller streamed the real progressive response; Microsoft Learn still says new-experience client-library support is not official.': {
+      'zh-CN': '2026 年 8 月 5 日已在一个发布且使用 Microsoft 身份验证的 GHCP 智能体上实测验证。/3p 控制器传回了真实的渐进式响应；Microsoft Learn 仍说明新体验客户端库支持尚未正式发布。',
+      'zh-TW': '2026 年 8 月 5 日已在一個發佈且使用 Microsoft 驗證的 GHCP 代理程式上實測驗證。/3p 控制器傳回了真實的漸進式回應；Microsoft Learn 仍說明新體驗用戶端程式庫支援尚未正式發佈。',
+      ja: '2026 年 8 月 5 日、公開済みで Microsoft 認証を使う GHCP エージェントに対して実環境で検証しました。/3p コントローラーから実際の段階的応答がストリーミングされましたが、Microsoft Learn では新しいエクスペリエンスのクライアント ライブラリ サポートはまだ正式ではないとされています。',
+      ko: '2026년 8월 5일 게시되고 Microsoft 인증을 사용하는 GHCP 에이전트에서 실환경 검증했습니다. /3p 컨트롤러가 실제 점진적 응답을 스트리밍했지만 Microsoft Learn은 새 환경 클라이언트 라이브러리 지원이 아직 공식적이지 않다고 명시합니다.'
+    },
+    '1 · identity': { 'zh-CN': '1 · 身份', 'zh-TW': '1 · 身分', ja: '1 · ID', ko: '1 · ID' },
+    'MSAL acquires the signed-in user\'s delegated Power Platform token.': { 'zh-CN': 'MSAL 获取已登录用户的 Power Platform 委托令牌。', 'zh-TW': 'MSAL 取得已登入使用者的 Power Platform 委派權杖。', ja: 'MSAL がサインイン ユーザーの委任 Power Platform トークンを取得します。', ko: 'MSAL이 로그인한 사용자의 위임된 Power Platform 토큰을 획득합니다.' },
+    '2 · route': { 'zh-CN': '2 · 路由', 'zh-TW': '2 · 路由', ja: '2 · ルート', ko: '2 · 경로' },
+    'Build the environment host and supply the GHCP base URL as directConnectUrl.': { 'zh-CN': '构建环境主机，并将 GHCP 基础 URL 作为 directConnectUrl 提供。', 'zh-TW': '建立環境主機，並將 GHCP 基礎 URL 作為 directConnectUrl 提供。', ja: '環境ホストを組み立て、GHCP ベース URL を directConnectUrl として渡します。', ko: '환경 호스트를 구성하고 GHCP 기본 URL을 directConnectUrl로 제공합니다.' },
+    '3 · sidecar': { 'zh-CN': '3 · 边车', 'zh-TW': '3 · Sidecar', ja: '3 · サイドカー', ko: '3 · 사이드카' },
+    'Node validates the host/path, preflights once, then keeps the SDK conversation alive.': { 'zh-CN': 'Node 验证主机/路径，执行一次预检，然后保持 SDK 对话存活。', 'zh-TW': 'Node 驗證主機/路徑，執行一次預檢，然後保持 SDK 交談存活。', ja: 'Node がホスト/パスを検証し、1 回だけ事前確認した後、SDK の会話を維持します。', ko: 'Node가 호스트/경로를 검증하고 한 번 사전 점검한 뒤 SDK 대화를 유지합니다.' },
+    '4 · render': { 'zh-CN': '4 · 呈现', 'zh-TW': '4 · 呈現', ja: '4 · 描画', ko: '4 · 렌더링' },
+    'The normalization tap coalesces cumulative chunks into one growing Web Chat bubble.': { 'zh-CN': '规范化 tap 将累积式分块合并为一个不断增长的 Web Chat 气泡。', 'zh-TW': '正規化 tap 將累積式區塊合併為一個持續增長的 Web Chat 泡泡。', ja: '正規化 tap が累積チャンクを 1 つの成長する Web Chat バブルにまとめます。', ko: '정규화 tap이 누적 청크를 하나의 커지는 Web Chat 버블로 병합합니다.' },
+    '✅ What arrived': { 'zh-CN': '✅ 实际收到的内容', 'zh-TW': '✅ 實際收到的內容', ja: '✅ 実際に届いたもの', ko: '✅ 실제로 도착한 내용' },
+    'Observed stream': { 'zh-CN': '实测流内容', 'zh-TW': '實測串流內容', ja: '観測したストリーム', ko: '관측된 스트림' },
+    'Cumulative typing updates, informative tool/status cues, thought entities, the final Markdown message, and generated-file attachments.': { 'zh-CN': '累积式 typing 更新、informative 工具/状态提示、thought 实体、最终 Markdown 消息，以及生成的文件附件。', 'zh-TW': '累積式 typing 更新、informative 工具/狀態提示、thought 實體、最終 Markdown 訊息，以及產生的檔案附件。', ja: '累積 typing 更新、informative のツール/状態通知、thought エンティティ、最終 Markdown メッセージ、生成ファイルの添付が届きます。', ko: '누적 typing 업데이트, informative 도구/상태 신호, thought 엔터티, 최종 Markdown 메시지 및 생성된 파일 첨부가 도착합니다.' },
+    'Cumulative typing updates, informative tool/status cues, thought entities, final Markdown, and generated-file attachments.': { 'zh-CN': '累积式 typing 更新、informative 工具/状态提示、thought 实体、最终 Markdown，以及生成的文件附件。', 'zh-TW': '累積式 typing 更新、informative 工具/狀態提示、thought 實體、最終 Markdown，以及產生的檔案附件。', ja: '累積 typing 更新、informative のツール/状態通知、thought エンティティ、最終 Markdown、生成ファイルの添付。', ko: '누적 typing 업데이트, informative 도구/상태 신호, thought 엔터티, 최종 Markdown 및 생성된 파일 첨부.' },
+    'Why the route matters': { 'zh-CN': '为何路由至关重要', 'zh-TW': '為何路由至關重要', ja: 'ルートが重要な理由', ko: '경로가 중요한 이유' },
+    'Routing reason': { 'zh-CN': '路由原因', 'zh-TW': '路由原因', ja: 'ルーティングの理由', ko: '라우팅 이유' },
+    'Setting directConnectUrl bypasses the legacy PublishedBotStrategy and keeps api-version=1 on every conversation turn.': { 'zh-CN': '设置 directConnectUrl 会绕过旧版 PublishedBotStrategy，并在每个对话轮次中保留 api-version=1。', 'zh-TW': '設定 directConnectUrl 會略過舊版 PublishedBotStrategy，並在每個交談回合中保留 api-version=1。', ja: 'directConnectUrl を設定すると従来の PublishedBotStrategy を迂回し、すべての会話ターンで api-version=1 を維持します。', ko: 'directConnectUrl을 설정하면 레거시 PublishedBotStrategy를 우회하고 모든 대화 턴에서 api-version=1을 유지합니다.' },
+    'directConnectUrl bypasses legacy PublishedBotStrategy and keeps api-version=1 on every turn.': { 'zh-CN': 'directConnectUrl 绕过旧版 PublishedBotStrategy，并在每个轮次中保留 api-version=1。', 'zh-TW': 'directConnectUrl 略過舊版 PublishedBotStrategy，並在每個回合中保留 api-version=1。', ja: 'directConnectUrl は従来の PublishedBotStrategy を迂回し、各ターンで api-version=1 を維持します。', ko: 'directConnectUrl은 레거시 PublishedBotStrategy를 우회하고 모든 턴에서 api-version=1을 유지합니다.' },
+    'This is a Microsoft-source-backed, live-proven developer path. Microsoft Learn still says new-experience agents are not officially supported by the client library, so treat /3p as experimental until production support is published.': {
+      'zh-CN': '这是一个有 Microsoft 源代码依据并经过实测验证的开发者路径。Microsoft Learn 仍说明客户端库尚未正式支持新体验智能体，因此在发布生产支持之前，请将 /3p 视为实验性方案。',
+      'zh-TW': '這是一個有 Microsoft 原始碼依據並經過實測驗證的開發者路徑。Microsoft Learn 仍說明用戶端程式庫尚未正式支援新體驗代理程式，因此在發佈生產支援之前，請將 /3p 視為實驗性方案。',
+      ja: 'これは Microsoft のソースに基づき、実環境で動作確認した開発者向け経路です。ただし Microsoft Learn は、新しいエクスペリエンスのエージェントがクライアント ライブラリでまだ正式サポートされていないとしています。本番サポートが公開されるまでは /3p を試験的な経路として扱ってください。',
+      ko: '이 경로는 Microsoft 소스에 근거하고 실환경에서 검증된 개발자 경로입니다. Microsoft Learn은 새 환경 에이전트가 클라이언트 라이브러리에서 아직 공식 지원되지 않는다고 명시하므로 프로덕션 지원이 게시될 때까지 /3p를 실험적으로 취급하세요.'
+    },
+    'EXPERIMENTAL SUPPORT BOUNDARY — Use this Microsoft-source-backed developer path for testing until Microsoft publishes production support for new-experience clients.': {
+      'zh-CN': '实验性支持边界 — 在 Microsoft 发布新体验客户端的生产支持之前，请仅将这个有 Microsoft 源代码依据的开发者路径用于测试。',
+      'zh-TW': '實驗性支援界線 — 在 Microsoft 發佈新體驗用戶端的生產支援之前，請僅將這個有 Microsoft 原始碼依據的開發者路徑用於測試。',
+      ja: '試験的サポート境界 — Microsoft が新しいエクスペリエンスのクライアント向け本番サポートを公開するまでは、Microsoft のソースに基づくこの開発者経路をテスト用途に限定してください。',
+      ko: '실험적 지원 경계 — Microsoft가 새 환경 클라이언트의 프로덕션 지원을 게시할 때까지 Microsoft 소스에 근거한 이 개발자 경로는 테스트에만 사용하세요.'
+    },
+    'Use this Microsoft-source-backed developer path for testing until Microsoft publishes production support for new-experience clients.': { 'zh-CN': '在 Microsoft 发布新体验客户端的生产支持之前，请仅将这个有 Microsoft 源代码依据的开发者路径用于测试。', 'zh-TW': '在 Microsoft 發佈新體驗用戶端的生產支援之前，請僅將這個有 Microsoft 原始碼依據的開發者路徑用於測試。', ja: 'Microsoft が新しいエクスペリエンスのクライアント向け本番サポートを公開するまでは、Microsoft のソースに基づくこの開発者経路をテスト用途に限定してください。', ko: 'Microsoft가 새 환경 클라이언트의 프로덕션 지원을 게시할 때까지 Microsoft 소스에 근거한 이 개발자 경로는 테스트에만 사용하세요.' },
+    'If you remember four things': { 'zh-CN': '请记住四件事', 'zh-TW': '請記住四件事', ja: '覚えておくべき 4 つのこと', ko: '기억해야 할 네 가지' },
+    'For an integrated GHCP agent, use the authenticated agenticruntime/3p Direct-to-Engine route — not legacy DTE or Direct Line.': { 'zh-CN': '对于集成身份验证的 GHCP 智能体，请使用经过身份验证的 agenticruntime/3p Direct-to-Engine 路由，而不是旧版 DTE 或 Direct Line。', 'zh-TW': '對於整合驗證的 GHCP 代理程式，請使用經過驗證的 agenticruntime/3p Direct-to-Engine 路由，而不是舊版 DTE 或 Direct Line。', ja: '統合認証 GHCP エージェントでは、従来の DTE や Direct Line ではなく、認証付き agenticruntime/3p Direct-to-Engine ルートを使います。', ko: '통합 인증 GHCP 에이전트에는 레거시 DTE나 Direct Line이 아니라 인증된 agenticruntime/3p Direct-to-Engine 경로를 사용합니다.' },
+    'Integrated GHCP: use authenticated agenticruntime/3p DTE — never legacy DTE or Direct Line.': { 'zh-CN': '集成身份验证的 GHCP：使用经过身份验证的 agenticruntime/3p DTE，绝不要使用旧版 DTE 或 Direct Line。', 'zh-TW': '整合驗證的 GHCP：使用經過驗證的 agenticruntime/3p DTE，絕不要使用舊版 DTE 或 Direct Line。', ja: '統合認証 GHCP: 認証付き agenticruntime/3p DTE を使い、従来の DTE や Direct Line は使いません。', ko: '통합 인증 GHCP: 인증된 agenticruntime/3p DTE를 사용하고 레거시 DTE나 Direct Line은 사용하지 않습니다.' },
+    'Integrated GHCP (experimental): test with authenticated /3p DTE; avoid legacy DTE and Direct Line.': { 'zh-CN': '集成身份验证的 GHCP（实验性）：使用经过身份验证的 /3p DTE 进行测试；避免使用旧版 DTE 和 Direct Line。', 'zh-TW': '整合驗證的 GHCP（實驗性）：使用經過驗證的 /3p DTE 進行測試；避免使用舊版 DTE 和 Direct Line。', ja: '統合認証 GHCP（試験的）: 認証付き /3p DTE でテストし、従来の DTE と Direct Line は避けます。', ko: '통합 인증 GHCP(실험적): 인증된 /3p DTE로 테스트하고 레거시 DTE와 Direct Line은 피하세요.' },
+    '11 · RUNTIME SPLIT': { 'zh-CN': '11 · 运行时分流', 'zh-TW': '11 · 執行階段分流', ja: '11 · ランタイムの分岐', ko: '11 · 런타임 분기' },
+    '12 · NO-AUTH ALTERNATIVE': { 'zh-CN': '12 · 无身份验证替代方案', 'zh-TW': '12 · 無驗證替代方案', ja: '12 · 認証なしの代替経路', ko: '12 · 인증 없음 대안' },
+    '13 · NEW AGENT EXPERIENCE': { 'zh-CN': '13 · 新智能体体验', 'zh-TW': '13 · 新代理程式體驗', ja: '13 · 新しいエージェント エクスペリエンス', ko: '13 · 새 에이전트 환경' },
+    '14 · TAKEAWAYS': { 'zh-CN': '14 · 要点', 'zh-TW': '14 · 重點', ja: '14 · 要点', ko: '14 · 핵심 요점' },
+    '15 · COMMUNITY SHARE': { 'zh-CN': '15 · 社区分享', 'zh-TW': '15 · 社區分享', ja: '15 · コミュニティ共有', ko: '15 · 커뮤니티 공유' },
+    // --- Legacy takeaways fragments ---
     'Both': { 'zh-CN': '两者：', 'zh-TW': '兩者：', ja: '両方:', ko: '둘 다:' },
     'and': { 'zh-CN': '和', 'zh-TW': '和', ja: 'と', ko: '및' },
     'stream — DtE is native; DL needs': { 'zh-CN': '都支持流式 —— DtE 是原生的；DL 需要', 'zh-TW': '都支援串流 —— DtE 是原生的；DL 需要', ja: 'がストリーミング — DtE はネイティブ。DL は次が必要:', ko: '스트리밍 — DtE는 기본; DL은 다음이 필요:' },
@@ -582,6 +772,7 @@
     'Community Share': { 'zh-CN': '社区分享', 'zh-TW': '社區分享', ja: 'コミュニティ共有', ko: '커뮤니티 공유' },
     'Discover more and test with your own agent': { 'zh-CN': '探索更多并使用你自己的智能体进行测试', 'zh-TW': '探索更多並使用你自己的代理程式進行測試', ja: 'さらに探索して、独自のエージェントでテストします', ko: '더 많이 탐색하고 자신의 에이전트로 테스트' },
     'We shared this streaming reference publicly so teams can quickly reproduce token-by-token UX in both Direct Line and Direct-to-Engine, then validate behavior with the same inspector patterns.': { 'zh-CN': '我们公开共享了这个流式响应参考，以便团队能在 Direct Line 和 Direct-to-Engine 中快速复现逐 token 的用户体验，然后使用相同的检查器模式验证行为。', 'zh-TW': '我們公開共享了這個串流回應參考，以便團隊能在 Direct Line 和 Direct-to-Engine 中快速複現逐 token 的使用者體驗，然後使用相同的檢查器模式驗證行為。', ja: 'このストリーミング リファレンスを公開して、チームが Direct Line と Direct-to-Engine の両方でトークン単位の UX をすばやく再現し、同じインスペクター パターンで動作を検証できるようにしました。', ko: '이 스트리밍 참조를 공개하여 팀이 Direct Line과 Direct-to-Engine에서 토큰 단위 UX를 빠르게 재현하고 동일한 검사기 패턴으로 동작을 검증할 수 있도록 했습니다.' },
+    'We shared this streaming reference publicly so teams can reproduce progressive-response UX, then validate the actual wire behavior with the same inspector patterns.': { 'zh-CN': '我们公开共享这个流式响应参考，让团队能够复现渐进式响应体验，并使用相同的检查器模式验证实际线协议行为。', 'zh-TW': '我們公開共享這個串流回應參考，讓團隊能夠複現漸進式回應體驗，並使用相同的檢查器模式驗證實際線路行為。', ja: 'このストリーミング リファレンスを公開し、チームが段階的な応答 UX を再現して、同じインスペクター パターンで実際のワイヤ動作を検証できるようにしました。', ko: '이 스트리밍 참조를 공개하여 팀이 점진적 응답 UX를 재현하고 동일한 검사기 패턴으로 실제 와이어 동작을 검증할 수 있도록 했습니다.' },
     'Repository snapshot': { 'zh-CN': '存储库快照', 'zh-TW': '存放庫快照', ja: 'リポジトリ スナップショット', ko: '저장소 스냅샷' },
     'Maker: Michael Jiang (michael.jiang@microsoft.com), Microsoft AI Business Process GBB Asia': { 'zh-CN': '编制者：Michael Jiang (michael.jiang@microsoft.com)，Microsoft AI Business Process GBB 亚洲地区', 'zh-TW': '編製者：Michael Jiang (michael.jiang@microsoft.com)，Microsoft AI Business Process GBB 亞洲地區', ja: '作成者: Michael Jiang (michael.jiang@microsoft.com)、Microsoft AI Business Process GBB アジア地域', ko: '작성자: Michael Jiang(michael.jiang@microsoft.com), Microsoft AI Business Process GBB 아시아 지역' },
     'Shared repo home with latest commits, README, docs, and deployment status.': { 'zh-CN': '共享的存储库主页，包含最新提交、README、文档和部署状态。', 'zh-TW': '共享的存放庫主頁，包含最新提交、README、文檔和部署狀態。', ja: '最新のコミット、README、ドキュメント、デプロイ状態を含む共有リポジトリホーム。', ko: '최신 커밋, README, 문서 및 배포 상태가 포함된 공유 저장소 홈.' },

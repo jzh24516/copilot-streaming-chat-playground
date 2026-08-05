@@ -23,7 +23,7 @@
     <script type="importmap">
       {
         "imports": {
-          "@microsoft/agents-copilotstudio-client": "https://unpkg.com/@microsoft/agents-copilotstudio-client@1.5.3/dist/src/browser.mjs"
+          "@microsoft/agents-copilotstudio-client": "https://unpkg.com/@microsoft/agents-copilotstudio-client@1.6.1/dist/src/browser.mjs"
         }
       }
     </script>
@@ -63,10 +63,11 @@
           <span>Connection mode</span>
           <select id="mode">
             <option value="sdk">Copilot Studio SDK · Direct-to-Engine (Entra sign-in · generative streaming)</option>
-            <option value="server">Server relay (secret stays server-side)</option>
-            <option value="tokenEndpoint">Copilot Studio token endpoint URL</option>
-            <option value="secret">Direct Line secret / token</option>
+            <option value="newAgent">Published-bot DTE · isolated diagnostic (standard harness)</option>
             <option value="dlStream">Direct Line · live streaming (custom coalescing) · experimental</option>
+            <option value="newAgentDL">No-auth agent · Agentic Direct Line (WebSocket diagnostic · may be final-only)</option>
+            <option value="newAgentDTE">Published-bot DTE · island sidecar diagnostic (Entra · non-GHCP)</option>
+            <option value="ghcp3p">GHCP harness · Agentic Runtime /3p (Entra auth · experimental)</option>
           </select>
         </label>
 
@@ -114,7 +115,232 @@
           </label>
           <small class="field-note">
             You sign in with your own Entra account; no secret leaves the browser. This is the
-            only mode that surfaces token-by-token generative streaming.
+            standard published-bot Direct-to-Engine route. GHCP harness testing uses the separate
+            experimental <strong>/3p</strong> mode.
+          </small>
+        </div>
+
+        <div class="field-group" id="newAgentField" hidden>
+          <small class="field-note">
+            Isolated configuration for the standard published-bot Direct-to-Engine strategy.
+            Use it to compare environment/schema routing with a copied Direct Connect URL without
+            changing the SDK defaults. It is <strong>not</strong> the GHCP harness route.
+          </small>
+          <label class="field">
+            <span>Entra application (client) ID</span>
+            <input
+              type="text"
+              id="newClientId"
+              placeholder="00000000-0000-0000-0000-000000000000"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Directory (tenant) ID</span>
+            <input
+              type="text"
+              id="newTenantId"
+              placeholder="00000000-0000-0000-0000-000000000000"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Direct connect URL (connection string)</span>
+            <input
+              type="text"
+              id="newDirectConnectUrl"
+              placeholder="Copilot Studio → Channels → Web app → Microsoft 365 Agents SDK"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Environment ID <em>(ignored if Direct connect URL is set)</em></span>
+            <input
+              type="text"
+              id="newEnvironmentId"
+              placeholder="Copilot Studio → Settings → Advanced → Metadata"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Agent schema name <em>(ignored if Direct connect URL is set)</em></span>
+            <input
+              type="text"
+              id="newSchemaName"
+              placeholder="e.g. Default_mjVibeMCPMooncakeAgent_o9-BgI"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Agent type</span>
+            <select id="newAgentType">
+              <option value="Published">Published</option>
+              <option value="Prebuilt">Prebuilt</option>
+            </select>
+          </label>
+          <label class="check">
+            <input type="checkbox" id="newExperimental" checked />
+            <span>Use experimental (island) gateway endpoint <em>(overrides Direct connect URL)</em></span>
+          </label>
+          <small class="field-note">
+            Note: the published agent must have generative orchestration enabled <em>and be
+            published</em> for tool/MCP answers — otherwise it returns the classic
+            "no related topic" fallback over Direct-to-Engine.
+          </small>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             Published-bot DTE island diagnostic
+             ─ Entra-authenticated, non-GHCP
+             ─ uses the same CopilotStudioClient + browser streaming path
+               as the "sdk" and "newAgent" modes but with an explicit label
+               to distinguish it from the no-auth Direct Line path
+        ════════════════════════════════════════════════════════════════ -->
+        <div class="field-group" id="newAgentDTEField" hidden>
+          <small class="field-note">
+            Diagnoses the standard published-bot <strong>Direct-to-Engine</strong> route and its
+            optional experimental island redirect with Entra sign-in. This path is retained for
+            comparison with classic/standard agents; it is <strong>not</strong> the GHCP harness
+            <code>/3p</code> controller.
+          </small>
+          <label class="field">
+            <span>Entra application (client) ID</span>
+            <input
+              type="text"
+              id="dtClientId"
+              placeholder="00000000-0000-0000-0000-000000000000"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <small>SPA registration with <code>CopilotStudio.Copilots.Invoke</code> delegated permission.</small>
+          </label>
+          <label class="field">
+            <span>Directory (tenant) ID</span>
+            <input
+              type="text"
+              id="dtTenantId"
+              placeholder="00000000-0000-0000-0000-000000000000"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Environment ID</span>
+            <input
+              type="text"
+              id="dtEnvironmentId"
+              placeholder="Copilot Studio → Settings → Advanced → Metadata"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Agent schema name</span>
+            <input
+              type="text"
+              id="dtSchemaName"
+              placeholder="e.g. mjsrc_mjnewagent4customer_Kvhq-e"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Direct connect URL <em>(optional — overrides env + schema)</em></span>
+            <input
+              type="text"
+              id="dtDirectConnectUrl"
+              placeholder="Copilot Studio → Channels → Web app → Microsoft 365 Agents SDK"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="check">
+            <input type="checkbox" id="dtExperimental" checked />
+            <span>Use experimental (island) gateway endpoint <em>(overrides Direct connect URL)</em></span>
+          </label>
+          <label class="check">
+            <input type="checkbox" id="dtViaSidecar" checked />
+            <span>Stream via server sidecar <em>(required for an MS-auth agent — bypasses browser CORS to follow the island redirect)</em></span>
+          </label>
+          <small class="field-note">
+            <strong>Server sidecar</strong> runs the identical Copilot Studio client (Direct-to-Engine) in
+            Node, where it is free to follow the <code>x-ms-d2e-experimental</code> redirect the browser
+            cannot read (CORS). Keep <strong>experimental</strong> on and leave
+            <strong>Direct connect URL</strong> empty to test that redirect; a manual URL wins when supplied.
+            For a GHCP/CLI agent, use the dedicated authenticated <code>/3p</code> mode instead.
+          </small>
+        </div>
+
+        <div class="field-group" id="ghcp3pField" hidden>
+          <small class="field-note">
+            Tests a published <strong>GitHub Copilot harness</strong> agent (Dracarys / CLI
+            agentic loop) through the authenticated Agentic Runtime <strong>/3p</strong>
+            Direct-to-Engine endpoint. The cloned agent should use
+            <code>CLICopilotRecognizer</code> or <code>CLIAgentRecognizer</code> and
+            <code>authenticationMode: Integrated</code>.
+          </small>
+          <label class="field">
+            <span>Entra application (client) ID</span>
+            <input
+              type="text"
+              id="ghcp3pClientId"
+              placeholder="00000000-0000-0000-0000-000000000000"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <small>SPA registration with the <code>CopilotStudio.Copilots.Invoke</code> delegated permission.</small>
+          </label>
+          <label class="field">
+            <span>Directory (tenant) ID</span>
+            <input
+              type="text"
+              id="ghcp3pTenantId"
+              placeholder="00000000-0000-0000-0000-000000000000"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Environment ID</span>
+            <input
+              type="text"
+              id="ghcp3pEnvironmentId"
+              placeholder="Copilot Studio environment GUID"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Agent schema name</span>
+            <input
+              type="text"
+              id="ghcp3pSchemaName"
+              placeholder="e.g. cr123_myAgent_AbCdEf"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Generated /3p Direct Connect URL</span>
+            <input
+              type="text"
+              id="ghcp3pUrl"
+              placeholder="Enter environment ID and schema name"
+              readonly
+              spellcheck="false"
+            />
+          </label>
+          <small class="field-note">
+            This mode always uses the Node sidecar and <code>api-version=1</code>. It does
+            not use Direct Line or the legacy published-bot endpoint. The /3p client path
+            is proven by Microsoft's experimental Copilot Studio plugin but is not yet an
+            officially supported production integration for new-experience agents.
+            Generated hosts currently support commercial <strong>Prod</strong> environments only.
           </small>
         </div>
 
@@ -158,6 +384,43 @@
             or a token-endpoint URL — whichever “connection string” you have for the agent.
           </small>
         </label>
+
+        <div class="field-group" id="newAgentDLField" hidden>
+          <small class="field-note">
+            Experimental diagnostic for a <strong>no-auth Copilot Studio agent</strong>. It mints a
+            Direct Line token from the
+            <code>agenticruntime/botsbyschema/&lt;schema&gt;/directline/token</code> endpoint, opens a
+            Direct Line 3.0 WebSocket on the regional host, and sends the empirical
+            <code>deliveryMode:"stream"</code> opt-in. The channel is stream-capable, but the agent
+            runtime may still return one final message; our tested no-auth new agent did exactly that.
+          </small>
+          <label class="field">
+            <span>Environment ID</span>
+            <input
+              type="text"
+              id="newDlEnvironmentId"
+              placeholder="Copilot Studio → Settings → Advanced → Metadata"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Agent schema name</span>
+            <input
+              type="text"
+              id="newDlSchemaName"
+              placeholder="e.g. mjsrc_mjnewagent4customer_Kvhq-e"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <small class="field-note">
+            <strong>Not for a GHCP harness agent.</strong> Current GHCP documentation lists Web app
+            iframe support but no Native app / Direct Line channel. For a Microsoft-authenticated
+            GHCP agent, use the separate experimental <strong>GHCP harness · /3p</strong> mode.
+            Generated hosts currently support commercial <strong>Prod</strong> environments only.
+          </small>
+        </div>
 
         <div class="toggles">
           <label class="check">

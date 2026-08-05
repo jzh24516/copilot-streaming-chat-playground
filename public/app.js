@@ -14,9 +14,35 @@ const sdkClientId = el('sdkClientId');
 const sdkTenantId = el('sdkTenantId');
 const sdkEnvironmentId = el('sdkEnvironmentId');
 const sdkSchemaName = el('sdkSchemaName');
+const newAgentField = el('newAgentField');
+const newClientId = el('newClientId');
+const newTenantId = el('newTenantId');
+const newEnvironmentId = el('newEnvironmentId');
+const newSchemaName = el('newSchemaName');
+const newDirectConnectUrl = el('newDirectConnectUrl');
+const newAgentType = el('newAgentType');
+const newExperimental = el('newExperimental');
 const tokenEndpointInput = el('tokenEndpoint');
 const secretInput = el('secret');
 const dlStreamCred = el('dlStreamCred');
+const newAgentDLField = el('newAgentDLField');
+const newDlEnvironmentId = el('newDlEnvironmentId');
+const newDlSchemaName = el('newDlSchemaName');
+  // Published-bot DTE island diagnostic — Entra-authenticated, non-GHCP
+const newAgentDTEField = el('newAgentDTEField');
+const dtClientId = el('dtClientId');
+const dtTenantId = el('dtTenantId');
+const dtEnvironmentId = el('dtEnvironmentId');
+const dtSchemaName = el('dtSchemaName');
+const dtDirectConnectUrl = el('dtDirectConnectUrl');
+const dtExperimental = el('dtExperimental');
+const dtViaSidecar = el('dtViaSidecar');
+const ghcp3pField = el('ghcp3pField');
+const ghcp3pClientId = el('ghcp3pClientId');
+const ghcp3pTenantId = el('ghcp3pTenantId');
+const ghcp3pEnvironmentId = el('ghcp3pEnvironmentId');
+const ghcp3pSchemaName = el('ghcp3pSchemaName');
+const ghcp3pUrl = el('ghcp3pUrl');
 const forceWebSocket = el('forceWebSocket');
 const autoInspect = el('autoInspect');
 const typewriterToggle = el('typewriter');
@@ -80,7 +106,11 @@ let directLine = null;
 let subscriptions = [];
 let sdkCloud = 'Prod';
 const seenStreamIds = new Set();
+const progressiveStreamIds = new Set();
+const streamObservations = new Map();
+const seenFinalKeys = new Set();
 let chunkCount = 0;
+let informativeCount = 0;
 let finalCount = 0;
 
 // Keeps the transcript pinned to the newest content so the streaming answer
@@ -138,10 +168,15 @@ function refreshModeUI() {
   secretField.hidden = mode !== 'secret';
   dlStreamField.hidden = mode !== 'dlStream';
   sdkField.hidden = mode !== 'sdk';
+  if (newAgentField) newAgentField.hidden = mode !== 'newAgent';
+  if (newAgentDLField) newAgentDLField.hidden = mode !== 'newAgentDL';
+  if (newAgentDTEField) newAgentDTEField.hidden = mode !== 'newAgentDTE';
+  if (ghcp3pField) ghcp3pField.hidden = mode !== 'ghcp3p';
   // Web Socket transport only applies to Direct Line modes (and is mandatory
   // for the live-streaming adapter, so it is forced/locked there).
-  forceWebSocket.disabled = mode === 'sdk' || mode === 'dlStream';
-  if (mode === 'dlStream') forceWebSocket.checked = true;
+  forceWebSocket.disabled =
+    mode === 'sdk' || mode === 'newAgent' || mode === 'dlStream' || mode === 'newAgentDL' || mode === 'newAgentDTE' || mode === 'ghcp3p';
+  if (mode === 'dlStream' || mode === 'newAgentDL') forceWebSocket.checked = true;
 }
 modeSel.addEventListener('change', refreshModeUI);
 
@@ -160,6 +195,28 @@ async function loadServerConfig() {
     if (sdk.environmentId) sdkEnvironmentId.value = sdk.environmentId;
     if (sdk.schemaName) sdkSchemaName.value = sdk.schemaName;
     if (sdk.cloud) sdkCloud = sdk.cloud;
+
+    // Seed the isolated "New Agent" mode with the same Entra identity (client +
+    // tenant) so testing a new agent only requires its environment + schema.
+    if (sdk.clientId && newClientId && !newClientId.value) newClientId.value = sdk.clientId;
+    if (sdk.tenantId && newTenantId && !newTenantId.value) newTenantId.value = sdk.tenantId;
+
+    // The no-auth Agentic Direct Line diagnostic lives in the same environment,
+    // so seed its Environment ID too (schema name is agent-specific — left blank).
+    if (sdk.environmentId && newDlEnvironmentId && !newDlEnvironmentId.value) {
+      newDlEnvironmentId.value = sdk.environmentId;
+    }
+    // The published-bot DTE island diagnostic shares the same
+    // Entra identity and environment — pre-seed so the user only has to fill
+    // the schema name for their employee-facing agent.
+    if (sdk.clientId && dtClientId && !dtClientId.value) dtClientId.value = sdk.clientId;
+    if (sdk.tenantId && dtTenantId && !dtTenantId.value) dtTenantId.value = sdk.tenantId;
+    if (sdk.environmentId && dtEnvironmentId && !dtEnvironmentId.value) dtEnvironmentId.value = sdk.environmentId;
+    if (sdk.clientId && ghcp3pClientId && !ghcp3pClientId.value) ghcp3pClientId.value = sdk.clientId;
+    if (sdk.tenantId && ghcp3pTenantId && !ghcp3pTenantId.value) ghcp3pTenantId.value = sdk.tenantId;
+    if (sdk.environmentId && ghcp3pEnvironmentId && !ghcp3pEnvironmentId.value) {
+      ghcp3pEnvironmentId.value = sdk.environmentId;
+    }
 
     // Pre-fill the client-side "Direct Line secret / token" input from .env
     // (DIRECT_LINE_SECRET_CLIENT) so it survives reloads.
@@ -187,21 +244,13 @@ async function loadServerConfig() {
         'Copilot Studio SDK ready · Direct-to-Engine. Click Connect to sign in and stream.',
         'ok'
       );
-    } else if (cfg.directLineSecret && !sdkConfigured) {
-      // No SDK config, but a saved Direct Line secret is available — land the
-      // operator directly in the secret mode with the field pre-filled.
-      modeSel.value = 'secret';
-      setHint(
-        'Direct Line secret loaded from .env · Direct Line secret / token mode. Click Connect.',
-        'ok'
-      );
     } else if (sdkConfigured || cfg.mode === 'none') {
       modeSel.value = 'sdk';
       setHint(
         'Fill in the Entra client ID and Environment ID below (or add them to .env), then Connect. SDK mode is the only one that streams generatively.'
       );
     } else {
-      modeSel.value = 'server';
+      modeSel.value = 'sdk';
       const host = cfg.tokenEndpointHost ? ` (${cfg.tokenEndpointHost})` : '';
       setHint(
         'Server relay ready · mode: {mode}{host}. For generative streaming, switch to SDK mode.',
@@ -219,7 +268,266 @@ async function loadServerConfig() {
 // ---------------------------------------------------------------------------
 // Token acquisition for each mode
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// No-auth Agentic Runtime · Direct Line diagnostic
+//
+// Reproduces the observed Web app canvas bootstrap for a no-auth agent:
+//   1. derive the environment API host from the environment id
+//   2. (best-effort) discover the agent's regional Direct Line host
+//   3. mint a Direct Line token from the agenticruntime token endpoint
+//   4. open Direct Line 3.0 over WebSocket against that regional host
+// The client requests livestreaming, but whether chunks are emitted is a
+// server/runtime capability. This mode is not a GHCP harness integration.
+// ---------------------------------------------------------------------------
+
+// Mirrors the SDK's getEnvironmentEndpoint host shaping for Prod: the 32-char
+// environment GUID (dashes removed) is split as <first 30>.<last 2>.
+function environmentApiHost(envId) {
+  const compact = String(envId || '').replace(/-/g, '').toLowerCase();
+  if (compact.length < 3) throw new Error('Environment ID looks invalid.');
+  const suffixLen = 2; // Prod / Mooncake share a 2-char suffix split.
+  const first = compact.slice(0, compact.length - suffixLen);
+  const last = compact.slice(compact.length - suffixLen);
+  return `${first}.${last}.environment.api.powerplatform.com`;
+}
+
+const NEWDL_FIELDS_KEY = 'newAgentDlFields';
+
+function readNewAgentDLConfigRaw() {
+  return {
+    environmentId: (newDlEnvironmentId && newDlEnvironmentId.value.trim()) || '',
+    schemaName: (newDlSchemaName && newDlSchemaName.value.trim()) || ''
+  };
+}
+
+function saveNewAgentDLConfig() {
+  try {
+    sessionStorage.setItem(NEWDL_FIELDS_KEY, JSON.stringify(readNewAgentDLConfigRaw()));
+  } catch {
+    /* storage unavailable - ignore */
+  }
+}
+
+function restoreNewAgentDLConfig() {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(NEWDL_FIELDS_KEY) || '{}');
+    if (saved.environmentId && newDlEnvironmentId && !newDlEnvironmentId.value) {
+      newDlEnvironmentId.value = saved.environmentId;
+    }
+    if (saved.schemaName && newDlSchemaName && !newDlSchemaName.value) {
+      newDlSchemaName.value = saved.schemaName;
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+[newDlEnvironmentId, newDlSchemaName]
+  .filter(Boolean)
+  .forEach((input) => input.addEventListener('change', saveNewAgentDLConfig));
+
+// ---------------------------------------------------------------------------
+// Published-bot DTE island diagnostic — Entra-authenticated, non-GHCP
+// ---------------------------------------------------------------------------
+const NEWDTE_FIELDS_KEY = 'newAgentDTEFields';
+
+function readNewAgentDTEConfigRaw() {
+  return {
+    clientId: (dtClientId && dtClientId.value.trim()) || '',
+    tenantId: (dtTenantId && dtTenantId.value.trim()) || '',
+    environmentId: (dtEnvironmentId && dtEnvironmentId.value.trim()) || '',
+    schemaName: (dtSchemaName && dtSchemaName.value.trim()) || '',
+    directConnectUrl: (dtDirectConnectUrl && dtDirectConnectUrl.value.trim()) || '',
+    cloud: sdkCloud || 'Prod',
+    copilotAgentType: 'Published',
+    useExperimentalEndpoint: Boolean(dtExperimental && dtExperimental.checked),
+    viaSidecar: Boolean(dtViaSidecar && dtViaSidecar.checked)
+  };
+}
+
+function readNewAgentDTEConfig() {
+  const cfg = readNewAgentDTEConfigRaw();
+  // Experimental island gateway takes precedence — drop manual URL to let the
+  // SDK follow the x-ms-d2e-experimental redirect instead.
+  if (cfg.useExperimentalEndpoint) cfg.directConnectUrl = '';
+  if (!window.CopilotStudioSDK || !window.CopilotStudioSDK.ready) {
+    throw new Error('Copilot Studio SDK is still loading. Wait a moment and retry.');
+  }
+  if (!window.msal) {
+    throw new Error('MSAL did not load. Check your network/CDN access and reload.');
+  }
+  if (!cfg.clientId) throw new Error('Enter the Entra application (client) ID.');
+  if (!cfg.tenantId) throw new Error('Enter the directory (tenant) ID.');
+  if (!cfg.directConnectUrl) {
+    if (!cfg.environmentId) throw new Error('Enter the Copilot Studio Environment ID.');
+    if (!cfg.schemaName) throw new Error('Enter the agent schema name.');
+  }
+  return cfg;
+}
+
+function saveNewAgentDTEConfig() {
+  try {
+    sessionStorage.setItem(NEWDTE_FIELDS_KEY, JSON.stringify(readNewAgentDTEConfigRaw()));
+  } catch { /* storage unavailable */ }
+}
+
+function readNewAgentDTEConfigSafe() {
+  if (!window.CopilotStudioSDK || !window.CopilotStudioSDK.ready || !window.msal) return null;
+  const cfg = readNewAgentDTEConfigRaw();
+  if (!cfg.clientId || !cfg.tenantId) return null;
+  return cfg;
+}
+
+function restoreNewAgentDTEConfig() {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(NEWDTE_FIELDS_KEY) || '{}');
+    if (saved.clientId && dtClientId && !dtClientId.value) dtClientId.value = saved.clientId;
+    if (saved.tenantId && dtTenantId && !dtTenantId.value) dtTenantId.value = saved.tenantId;
+    if (saved.environmentId && dtEnvironmentId && !dtEnvironmentId.value) dtEnvironmentId.value = saved.environmentId;
+    if (saved.schemaName && dtSchemaName && !dtSchemaName.value) dtSchemaName.value = saved.schemaName;
+  } catch { /* ignore */ }
+}
+
+[dtClientId, dtTenantId, dtEnvironmentId, dtSchemaName, dtDirectConnectUrl, dtExperimental, dtViaSidecar]
+  .filter(Boolean)
+  .forEach((input) => input.addEventListener('change', saveNewAgentDTEConfig));
+
+const GHCP3P_FIELDS_KEY = 'ghcp3pFields';
+
+function buildGhcp3pDirectConnectUrl(environmentId, schemaName) {
+  if (!environmentId || !schemaName) return '';
+  return (
+    `https://${environmentApiHost(environmentId)}` +
+    '/copilotstudio/agenticruntime/3p/dataverse-backed/authenticated/bots/' +
+    `${encodeURIComponent(schemaName)}?api-version=1`
+  );
+}
+
+function readGhcp3pConfigRaw() {
+  const environmentId = (ghcp3pEnvironmentId && ghcp3pEnvironmentId.value.trim()) || '';
+  const schemaName = (ghcp3pSchemaName && ghcp3pSchemaName.value.trim()) || '';
+  return {
+    clientId: (ghcp3pClientId && ghcp3pClientId.value.trim()) || '',
+    tenantId: (ghcp3pTenantId && ghcp3pTenantId.value.trim()) || '',
+    environmentId,
+    schemaName,
+    directConnectUrl: buildGhcp3pDirectConnectUrl(environmentId, schemaName),
+    cloud: sdkCloud || 'Prod',
+    copilotAgentType: 'Published',
+    useExperimentalEndpoint: false,
+    viaSidecar: true,
+    runtime: 'ghcp3p'
+  };
+}
+
+function syncGhcp3pUrl() {
+  if (!ghcp3pUrl) return;
+  try {
+    ghcp3pUrl.value = readGhcp3pConfigRaw().directConnectUrl;
+  } catch {
+    ghcp3pUrl.value = '';
+  }
+}
+
+function readGhcp3pConfig() {
+  const cfg = readGhcp3pConfigRaw();
+  if (!window.CopilotStudioSDK || !window.CopilotStudioSDK.ready) {
+    throw new Error('Copilot Studio SDK is still loading. Wait a moment and retry.');
+  }
+  if (!window.msal) throw new Error('MSAL did not load. Check your network/CDN access and reload.');
+  if (!cfg.clientId) throw new Error('Enter the Entra application (client) ID.');
+  if (!cfg.tenantId) throw new Error('Enter the directory (tenant) ID.');
+  if (!cfg.environmentId) throw new Error('Enter the Copilot Studio Environment ID.');
+  if (!cfg.schemaName) throw new Error('Enter the GHCP agent schema name.');
+  return cfg;
+}
+
+function readGhcp3pConfigSafe() {
+  if (!window.CopilotStudioSDK || !window.CopilotStudioSDK.ready || !window.msal) return null;
+  const cfg = readGhcp3pConfigRaw();
+  if (!cfg.clientId || !cfg.tenantId || !cfg.environmentId || !cfg.schemaName) return null;
+  return cfg;
+}
+
+function saveGhcp3pConfig() {
+  try {
+    const cfg = readGhcp3pConfigRaw();
+    sessionStorage.setItem(GHCP3P_FIELDS_KEY, JSON.stringify({
+      clientId: cfg.clientId,
+      tenantId: cfg.tenantId,
+      environmentId: cfg.environmentId,
+      schemaName: cfg.schemaName
+    }));
+  } catch { /* storage unavailable */ }
+  syncGhcp3pUrl();
+}
+
+function restoreGhcp3pConfig() {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(GHCP3P_FIELDS_KEY) || '{}');
+    if (saved.clientId && ghcp3pClientId && !ghcp3pClientId.value) ghcp3pClientId.value = saved.clientId;
+    if (saved.tenantId && ghcp3pTenantId && !ghcp3pTenantId.value) ghcp3pTenantId.value = saved.tenantId;
+    if (saved.environmentId && ghcp3pEnvironmentId && !ghcp3pEnvironmentId.value) {
+      ghcp3pEnvironmentId.value = saved.environmentId;
+    }
+    if (saved.schemaName && ghcp3pSchemaName && !ghcp3pSchemaName.value) ghcp3pSchemaName.value = saved.schemaName;
+  } catch { /* ignore */ }
+  syncGhcp3pUrl();
+}
+
+[ghcp3pClientId, ghcp3pTenantId, ghcp3pEnvironmentId, ghcp3pSchemaName]
+  .filter(Boolean)
+  .forEach((input) => {
+    input.addEventListener('change', saveGhcp3pConfig);
+    input.addEventListener('input', syncGhcp3pUrl);
+  });
+
+async function acquireNewAgentDLToken() {
+  const cfg = readNewAgentDLConfigRaw();
+  if (!cfg.environmentId) throw new Error('Enter the Copilot Studio Environment ID.');
+  if (!cfg.schemaName) throw new Error('Enter the agent schema name.');
+
+  const host = environmentApiHost(cfg.environmentId);
+  const apiVersion = 'api-version=2022-03-01-preview';
+
+  // 1. Best-effort: discover the agent's regional Direct Line host so the
+  //    WebSocket targets the same geo the canvas uses.
+  let domain = 'https://directline.botframework.com/v3/directline';
+  try {
+    const rcs = await fetch(
+      `https://${host}/powervirtualagents/regionalchannelsettings?${apiVersion}`,
+      undefined
+    );
+    if (rcs.ok) {
+      const body = await rcs.json();
+      const dl = body && body.channelUrlsById && body.channelUrlsById.directline;
+      if (dl) domain = dl.replace(/\/+$/, '') + '/v3/directline';
+    }
+  } catch {
+    /* keep the default global Direct Line host */
+  }
+
+  // 2. Mint the Direct Line token from the generative (agenticruntime) runtime.
+  const tokenUrl =
+    `https://${host}/copilotstudio/agenticruntime/botsbyschema/` +
+    `${encodeURIComponent(cfg.schemaName)}/directline/token?${apiVersion}`;
+  const resp = await fetch(tokenUrl);
+  if (!resp.ok) {
+    throw new Error(
+      `No-auth Direct Line token endpoint returned HTTP ${resp.status}. ` +
+      'This diagnostic does not support Microsoft-authenticated or GHCP harness agents.'
+    );
+  }
+  const body = await resp.json();
+  if (!body.token) throw new Error('Token endpoint did not return a "token".');
+  return { token: body.token, domain };
+}
+
 async function acquireToken(mode) {
+  if (mode === 'newAgentDL') {
+    return acquireNewAgentDLToken();
+  }
+
   if (mode === 'server') {
     const resp = await fetch('/api/directline/token');
     if (!resp.ok) {
@@ -289,8 +597,8 @@ async function acquireToken(mode) {
 // SDK (Direct-to-Engine) mode
 //
 // This path authenticates the signed-in user with Entra ID (MSAL) and talks to
-// Copilot Studio over the Direct Engine protocol. It is the only mode that
-// surfaces token-by-token generative streaming chunks.
+// standard published Copilot Studio agents over the Direct Engine protocol.
+// GHCP harness experiments use the separate authenticated /3p route.
 // ---------------------------------------------------------------------------
 function readSdkConfigRaw() {
   return {
@@ -369,12 +677,106 @@ function readSdkConfig() {
 function buildSdkSettings(cfg) {
   const { ConnectionSettings } = window.CopilotStudioSDK;
   return new ConnectionSettings({
+    directConnectUrl: cfg.directConnectUrl || undefined,
     environmentId: cfg.environmentId,
     schemaName: cfg.schemaName,
     cloud: cfg.cloud,
-    copilotAgentType: 'Published'
+    copilotAgentType: cfg.copilotAgentType || 'Published',
+    useExperimentalEndpoint: Boolean(cfg.useExperimentalEndpoint)
   });
 }
+
+// ---------------------------------------------------------------------------
+// Published-bot Direct-to-Engine isolated diagnostic
+//
+// A second config for comparing environment/schema routing, Direct Connect URLs,
+// and the experimental island redirect without disturbing SDK-mode defaults.
+// This is not the GHCP harness /3p controller.
+// ---------------------------------------------------------------------------
+const NEW_AGENT_FIELDS_KEY = 'newAgentFields';
+
+function readNewAgentConfigRaw() {
+  return {
+    clientId: (newClientId && newClientId.value.trim()) || '',
+    tenantId: (newTenantId && newTenantId.value.trim()) || '',
+    environmentId: (newEnvironmentId && newEnvironmentId.value.trim()) || '',
+    schemaName: (newSchemaName && newSchemaName.value.trim()) || '',
+    directConnectUrl: (newDirectConnectUrl && newDirectConnectUrl.value.trim()) || '',
+    cloud: sdkCloud || 'Prod',
+    copilotAgentType: (newAgentType && newAgentType.value) || 'Published',
+    useExperimentalEndpoint: Boolean(newExperimental && newExperimental.checked)
+  };
+}
+
+function readNewAgentConfig() {
+  const cfg = readNewAgentConfigRaw();
+  // Experimental island gateway and a manual Direct connect URL are mutually
+  // exclusive: the SDK only follows the server's x-ms-d2e-experimental redirect
+  // when directConnectUrl is empty. When experimental is on, drop the URL so the
+  // generative island endpoint actually engages.
+  if (cfg.useExperimentalEndpoint) {
+    cfg.directConnectUrl = '';
+  }
+  if (!window.CopilotStudioSDK || !window.CopilotStudioSDK.ready) {
+    throw new Error('Copilot Studio SDK is still loading. Wait a moment and retry.');
+  }
+  if (!window.msal) {
+    throw new Error('MSAL did not load. Check your network/CDN access and reload.');
+  }
+  if (!cfg.clientId) throw new Error('Enter the Entra application (client) ID.');
+  if (!cfg.tenantId) throw new Error('Enter the directory (tenant) ID.');
+  if (!cfg.directConnectUrl) {
+    if (!cfg.environmentId) {
+      throw new Error('Enter the Copilot Studio Environment ID (or a Direct connect URL).');
+    }
+    if (!cfg.schemaName) {
+      throw new Error('Enter the agent schema name (or a Direct connect URL).');
+    }
+  }
+  return cfg;
+}
+
+function readNewAgentConfigSafe() {
+  if (!window.CopilotStudioSDK || !window.CopilotStudioSDK.ready || !window.msal) {
+    return null;
+  }
+  const cfg = readNewAgentConfigRaw();
+  if (!cfg.clientId || !cfg.tenantId) return null;
+  return cfg;
+}
+
+function saveNewAgentConfig() {
+  try {
+    sessionStorage.setItem(NEW_AGENT_FIELDS_KEY, JSON.stringify(readNewAgentConfigRaw()));
+  } catch {
+    /* storage unavailable - ignore */
+  }
+}
+
+function restoreNewAgentConfig() {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(NEW_AGENT_FIELDS_KEY) || '{}');
+    if (saved.clientId && newClientId && !newClientId.value) newClientId.value = saved.clientId;
+    if (saved.tenantId && newTenantId && !newTenantId.value) newTenantId.value = saved.tenantId;
+    if (saved.environmentId && newEnvironmentId && !newEnvironmentId.value) {
+      newEnvironmentId.value = saved.environmentId;
+    }
+    if (saved.schemaName && newSchemaName && !newSchemaName.value) {
+      newSchemaName.value = saved.schemaName;
+    }
+    // NOTE: directConnectUrl and the experimental checkbox are intentionally NOT
+    // restored. Experimental island endpoint defaults ON (see index.html) and is
+    // mutually exclusive with a manual Direct connect URL, so we never re-fill a
+    // stale URL nor override the default-checked box.
+    if (saved.copilotAgentType && newAgentType) newAgentType.value = saved.copilotAgentType;
+  } catch {
+    /* ignore */
+  }
+}
+
+[newClientId, newTenantId, newEnvironmentId, newSchemaName, newDirectConnectUrl, newAgentType, newExperimental]
+  .filter(Boolean)
+  .forEach((input) => input.addEventListener('change', saveNewAgentConfig));
 
 let msalInstance = null;
 async function getMsalInstance(cfg) {
@@ -412,7 +814,7 @@ const SDK_RESUME_KEY = 'sdkAutoConnect';
  * navigates the whole tab to Entra and back, then we auto-resume via
  * processSdkRedirect() on load.
  */
-async function acquireSdkToken(cfg) {
+async function acquireSdkToken(cfg, mode = 'sdk') {
   const { CopilotStudioClient } = window.CopilotStudioSDK;
   const settings = buildSdkSettings(cfg);
   const scope = CopilotStudioClient.scopeFromSettings(settings);
@@ -431,8 +833,11 @@ async function acquireSdkToken(cfg) {
 
   // Interactive sign-in required: remember intent, then redirect away.
   setHint('Redirecting to Microsoft sign-in…');
-  saveSdkConfig();
-  sessionStorage.setItem(SDK_RESUME_KEY, '1');
+  if (mode === 'newAgent') saveNewAgentConfig();
+  else if (mode === 'newAgentDTE') saveNewAgentDTEConfig();
+  else if (mode === 'ghcp3p') saveGhcp3pConfig();
+  else saveSdkConfig();
+  sessionStorage.setItem(SDK_RESUME_KEY, mode);
   await pca.acquireTokenRedirect(request);
   // Navigation has started; keep the caller pending until the page unloads.
   return new Promise(() => {});
@@ -459,15 +864,27 @@ async function acquireSdkTokenSilent(cfg) {
  * On page load, completes any returning Entra redirect and resumes Connect.
  */
 async function processSdkRedirect() {
-  const cfg = readSdkConfigSafe();
+  const resuming = sessionStorage.getItem(SDK_RESUME_KEY);
+  const resumeMode =
+    resuming === 'newAgent'
+      ? 'newAgent'
+      : resuming === 'newAgentDTE'
+        ? 'newAgentDTE'
+        : resuming === 'ghcp3p'
+          ? 'ghcp3p'
+          : 'sdk';
+  const cfg =
+    resumeMode === 'newAgent'    ? readNewAgentConfigSafe()    :
+    resumeMode === 'newAgentDTE' ? readNewAgentDTEConfigSafe() :
+    resumeMode === 'ghcp3p'      ? readGhcp3pConfigSafe()      :
+                                   readSdkConfigSafe();
   if (!cfg) return;
   const pca = await getMsalInstance(cfg);
   try {
     const result = await pca.handleRedirectPromise();
-    const resuming = sessionStorage.getItem(SDK_RESUME_KEY) === '1';
     if (result || resuming) {
       sessionStorage.removeItem(SDK_RESUME_KEY);
-      modeSel.value = 'sdk';
+      modeSel.value = resumeMode;
       refreshModeUI();
       // Account is now cached; connect() will acquire the token silently.
       connect();
@@ -498,6 +915,7 @@ function getStreamInfo(activity) {
   if (!raw) return null;
 
   const { streamType, streamId, streamSequence } = raw;
+  const idValid = typeof activity.id === 'string' && activity.id.length > 0;
   const seqValid = Number.isInteger(streamSequence) && streamSequence >= 1;
 
   // Validation rules from livestreamingActivitySchema:
@@ -505,14 +923,84 @@ function getStreamInfo(activity) {
   //  - final: type must be "message" or "typing", streamId required
   const valid =
     ((streamType === 'streaming' || streamType === 'informative') &&
+      idValid &&
       activity.type === 'typing' &&
       seqValid) ||
     (streamType === 'final' &&
-      (activity.type === 'message' || activity.type === 'typing') &&
+      idValid &&
+      (activity.type === 'message' ||
+        (activity.type === 'typing' && !activity.text)) &&
       typeof streamId === 'string' &&
       streamId.length > 0);
 
-  return { streamType, streamId, streamSequence, valid };
+  return {
+    streamType,
+    streamId,
+    streamSequence,
+    sessionId: streamId || activity.id,
+    valid
+  };
+}
+
+function isUserActivity(activity) {
+  if (activity?.from?.role === 'user') return true;
+  if (activity?.from?.role === 'bot') return false;
+  return Boolean(
+    activity?.type === 'message' &&
+    activity?.channelData?.clientActivityID &&
+    !activity?.replyToId
+  );
+}
+
+function observeLivestreamActivity(activity, info) {
+  if (!info?.valid || !info.sessionId) return { stale: false };
+
+  const sessionId = info.sessionId;
+  const existing = streamObservations.get(sessionId);
+
+  if (info.streamType === 'final') {
+    if (!existing) return { stale: false, invalidLifecycle: true };
+    if (existing.concluded) return { stale: true };
+    existing.concluded = true;
+    streamObservations.set(sessionId, existing);
+    return { stale: false };
+  }
+
+  const observation = existing || {
+    lastSequence: 0,
+    lastAnswerText: null,
+    answerSnapshots: 0,
+    concluded: false
+  };
+
+  if (observation.concluded || info.streamSequence <= observation.lastSequence) {
+    return { stale: true };
+  }
+
+  observation.lastSequence = info.streamSequence;
+  seenStreamIds.add(sessionId);
+
+  if (info.streamType === 'informative') {
+    informativeCount += 1;
+  } else {
+    chunkCount += 1;
+    const answerText = activity.text || '';
+    if (answerText && answerText !== observation.lastAnswerText) {
+      observation.answerSnapshots += 1;
+      observation.lastAnswerText = answerText;
+      if (observation.answerSnapshots >= 2) progressiveStreamIds.add(sessionId);
+    }
+  }
+
+  streamObservations.set(sessionId, observation);
+  return { stale: false };
+}
+
+function countFinalActivity(activity) {
+  const key = `${activity.replyToId || activity.id || ''}\u0000${activity.text || ''}`;
+  if (seenFinalKeys.has(key)) return;
+  seenFinalKeys.add(key);
+  finalCount += 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -522,14 +1010,19 @@ function logActivity(activity) {
   if (!autoInspect.checked) return;
 
   const info = getStreamInfo(activity);
+  const observation = observeLivestreamActivity(activity, info);
   // Surface streaming-related activities plus plain bot typing/message events so
   // validation can distinguish "typing only" from true livestream metadata.
-  const isBotMessage = activity.type === 'message' && activity.from?.role !== 'user';
-  const isBotTyping = activity.type === 'typing' && activity.from?.role !== 'user';
+  const isBotMessage = activity.type === 'message' && !isUserActivity(activity);
+  const isBotTyping = activity.type === 'typing' && !isUserActivity(activity);
   if (!info && !isBotMessage && !isBotTyping) return;
 
   const streamType = info?.streamType || activity.type;
-  const malformed = Boolean(info) && info.valid === false;
+  const malformed = Boolean(info) && (
+    info.valid === false ||
+    observation.stale ||
+    observation.invalidLifecycle
+  );
   const cssClass = malformed
     ? 'malformed'
     : streamType === 'informative'
@@ -542,15 +1035,8 @@ function logActivity(activity) {
             ? 'typing'
             : 'other';
 
-  // Metrics (only count well-formed livestream activities).
-  if (info && info.valid) {
-    if (streamType === 'streaming' || streamType === 'informative') chunkCount++;
-    if (streamType === 'final') finalCount++;
-    const sid = info.streamId || activity.id;
-    if (sid) seenStreamIds.add(sid);
-  } else if (isBotMessage && !info) {
-    finalCount++;
-  }
+  if (info?.valid && !observation.stale && streamType === 'final') countFinalActivity(activity);
+  else if (isBotMessage && !info) countFinalActivity(activity);
   mStreams.textContent = String(seenStreamIds.size);
   mChunks.textContent = String(chunkCount);
   mFinal.textContent = String(finalCount);
@@ -558,7 +1044,7 @@ function logActivity(activity) {
 
   const text = (activity.text || '').slice(0, 280);
   const seq = info?.streamSequence != null ? `#${info.streamSequence}` : '';
-  const sid = (info?.streamId || activity.id || '').toString().slice(0, 18);
+  const sid = (info?.sessionId || activity.id || '').toString().slice(0, 18);
 
   // Raw activity JSON — the fastest way to confirm with support whether
   // streaming metadata (channelData / entities[streaminfo]) is actually emitted.
@@ -581,7 +1067,11 @@ function logActivity(activity) {
       t('stream: {id} · len {length}{suffix}', {
         id: sid || '—',
         length: text.length,
-        suffix: malformed ? t(' · invalid per schema') : ''
+        suffix: observation.stale
+          ? t(' · stale or out of order')
+          : malformed
+            ? t(' · invalid per schema')
+            : ''
       })
     )}</div>
     <details class="raw">
@@ -600,15 +1090,21 @@ function updateDiagnosis() {
   if (!diagnosisEl) return;
   let state;
   let label;
-  if (chunkCount > 0) {
+  if (progressiveStreamIds.size > 0) {
     state = 'ok';
-    label = t('Streaming ✓ — {chunks} chunk(s) across {streams} livestream(s)', {
+    label = t('Progressive answer ✓ — {chunks} streaming chunk(s) across {streams} livestream(s)', {
       chunks: chunkCount,
-      streams: seenStreamIds.size
+      streams: progressiveStreamIds.size
     });
+  } else if (seenStreamIds.size > 0) {
+    state = 'warn';
+    label = t(
+      'Livestream protocol observed — progressive answer text not proven ({informative} informative, {chunks} streaming)',
+      { informative: informativeCount, chunks: chunkCount }
+    );
   } else if (finalCount > 0) {
     state = 'warn';
-    label = t('Not streaming — only typing + final message (generative streaming not emitted)');
+    label = t('Final-only response — no livestream metadata emitted');
   } else {
     state = 'idle';
     label = t('Waiting for bot activity…');
@@ -627,7 +1123,11 @@ function escapeHtml(s) {
 function resetInspector() {
   logEl.innerHTML = '';
   seenStreamIds.clear();
+  progressiveStreamIds.clear();
+  streamObservations.clear();
+  seenFinalKeys.clear();
   chunkCount = 0;
+  informativeCount = 0;
   finalCount = 0;
   mStreams.textContent = '0';
   mChunks.textContent = '0';
@@ -778,7 +1278,7 @@ function wrapWithInspectorTap(conn) {
         }
         // Informative chunks become the "thinking" overlay and are withheld
         // from Web Chat; streaming/final chunks close the overlay and flow on
-        // so the canvas paints the token-by-token livestream bubble.
+        // so the canvas paints the progressively growing livestream bubble.
         const info = getStreamInfo(activity);
         if (info && info.valid && handleThinking(activity, info)) {
           return;
@@ -854,7 +1354,7 @@ function normalizeStreamingForWebChat(activity) {
 // Typewriter effect (Direct Line modes)
 //
 // Over the Direct Line channel, Copilot Studio sends the answer as a SINGLE
-// final `message` activity — so there is no native token-by-token feel. We
+// final `message` activity — so there is no native progressive reveal. We
 // simulate one by re-emitting that message as a series of same-id frames whose
 // text grows a few characters at a time. Web Chat updates the SAME bubble in
 // place (it dedupes by activity id), producing a typing animation. The final
@@ -887,7 +1387,7 @@ function clearTypewriter() {
 function shouldTypewrite(activity) {
   if (!typewriterToggle || !typewriterToggle.checked) return false;
   if (activity.type !== 'message') return false;
-  if (activity.from?.role === 'user') return false;
+  if (isUserActivity(activity)) return false;
   if (!activity.text) return false;
   // Real generative streaming chunks animate themselves — don't double up.
   if (getStreamInfo(activity)) return false;
@@ -1035,9 +1535,8 @@ function wrapWithTypewriter(conn) {
 function wrapWithDirectLineStreaming(conn) {
   const observers = new Set();
   let upstreamSub = null;
-  // streamId -> last full text we emitted, kept so we can recognise (and drop)
-  // the trailing duplicate final message Direct Line re-sends after a stream.
-  const completed = new Map();
+  const streams = new Map();
+  const recentFinals = [];
 
   const broadcast = (activity) => {
     for (const observer of observers) {
@@ -1058,36 +1557,57 @@ function wrapWithDirectLineStreaming(conn) {
       info.valid &&
       (info.streamType === 'streaming' || info.streamType === 'informative')
     ) {
-      const id = info.streamId || activity.id;
+      const id = info.sessionId;
+      const stream = streams.get(id) || { lastSequence: 0, text: '', concluded: false };
+      if (stream.concluded || info.streamSequence <= stream.lastSequence) return;
+      stream.lastSequence = info.streamSequence;
       const text = activity.text || '';
       broadcast({
         ...activity,
         type: 'message',
         id,
         text,
-        from: activity.from || { role: 'bot' }
+        from: { ...(activity.from || {}), role: 'bot' }
       });
-      completed.set(id, text);
+      if (info.streamType === 'streaming') stream.text = text;
+      streams.set(id, stream);
       return;
     }
 
     // Final streamed message → replace the growing bubble with the full text.
     if (info && info.valid && info.streamType === 'final') {
-      const id = info.streamId || activity.id;
-      const text = activity.text || completed.get(id) || '';
-      broadcast({ ...activity, type: 'message', id, text });
-      completed.set(id, text);
+      const id = info.sessionId;
+      const stream = streams.get(id) || { lastSequence: 0, text: '', concluded: false };
+      if (stream.concluded) return;
+      const text = activity.text || stream.text || '';
+      broadcast({
+        ...activity,
+        type: 'message',
+        id,
+        text,
+        from: { ...(activity.from || {}), role: 'bot' }
+      });
+      stream.text = text;
+      stream.concluded = true;
+      streams.set(id, stream);
+      recentFinals.push({ text, replyToId: activity.replyToId, at: Date.now() });
       return;
     }
 
     // Plain bot message with no stream metadata: if it duplicates a stream we
     // just finished, drop it; otherwise pass it through (ordinary reply).
-    const isBotMessage =
-      activity.type === 'message' && activity.from?.role !== 'user';
+    const isBotMessage = activity.type === 'message' && !isUserActivity(activity);
     if (isBotMessage && !info && activity.text) {
-      for (const doneText of completed.values()) {
-        if (doneText && doneText === activity.text) return;
-      }
+      const cutoff = Date.now() - 30000;
+      while (recentFinals.length && recentFinals[0].at < cutoff) recentFinals.shift();
+      if (
+        activity.replyToId &&
+        recentFinals.some(
+          (final) =>
+            final.replyToId === activity.replyToId &&
+            final.text === activity.text
+        )
+      ) return;
     }
 
     broadcast(activity);
@@ -1195,6 +1715,189 @@ function attachAutoScroll() {
 }
 
 // ---------------------------------------------------------------------------
+// Server-sidecar Direct-to-Engine adapter
+//
+// A minimal Direct Line-compatible connection that drives the Node sidecar
+// (/api/dte/start + /api/dte/send) and feeds its NDJSON activity frames into
+// Web Chat. The sidecar runs the identical Copilot Studio SDK server-side,
+// where it is free to follow the x-ms-d2e-experimental redirect the browser
+// cannot read (CORS) — so this path reaches the generative island runtime and
+// streams progressive activities when the selected runtime emits them.
+//
+// Web Chat subscribes to `activity$` several times, so the subject MUST
+// multicast. It also reads the latest `connectionStatus$` value on subscribe,
+// so that one replays its current value. Streaming chunks are folded into one
+// growing bubble by reusing normalizeStreamingForWebChat (stable id = streamId).
+// ---------------------------------------------------------------------------
+function createSidecarConnection({ token, settings }) {
+  const asObserver = (o, e, c) =>
+    typeof o === 'function' ? { next: o, error: e, complete: c } : o || {};
+
+  // connectionStatus$: replay the latest value to every new subscriber.
+  const statusObservers = new Set();
+  let status = 0; // Uninitialized
+  const status$ = {
+    subscribe(o, e, c) {
+      const obs = asObserver(o, e, c);
+      statusObservers.add(obs);
+      try { obs.next && obs.next(status); } catch { /* noop */ }
+      return { unsubscribe: () => statusObservers.delete(obs) };
+    }
+  };
+  const setStatusValue = (v) => {
+    status = v;
+    for (const obs of statusObservers) {
+      try { obs.next && obs.next(v); } catch { /* noop */ }
+    }
+  };
+
+  // activity$: multicast, buffering activities until Web Chat has subscribed
+  // (flush() is called right after renderWebChat) so the greeting is never lost.
+  const activityObservers = new Set();
+  const activityBuffer = [];
+  let flushing = false;
+  const emitActivity = (a) => {
+    if (!flushing) { activityBuffer.push(a); return; }
+    for (const obs of activityObservers) {
+      try { obs.next && obs.next(a); } catch { /* noop */ }
+    }
+  };
+  const activity$ = {
+    subscribe(o, e, c) {
+      const obs = asObserver(o, e, c);
+      activityObservers.add(obs);
+      return { unsubscribe: () => activityObservers.delete(obs) };
+    }
+  };
+
+  let conversationId = '';
+  let ended = false;
+
+  const toWebChat = (a) => {
+    let act = normalizeStreamingForWebChat(a); // stable id=streamId + role:bot for chunks
+    if (act.type === 'message' && act.from?.role !== 'user' && act.from?.role !== 'bot') {
+      act = { ...act, from: { ...(act.from || {}), role: 'bot' } };
+    }
+    if (!act.id) act = { ...act, id: 'a-' + Math.random().toString(36).slice(2, 10) };
+    // The sidecar never forwards the server-side activity that `replyToId`
+    // points at (user echoes get a local `u-…` id, the typing frame is
+    // `typing-1`). Web Chat's queueIncomingActivitySaga would otherwise wait
+    // ~5s for that phantom parent, log a "Timed out while waiting for activity"
+    // warning, and stall ordering. Drop the dangling reference.
+    if (act.replyToId) { const { replyToId, ...rest } = act; act = rest; }
+    return act;
+  };
+
+  async function streamTurn(url, body) {
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!resp.ok || !resp.body) {
+      let msg = `HTTP ${resp.status}`;
+      try { msg = (await resp.json()).error || msg; } catch { /* noop */ }
+      throw new Error(msg);
+    }
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+    const handle = (line) => {
+      if (!line.trim()) return;
+      let frame;
+      try { frame = JSON.parse(line); } catch { return; }
+      if (frame.type === 'activity' && frame.activity) {
+        const a = frame.activity;
+        if (a.conversation?.id) conversationId = a.conversation.id;
+        emitActivity(toWebChat(a));
+      } else if (frame.type === 'done') {
+        if (frame.conversationId) conversationId = frame.conversationId;
+      } else if (frame.type === 'error') {
+        emitActivity({
+          type: 'message',
+          id: 'err-' + Math.random().toString(36).slice(2, 10),
+          from: { id: 'bot', role: 'bot' },
+          text: `⚠️ Sidecar error: ${frame.error}`,
+          timestamp: new Date().toISOString()
+        });
+      }
+    };
+    while (!ended) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      let nl;
+      while ((nl = buf.indexOf('\n')) >= 0) {
+        handle(buf.slice(0, nl));
+        buf = buf.slice(nl + 1);
+      }
+    }
+    if (buf) handle(buf);
+  }
+
+  // Open the conversation as soon as the adapter is created. The greeting
+  // activities are buffered until flush().
+  (async () => {
+    setStatusValue(1); // Connecting
+    try {
+      await streamTurn('/api/dte/start', { token, settings });
+      if (!ended) setStatusValue(2); // Online
+    } catch (e) {
+      console.error('[sidecar] start failed', e);
+      emitActivity({
+        type: 'message',
+        id: 'err-start',
+        from: { id: 'bot', role: 'bot' },
+        text: `⚠️ Could not start the sidecar conversation: ${e.message}`,
+        timestamp: new Date().toISOString()
+      });
+      if (!ended) setStatusValue(4); // FailedToConnect
+    }
+  })();
+
+  return {
+    get conversationId() { return conversationId; },
+    connectionStatus$: status$,
+    activity$,
+    // Web Chat subscribes ~5×; flush replays the buffered greeting once to all
+    // present subscribers, then switches to live pass-through.
+    __flushActivities() { flushing = true; const items = activityBuffer.splice(0); items.forEach(emitActivity); },
+    postActivity(activity) {
+      const id = 'u-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      if (activity && activity.type === 'message' && activity.from?.role !== 'bot') {
+        // Echo the user's message so Web Chat moves the bubble from "sending"
+        // to "sent" (it reconciles by channelData.clientActivityID). Defer so
+        // Web Chat registers the outgoing activity before the echo arrives.
+        setTimeout(() => emitActivity({ ...activity, id, timestamp: new Date().toISOString() }), 0);
+        streamTurn('/api/dte/send', {
+          token,
+          conversationId,
+          text: activity.text || '',
+          settings
+        }).catch((e) => {
+          console.error('[sidecar] send failed', e);
+          emitActivity({
+            type: 'message',
+            id: 'err-' + id,
+            from: { id: 'bot', role: 'bot' },
+            text: `⚠️ Sidecar send failed: ${e.message}`,
+            timestamp: new Date().toISOString()
+          });
+        });
+      }
+      return {
+        subscribe(o, e, c) {
+          const obs = asObserver(o, e, c);
+          try { obs.next && obs.next(id); obs.complete && obs.complete(); } catch { /* noop */ }
+          return { unsubscribe() {} };
+        }
+      };
+    },
+    end() { ended = true; setStatusValue(5); }
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Web Chat rendering
 //
 // Every mode shares the single global `WebChat` loaded once in index.html from
@@ -1220,27 +1923,71 @@ async function connect() {
     // error #321 ("Invalid hook call").
     let webChatLib = WebChat;
 
-    if (mode === 'sdk') {
+    if (mode === 'sdk' || mode === 'newAgent' || mode === 'newAgentDTE' || mode === 'ghcp3p') {
       // Direct-to-Engine: MSAL sign-in, then a Web Chat-compatible connection.
-      const cfg = readSdkConfig();
+      const cfg =
+        mode === 'newAgent'    ? readNewAgentConfig()    :
+        mode === 'newAgentDTE' ? readNewAgentDTEConfig() :
+        mode === 'ghcp3p'      ? readGhcp3pConfig()      :
+                                 readSdkConfig();
       setHint('Signing in with Entra ID…');
-      const { token, settings } = await acquireSdkToken(cfg);
-      const { CopilotStudioClient, CopilotStudioWebChat } = window.CopilotStudioSDK;
-      const client = new CopilotStudioClient(settings, token);
-      const rawConnection = CopilotStudioWebChat.createConnection(client, { showTyping: true });
-      // The SDK's activity$ is a COLD observable that keeps only a single
-      // subscriber. If both Web Chat and our inspector subscribe, the last one
-      // wins and the other goes blind. So we tap activities inside Web Chat's
-      // one subscription instead of subscribing a second time.
-      directLine = wrapWithInspectorTap(rawConnection);
+      const { token, settings } = await acquireSdkToken(cfg, mode);
+      if ((mode === 'newAgentDTE' && cfg.viaSidecar) || mode === 'ghcp3p') {
+        // Server-sidecar Direct-to-Engine: the correct transport for an MS-auth
+        // modern agent. The server runs the identical CopilotStudioClient with
+        // the delegated user token and — unlike the CORS-blocked browser — can
+        // follow the `x-ms-d2e-experimental` redirect to the island gateway.
+        //
+        // OPTIMAL SETTINGS for MS-auth: keep useExperimentalEndpoint ON and
+        // directConnectUrl EMPTY so the redirect engages (a manual directConnectUrl
+        // would DISABLE it). The server caches the client per conversationId, so
+        // the island URL the SDK learns from turn 1's response header persists
+        // into every later turn — the first USER message already lands on the
+        // island runtime.
+        setHint(mode === 'ghcp3p' ? 'Connecting to GHCP /3p runtime via server sidecar…' : 'Streaming via server sidecar…');
+
+        // A manually pasted Direct connect URL (Channels → Web/Native app →
+        // "Microsoft 365 Agents SDK") always wins; otherwise leave it empty so
+        // the experimental island redirect can engage on the server.
+        const directConnectUrl = mode === 'ghcp3p'
+          ? cfg.directConnectUrl
+          : readNewAgentDTEConfigRaw().directConnectUrl || cfg.directConnectUrl || '';
+
+        directLine = createSidecarConnection({
+          token,
+          settings: {
+            environmentId: cfg.environmentId,
+            schemaName: cfg.schemaName,
+            cloud: cfg.cloud,
+            copilotAgentType: cfg.copilotAgentType,
+            useExperimentalEndpoint: cfg.useExperimentalEndpoint,
+            directConnectUrl,
+            runtime: cfg.runtime
+          }
+        });
+      } else {
+        const { CopilotStudioClient, CopilotStudioWebChat } = window.CopilotStudioSDK;
+        const client = new CopilotStudioClient(settings, token);
+        const rawConnection = CopilotStudioWebChat.createConnection(client, { showTyping: true });
+        // The SDK's activity$ is a COLD observable that keeps only a single
+        // subscriber. If both Web Chat and our inspector subscribe, the last one
+        // wins and the other goes blind. So we tap activities inside Web Chat's
+        // one subscription instead of subscribing a second time.
+        directLine = wrapWithInspectorTap(rawConnection);
+      }
     } else {
-      const { token } = await acquireToken(mode);
+      const tok = await acquireToken(mode);
+      const isDlStreaming = mode === 'dlStream' || mode === 'newAgentDL';
       // Web Socket transport is required for livestreaming.
-      directLine = webChatLib.createDirectLine({
-        token,
-        webSocket: mode === 'dlStream' ? true : forceWebSocket.checked
-      });
-      if (mode === 'dlStream') {
+      const dlOptions = {
+        token: tok.token,
+        webSocket: isDlStreaming ? true : forceWebSocket.checked
+      };
+      // newAgentDL targets the no-auth agent's regional Direct Line host (discovered
+      // from regionalchannelsettings); other modes use the global default.
+      if (tok.domain) dlOptions.domain = tok.domain;
+      directLine = webChatLib.createDirectLine(dlOptions);
+      if (isDlStreaming) {
         // Coalesce real Copilot Studio livestreaming chunks into one growing
         // bubble keyed on streamId (and drop the trailing duplicate final).
         directLine = wrapWithDirectLineStreaming(directLine);
@@ -1252,7 +1999,7 @@ async function connect() {
     }
 
     // Surface conversation id + inspect every activity.
-    // Copilot Studio only emits generative (token-by-token) streaming when the
+    // Some Copilot Studio canvases request progressive streaming when the
     // client opts in with a `startConversation` event carrying
     // deliveryMode:"stream" + a ClientCapabilities entity — exactly what the
     // official test canvas sends. Plain Web Chat never sends it, so without this
@@ -1262,18 +2009,29 @@ async function connect() {
     subscriptions.push(
       directLine.connectionStatus$.subscribe((status) => {
         const meta = STATUS[status] || { label: `Status ${status}`, state: 'idle' };
-        setStatus(meta.state, meta.label);
+        setStatus(
+          meta.state,
+          status === 2 && mode === 'newAgentDL' ? 'Online · Direct Line connected' : meta.label
+        );
         if (status === 2) {
-          setHint('Connected. Send a message to see streaming chunks arrive.', 'ok');
-          if (mode === 'dlStream' && !streamOptInSent) {
+          setHint(
+            mode === 'newAgentDL'
+              ? 'Connected to no-auth Agentic Direct Line. The runtime may return final-only.'
+              : 'Connected. Send a message to see streaming chunks arrive.',
+            'ok'
+          );
+          if ((mode === 'dlStream' || mode === 'newAgentDL') && !streamOptInSent) {
             streamOptInSent = true;
             try {
-              const sdkMeta = (() => {
-                try {
-                  return readSdkConfig();
-                } catch {
-                  return {};
+              const streamMeta = (() => {
+                if (mode === 'newAgentDL') {
+                  const c = readNewAgentDLConfigRaw();
+                  return { environmentId: c.environmentId, schemaName: c.schemaName };
                 }
+                // Classic Direct Line should opt-in to streaming only. Do not
+                // attach cci_* routing fields from SDK config, which can
+                // accidentally steer the request to the wrong runtime/agent.
+                return {};
               })();
               const optIn = {
                 type: 'event',
@@ -1296,13 +2054,26 @@ async function connect() {
                   }
                 ]
               };
-              if (sdkMeta.tenantId) optIn.cci_tenant_id = sdkMeta.tenantId;
-              if (sdkMeta.environmentId)
-                optIn.cci_environment_id = sdkMeta.environmentId;
+              if (streamMeta.tenantId) optIn.cci_tenant_id = streamMeta.tenantId;
+              if (streamMeta.environmentId)
+                optIn.cci_environment_id = streamMeta.environmentId;
+              if (mode === 'newAgentDL') {
+                // The observed no-auth agentic canvas keys routing off the agent
+                // schema id; tenant is empty because this mode carries no user identity.
+                optIn.cci_tenant_id = streamMeta.tenantId || '';
+                if (streamMeta.schemaName) optIn.cci_bot_id = streamMeta.schemaName;
+                optIn.value = {
+                  __version__: '2',
+                  enableFileAttachment: 'false',
+                  cliAgent: 'true'
+                };
+              }
               directLine.postActivity(optIn).subscribe({
                 next: () =>
                   setHint(
-                    'Streaming opt-in sent (deliveryMode:"stream") — send a message to see chunks.',
+                    mode === 'newAgentDL'
+                      ? 'Livestream opt-in sent; the runtime still decides whether chunks are emitted.'
+                      : 'Streaming opt-in sent (deliveryMode:"stream") — send a message to see chunks.',
                     'ok'
                   ),
                 error: (e) =>
@@ -1394,6 +2165,12 @@ async function connect() {
       mount
     );
 
+    // The sidecar adapter buffers its greeting until Web Chat has subscribed
+    // (which happens synchronously inside renderWebChat above); release it now.
+    if (typeof directLine.__flushActivities === 'function') {
+      directLine.__flushActivities();
+    }
+
     attachAutoScroll();
 
     disconnectBtn.disabled = false;
@@ -1467,18 +2244,35 @@ async function testConnection() {
     } catch (err) {
       setHint('✗ {message}', 'err', { message: err.message });
     }
-  } else if (modeSel.value === 'sdk') {
+  } else if (modeSel.value === 'sdk' || modeSel.value === 'newAgent' || modeSel.value === 'newAgentDTE' || modeSel.value === 'ghcp3p') {
     setHint('Checking existing Entra session…');
     try {
-      const cfg = readSdkConfig();
+      const cfg =
+        modeSel.value === 'newAgent'    ? readNewAgentConfig()    :
+        modeSel.value === 'newAgentDTE' ? readNewAgentDTEConfig() :
+        modeSel.value === 'ghcp3p'      ? readGhcp3pConfig()      :
+                                          readSdkConfig();
       const { token } = await acquireSdkTokenSilent(cfg);
-      setHint(
-        '✓ Signed in · token acquired ({chars} chars). Click Connect to chat.',
-        'ok',
-        {
-          chars: token.length
-        }
-      );
+      if (modeSel.value === 'ghcp3p') {
+        setHint('Testing GHCP /3p runtime…');
+        const response = await fetch('/api/dte/preflight', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, settings: cfg })
+        });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok || !body.ok) throw new Error(body.error || `HTTP ${response.status}`);
+        setHint('✓ GHCP /3p runtime reached · HTTP {status} · {elapsedMs}ms. Click Connect to chat.', 'ok', {
+          status: body.status,
+          elapsedMs: body.elapsedMs
+        });
+      } else {
+        setHint(
+          '✓ Signed in · token acquired ({chars} chars). Click Connect to chat.',
+          'ok',
+          { chars: token.length }
+        );
+      }
     } catch (err) {
       setHint('✗ {message}', 'err', { message: err.message });
     }
@@ -1520,6 +2314,10 @@ async function start() {
   await loadServerConfig();
   // Restore any fields the user typed before an interactive redirect.
   restoreSdkConfig();
+  restoreNewAgentConfig();
+  restoreNewAgentDLConfig();
+  restoreNewAgentDTEConfig();
+  restoreGhcp3pConfig();
   await whenSdkReady();
   // Complete a returning Entra redirect (if any) and auto-resume Connect.
   await processSdkRedirect();
