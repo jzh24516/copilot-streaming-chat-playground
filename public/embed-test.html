@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Copilot Studio Embed · Streaming Tracer</title>
+    <style>
+      :root {
+        --bg: #0f0f1a;
+        --panel: #1a1a2e;
+        --panel-2: #16213e;
+        --border: #2d3748;
+        --text: #e2e8f0;
+        --muted: #a0aec0;
+        --accent: #6344c5;
+        --accent-2: #0099e0;
+        --ok: #44d7b6;
+        --warn: #f6ad55;
+        --err: #fc8181;
+        --info: #60a5fa;
+        font-family: Aptos, "Segoe UI", system-ui, -apple-system, sans-serif;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: 1fr 460px;
+        grid-template-rows: auto auto 1fr;
+        grid-template-areas: "head head" "ctrl ctrl" "embed trace";
+        gap: 12px;
+        padding: 12px;
+      }
+      .controls {
+        grid-area: ctrl;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 10px 14px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+      }
+      .controls label { font-size: 12px; color: var(--muted); }
+      .controls input[type="text"] {
+        flex: 1;
+        min-width: 280px;
+        font: inherit;
+        font-size: 12.5px;
+        color: var(--text);
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px 12px;
+      }
+      .controls button {
+        font: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        color: #fff;
+        background: linear-gradient(135deg, #3b1f8e, #6344c5, #0099e0);
+        border: 0;
+        border-radius: 8px;
+        padding: 8px 18px;
+        cursor: pointer;
+      }
+      .controls .opt {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      header {
+        grid-area: head;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 12px 16px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+      }
+      header h1 { font-size: 16px; margin: 0; }
+      header p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+      .pills { display: flex; gap: 8px; flex-wrap: wrap; }
+      .pill {
+        font-size: 12px;
+        padding: 6px 12px;
+        border-radius: 50px;
+        border: 1px solid var(--border);
+        background: var(--panel-2);
+        color: var(--muted);
+      }
+      .pill strong { color: var(--text); font-size: 15px; margin-right: 4px; }
+      .pill.live strong { color: var(--accent-2); }
+      .pill.chunk strong { color: var(--info); }
+      .pill.final strong { color: var(--ok); }
+
+      #embed-area {
+        grid-area: embed;
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: auto;
+        position: relative;
+        min-height: 400px;
+      }
+      /* Let common embeds (iframe / #webchat) fill the area. */
+      #embed-area iframe { width: 100%; height: 100%; border: 0; display: block; }
+      #embed-area > #webchat,
+      #embed-area > div[id*="webchat" i] { width: 100%; height: 100%; }
+      .embed-hint {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: #5c5a72;
+        font-size: 13px;
+        padding: 24px;
+        pointer-events: none;
+      }
+
+      #trace {
+        grid-area: trace;
+        display: flex;
+        flex-direction: column;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      #trace-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+      }
+      #trace-head h2 { font-size: 14px; margin: 0; }
+      #trace-head button {
+        font: inherit;
+        font-size: 12px;
+        color: var(--muted);
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 4px 10px;
+        cursor: pointer;
+      }
+      #verdict {
+        padding: 8px 14px;
+        font-size: 12px;
+        border-bottom: 1px solid var(--border);
+        color: var(--muted);
+      }
+      #verdict.stream { color: var(--ok); }
+      #verdict.final { color: var(--warn); }
+      #log {
+        flex: 1;
+        overflow: auto;
+        font-family: Consolas, "Cascadia Code", monospace;
+        font-size: 11.5px;
+        line-height: 1.5;
+        padding: 8px 10px;
+      }
+      .row {
+        padding: 4px 6px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .row .t { font-weight: 700; }
+      .row.ws .t { color: var(--accent-2); }
+      .row.tx .t { color: var(--info); }
+      .row.streaming .t { color: var(--info); }
+      .row.informative .t { color: var(--warn); }
+      .row.final .t { color: var(--ok); }
+      .row.message .t { color: var(--ok); }
+      .row.typing .t { color: var(--muted); }
+      .row.note { color: var(--muted); }
+      .row .meta { color: var(--muted); }
+    </style>
+
+    <!-- ================================================================== -->
+    <!-- TRACER — installed BEFORE any embed code runs, so it captures the   -->
+    <!-- Copilot Studio Direct Line WebSocket frames + posted activities.    -->
+    <!-- Works for any embed that runs Web Chat ON THIS PAGE (not a          -->
+    <!-- cross-origin <iframe>, whose traffic the browser hides from us).    -->
+    <!-- ================================================================== -->
+    <script>
+      (function installTracer() {
+        const counts = { live: 0, chunk: 0, final: 0 };
+        const streamIds = new Set();
+        let logEl, verdictEl, pillLive, pillChunk, pillFinal;
+        const pending = [];
+
+        function ready(fn) {
+          if (document.readyState !== 'loading') fn();
+          else document.addEventListener('DOMContentLoaded', fn);
+        }
+        ready(() => {
+          logEl = document.getElementById('log');
+          verdictEl = document.getElementById('verdict');
+          pillLive = document.querySelector('#pill-live strong');
+          pillChunk = document.querySelector('#pill-chunk strong');
+          pillFinal = document.querySelector('#pill-final strong');
+          pending.splice(0).forEach((args) => paint(...args));
+          refresh();
+        });
+
+        function paint(cls, title, meta) {
+          if (!logEl) {
+            pending.push([cls, title, meta]);
+            return;
+          }
+          const row = document.createElement('div');
+          row.className = 'row ' + cls;
+          const t = document.createElement('span');
+          t.className = 't';
+          t.textContent = title;
+          row.appendChild(t);
+          if (meta) {
+            const m = document.createElement('span');
+            m.className = 'meta';
+            m.textContent = '  ' + meta;
+            row.appendChild(m);
+          }
+          logEl.appendChild(row);
+          logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function refresh() {
+          if (pillLive) pillLive.textContent = counts.live;
+          if (pillChunk) pillChunk.textContent = counts.chunk;
+          if (pillFinal) pillFinal.textContent = counts.final;
+          if (!verdictEl) return;
+          if (counts.chunk > 0) {
+            verdictEl.className = 'stream';
+            verdictEl.textContent =
+              '✅ STREAMING — ' + counts.chunk + ' token-by-token chunks across ' +
+              counts.live + ' livestream(s), ' + counts.final + ' finalized.';
+          } else if (counts.final > 0 || counts.message > 0) {
+            verdictEl.className = 'final';
+            verdictEl.textContent =
+              '⚠️ FINAL-ONLY — no streaming chunks seen (typing + complete message). ' +
+              'Same shape as our app: this agent is not emitting token streaming.';
+          } else {
+            verdictEl.className = '';
+            verdictEl.textContent = 'Waiting for Direct Line traffic… paste the embed and send a generative prompt.';
+          }
+        }
+
+        // ---- interpret one Direct Line activity ----------------------------
+        function streamInfoOf(a) {
+          const cd = a && a.channelData;
+          let st = cd && cd.streamType;
+          let sid = cd && cd.streamId;
+          let seq = cd && cd.streamSequence;
+          if (!st && Array.isArray(a && a.entities)) {
+            const si = a.entities.find((e) => e && e.type === 'streaminfo' && e.streamType);
+            if (si) { st = si.streamType; sid = sid || si.streamId; seq = seq || si.streamSequence; }
+          }
+          return { st, sid, seq };
+        }
+
+        function handleActivity(a, source) {
+          if (!a || !a.type) return;
+          const from = (a.from && (a.from.role || a.from.id)) || '';
+          const isUser = from === 'user';
+          const { st, sid, seq } = streamInfoOf(a);
+          const len = (a.text || '').length;
+
+          if (st === 'streaming' || st === 'informative') {
+            counts.chunk++;
+            if (sid && !streamIds.has(sid)) { streamIds.add(sid); counts.live++; }
+            paint(st, st.toUpperCase(),
+              'seq ' + (seq ?? '?') + ' · len ' + len + ' · stream ' + (sid || a.id || '').slice(0, 18));
+          } else if (st === 'final') {
+            counts.final++;
+            paint('final', 'FINAL', 'len ' + len + ' · stream ' + (sid || a.id || '').slice(0, 18));
+          } else if (a.type === 'message' && !isUser) {
+            counts.message = (counts.message || 0) + 1;
+            paint('message', 'message', 'len ' + len + ' · ' + (source || ''));
+          } else if (a.type === 'typing' && !isUser) {
+            paint('typing', 'typing', source || '');
+          } else if (a.type === 'message' && isUser) {
+            paint('tx', 'USER →', '"' + (a.text || '').slice(0, 40) + '" deliveryMode=' + (a.deliveryMode || '—'));
+          }
+          refresh();
+        }
+
+        function scanFrame(data, source) {
+          if (typeof data !== 'string') return;
+          if (data.indexOf('activit') === -1) return;
+          let obj;
+          try { obj = JSON.parse(data); } catch { return; }
+          const acts = obj.activities || (Array.isArray(obj) ? obj : obj.activity ? [obj.activity] : null);
+          if (Array.isArray(acts)) acts.forEach((a) => handleActivity(a, source));
+        }
+
+        // ---- hook WebSocket (Direct Line stream channel) -------------------
+        const NativeWS = window.WebSocket;
+        function HookedWS(url, protocols) {
+          const ws = protocols === undefined ? new NativeWS(url) : new NativeWS(url, protocols);
+          try {
+            if (/directline|botframework|\/stream/i.test(String(url))) {
+              paint('ws', 'WS OPEN', String(url).slice(0, 80));
+            }
+          } catch {}
+          ws.addEventListener('message', (ev) => {
+            try { scanFrame(ev.data, 'ws'); } catch {}
+          });
+          return ws;
+        }
+        HookedWS.prototype = NativeWS.prototype;
+        ['CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'].forEach((k) => (HookedWS[k] = NativeWS[k]));
+        window.WebSocket = HookedWS;
+
+        // ---- hook fetch (token endpoint + polling activities) --------------
+        const nativeFetch = window.fetch;
+        window.fetch = function (input, init) {
+          const url = typeof input === 'string' ? input : input && input.url;
+          // Trace outgoing posted activities (to confirm deliveryMode:stream).
+          try {
+            if (init && init.body && /\/activities/i.test(String(url))) {
+              scanFrame(typeof init.body === 'string' ? init.body : '', 'tx');
+            }
+            if (/directline.*\/token|agenticruntime.*token/i.test(String(url))) {
+              paint('note', 'TOKEN', String(url).slice(0, 80));
+            }
+          } catch {}
+          return nativeFetch.apply(this, arguments).then((res) => {
+            try {
+              if (/\/activities/i.test(String(url)) && (!init || (init.method || 'GET').toUpperCase() === 'GET')) {
+                res.clone().text().then((t) => scanFrame(t, 'poll')).catch(() => {});
+              }
+            } catch {}
+            return res;
+          });
+        };
+
+        // ---- hook XHR (Web Chat polling transport fallback) ----------------
+        const open = XMLHttpRequest.prototype.open;
+        const send = XMLHttpRequest.prototype.send;
+        XMLHttpRequest.prototype.open = function (method, url) {
+          this.__url = url;
+          this.__method = method;
+          return open.apply(this, arguments);
+        };
+        XMLHttpRequest.prototype.send = function (body) {
+          try {
+            if (body && /\/activities/i.test(String(this.__url))) scanFrame(String(body), 'tx');
+          } catch {}
+          this.addEventListener('load', () => {
+            try {
+              if (/\/activities/i.test(String(this.__url))) scanFrame(this.responseText, 'poll');
+            } catch {}
+          });
+          return send.apply(this, arguments);
+        };
+
+        window.__tracer = { counts, reset() {
+          counts.live = counts.chunk = counts.final = 0; counts.message = 0;
+          streamIds.clear();
+          if (logEl) logEl.innerHTML = '';
+          refresh();
+        }};
+        paint('note', 'TRACER READY', 'WebSocket + fetch + XHR hooked. Paste embed, then send a generative prompt.');
+      })();
+    </script>
+
+    <!-- Web Chat bundle — loaded AFTER the tracer so the tracer's WebSocket
+         hook is installed before Web Chat creates the Direct Line socket. -->
+    <script
+      crossorigin="anonymous"
+      src="https://cdn.jsdelivr.net/npm/botframework-webchat@latest/dist/webchat.js"
+    ></script>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>Copilot Studio Embed · Streaming Tracer</h1>
+        <p>Paste the Copilot Studio embed code into the white panel. Send a generative prompt and watch the trace grade streaming vs. final-only.</p>
+      </div>
+      <div class="pills">
+        <span class="pill live" id="pill-live"><strong>0</strong>livestreams</span>
+        <span class="pill chunk" id="pill-chunk"><strong>0</strong>chunks</span>
+        <span class="pill final" id="pill-final"><strong>0</strong>finalized</span>
+      </div>
+    </header>
+
+    <!-- Modern-agent Direct Line, minted the same way the app's "New Agent ·
+         Direct Line" test mode does (agenticruntime token by schema). Web Chat
+         renders ON THIS PAGE, so the tracer hooks the Direct Line WebSocket and
+         grades streaming. No token endpoint needed — just env ID + schema. -->
+    <div class="controls">
+      <label for="envId">Environment ID</label>
+      <input
+        type="text"
+        id="envId"
+        value="d37505ad-37df-eccf-b172-39255da7a512"
+        placeholder="00000000-0000-0000-0000-000000000000"
+      />
+      <label for="schemaName">Schema</label>
+      <input
+        type="text"
+        id="schemaName"
+        value="mjsrc_mjnewagent4customer_Kvhq-e"
+        placeholder="prefix_agentname_xxxx"
+      />
+      <span class="opt">
+        <input type="checkbox" id="optStream" checked />
+        <label for="optStream">canvas stream opt-in (__version__:2)</label>
+      </span>
+      <button id="renderBtn" type="button">Render Web Chat</button>
+    </div>
+    <div id="embed-area">
+      <div class="embed-hint" id="embed-hint">
+        ↑ Confirm the <strong>Environment ID</strong> + <strong>Schema</strong> above
+        and click <strong>Render Web Chat</strong>. The token is minted from the
+        modern-agent <code>agenticruntime</code> runtime (same as the app's New
+        Agent · Direct Line mode), and Web Chat runs here on localhost so the
+        tracer sees every Direct Line frame.
+      </div>
+
+      <!-- PASTE START -->
+      <!-- PASTE END -->
+    </div>
+
+    <section id="trace">
+      <div id="trace-head">
+        <h2>Direct Line activity trace</h2>
+        <button onclick="window.__tracer && window.__tracer.reset()">Clear</button>
+      </div>
+      <div id="verdict">Waiting for Direct Line traffic…</div>
+      <div id="log"></div>
+    </section>
+
+    <script>
+      // Hide the hint once Web Chat is mounted.
+      function hideHintIfMounted() {
+        const area = document.getElementById('embed-area');
+        const hint = document.getElementById('embed-hint');
+        if (!area || !hint) return;
+        const meaningful = Array.from(area.children).some(
+          (c) => c !== hint && c.nodeType === 1
+        );
+        hint.style.display = meaningful ? 'none' : '';
+      }
+      hideHintIfMounted();
+
+      // ---- Modern-agent custom canvas renderer ----------------------------
+      (function () {
+        const btn = document.getElementById('renderBtn');
+        const envInput = document.getElementById('envId');
+        const schemaInput = document.getElementById('schemaName');
+        const optStream = document.getElementById('optStream');
+        const area = document.getElementById('embed-area');
+        const API_VERSION = 'api-version=2022-03-01-preview';
+
+        // Mirror app.js environmentApiHost(): split the compact GUID so the
+        // last 2 chars become the regional sub-host segment.
+        function environmentApiHost(envId) {
+          const compact = String(envId || '').replace(/-/g, '').toLowerCase();
+          if (compact.length < 3) throw new Error('Environment ID looks invalid.');
+          const first = compact.slice(0, compact.length - 2);
+          const last = compact.slice(compact.length - 2);
+          return `${first}.${last}.environment.api.powerplatform.com`;
+        }
+
+        async function mintToken(envId, schema) {
+          const host = environmentApiHost(envId);
+
+          // 1. Best-effort: discover the regional Direct Line host.
+          let domain = 'https://directline.botframework.com/v3/directline';
+          try {
+            const rcs = await fetch(
+              `https://${host}/powervirtualagents/regionalchannelsettings?${API_VERSION}`
+            );
+            if (rcs.ok) {
+              const body = await rcs.json();
+              const dl = body && body.channelUrlsById && body.channelUrlsById.directline;
+              if (dl) domain = dl.replace(/\/+$/, '') + '/v3/directline';
+            }
+          } catch {
+            /* keep the global Direct Line host */
+          }
+
+          // 2. Mint the Direct Line token from the agenticruntime runtime.
+          const tokenUrl =
+            `https://${host}/copilotstudio/agenticruntime/botsbyschema/` +
+            `${encodeURIComponent(schema)}/directline/token?${API_VERSION}`;
+          const resp = await fetch(tokenUrl);
+          if (!resp.ok) {
+            throw new Error(
+              `Token endpoint returned HTTP ${resp.status}. ` +
+                'If this agent requires sign-in, mint the token in the main app instead.'
+            );
+          }
+          const body = await resp.json();
+          if (!body.token) throw new Error('Token endpoint did not return a "token".');
+          return { token: body.token, domain };
+        }
+
+        async function render() {
+          const envId = (envInput.value || '').trim();
+          const schema = (schemaInput.value || '').trim();
+          if (!envId) { envInput.focus(); return; }
+          if (!schema) { schemaInput.focus(); return; }
+          if (!window.WebChat) { alert('Web Chat bundle not loaded yet, try again.'); return; }
+
+          btn.disabled = true;
+          btn.textContent = 'Connecting…';
+          try {
+            if (window.__tracer) window.__tracer.reset();
+            const { token, domain } = await mintToken(envId, schema);
+            const directLine = window.WebChat.createDirectLine({
+              token,
+              domain,
+              webSocket: true,
+            });
+
+            // Replicate the canvas contract: tag outgoing user messages with
+            // deliveryMode:'stream' so the runtime livestreams.
+            if (optStream.checked) {
+              const origPost = directLine.postActivity.bind(directLine);
+              directLine.postActivity = (activity) =>
+                origPost(
+                  activity && activity.type === 'message'
+                    ? { ...activity, deliveryMode: 'stream' }
+                    : activity
+                );
+
+              // Send the startConversation opt-in once Online (status 2).
+              let optedIn = false;
+              directLine.connectionStatus$.subscribe((status) => {
+                if (status === 2 && !optedIn) {
+                  optedIn = true;
+                  directLine
+                    .postActivity({
+                      type: 'event',
+                      name: 'startConversation',
+                      deliveryMode: 'stream',
+                      channelId: 'webchat',
+                      from: { id: 'embed-tracer-user', role: 'user' },
+                      channelData: { postBack: true },
+                      value: {
+                        __version__: '2',
+                        enableFileAttachment: 'false',
+                        cliAgent: 'true',
+                      },
+                      entities: [
+                        {
+                          type: 'ClientCapabilities',
+                          requiresBotState: true,
+                          supportsListening: true,
+                          supportsTts: true,
+                        },
+                      ],
+                    })
+                    .subscribe();
+                }
+              });
+            }
+
+            // Mount Web Chat in the white panel.
+            Array.from(area.children).forEach((c) => {
+              if (c.id !== 'embed-hint') c.remove();
+            });
+            const mount = document.createElement('div');
+            mount.style.width = '100%';
+            mount.style.height = '100%';
+            area.appendChild(mount);
+            window.WebChat.renderWebChat({ directLine }, mount);
+            hideHintIfMounted();
+          } catch (err) {
+            alert('Render failed: ' + (err && err.message ? err.message : err));
+          } finally {
+            btn.disabled = false;
+            btn.textContent = 'Render Web Chat';
+          }
+        }
+
+        btn.addEventListener('click', render);
+        [envInput, schemaInput].forEach((el) =>
+          el.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') render();
+          })
+        );
+      })();
+    </script>
+  </body>
+</html>
