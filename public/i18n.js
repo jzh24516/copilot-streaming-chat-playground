@@ -87,6 +87,17 @@
     },
     'Published-bot DTE · isolated diagnostic (standard harness)': { 'zh-CN': '已发布 Bot DTE · 隔离诊断（标准框架）', 'zh-TW': '已發佈 Bot DTE · 隔離診斷（標準框架）', ja: '公開 Bot DTE · 分離診断（標準ハーネス）', ko: '게시 봇 DTE · 격리 진단(표준 하네스)' },
     'Published-bot DTE · island sidecar diagnostic (Entra · non-GHCP)': { 'zh-CN': '已发布 Bot DTE · island 边车诊断（Entra · 非 GHCP）', 'zh-TW': '已發佈 Bot DTE · island sidecar 診斷（Entra · 非 GHCP）', ja: '公開 Bot DTE · island サイドカー診断（Entra · GHCP 以外）', ko: '게시 봇 DTE · island 사이드카 진단(Entra · 비 GHCP)' },
+    'Copilot Studio GHCP harness · .NET Agent Framework /3p POC': { 'zh-CN': 'Copilot Studio GHCP 框架 · .NET Agent Framework /3p POC', 'zh-TW': 'Copilot Studio GHCP 框架 · .NET Agent Framework /3p POC', ja: 'Copilot Studio GHCP ハーネス · .NET Agent Framework /3p POC', ko: 'Copilot Studio GHCP 하네스 · .NET Agent Framework /3p POC' },
+    '.NET Agent Framework sidecar URL': { 'zh-CN': '.NET Agent Framework 边车 URL', 'zh-TW': '.NET Agent Framework Sidecar URL', ja: '.NET Agent Framework サイドカー URL', ko: '.NET Agent Framework 사이드카 URL' },
+    'Collapse connection panel': { 'zh-CN': '折叠连接面板', 'zh-TW': '摺疊連線面板', ja: '接続パネルを折りたたむ', ko: '연결 패널 접기' },
+    'Expand connection panel': { 'zh-CN': '展开连接面板', 'zh-TW': '展開連線面板', ja: '接続パネルを展開する', ko: '연결 패널 펼치기' },
+    'Resize connection panel': { 'zh-CN': '调整连接面板大小', 'zh-TW': '調整連線面板大小', ja: '接続パネルのサイズを変更', ko: '연결 패널 크기 조정' },
+    'Start the .NET sidecar with npm run agent-framework:poc, then click Test connection or Connect.': {
+      'zh-CN': '使用 npm run agent-framework:poc 启动 .NET 边车，然后点击“测试连接”或“连接”。',
+      'zh-TW': '使用 npm run agent-framework:poc 啟動 .NET Sidecar，然後按一下「測試連線」或「連線」。',
+      ja: 'npm run agent-framework:poc で .NET サイドカーを起動し、「接続テスト」または「接続」をクリックします。',
+      ko: 'npm run agent-framework:poc로 .NET 사이드카를 시작한 다음 연결 테스트 또는 연결을 클릭하세요.'
+    },
     'Generated hosts currently support commercial': { 'zh-CN': '当前生成的主机仅支持商业', 'zh-TW': '目前產生的主機僅支援商業', ja: '生成ホストが現在対応するのは商用', ko: '현재 생성 호스트는 상용' },
     'environments only.': { 'zh-CN': '环境。', 'zh-TW': '環境。', ja: '環境のみです。', ko: '환경만 지원합니다.' },
     'Experimental diagnostic for a': { 'zh-CN': '用于', 'zh-TW': '用於', ja: '対象:', ko: '대상:' },
@@ -169,6 +180,7 @@
     'Connecting…': { 'zh-CN': '正在连接…', 'zh-TW': '正在連線…', ja: '接続中…', ko: '연결 중…' },
     'Online · streaming ready': { 'zh-CN': '在线 · 已可流式响应', 'zh-TW': '線上 · 已可串流', ja: 'オンライン · ストリーミング準備完了', ko: '온라인 · 스트리밍 준비됨' },
     'Online · Direct Line connected': { 'zh-CN': '在线 · Direct Line 已连接', 'zh-TW': '線上 · Direct Line 已連線', ja: 'オンライン · Direct Line 接続済み', ko: '온라인 · Direct Line 연결됨' },
+    'Online · .NET Agent Framework connected': { 'zh-CN': '在线 · .NET Agent Framework 已连接', 'zh-TW': '線上 · .NET Agent Framework 已連線', ja: 'オンライン · .NET Agent Framework 接続済み', ko: '온라인 · .NET Agent Framework 연결됨' },
     'Token expired': { 'zh-CN': '令牌已过期', 'zh-TW': '權杖已過期', ja: 'トークンの有効期限切れ', ko: '토큰 만료됨' },
     'Failed to connect': { 'zh-CN': '连接失败', 'zh-TW': '連線失敗', ja: '接続に失敗しました', ko: '연결 실패' },
     'Conversation ended': { 'zh-CN': '对话已结束', 'zh-TW': '交談已結束', ja: '会話が終了しました', ko: '대화 종료됨' },
@@ -188,6 +200,24 @@
       'zh-TW': '已連線到無驗證的 Agentic Direct Line。執行階段可能僅傳回最終訊息。',
       ja: '認証なし Agentic Direct Line に接続しました。ランタイムは final のみを返す場合があります。',
       ko: '인증 없는 Agentic Direct Line에 연결되었습니다. 런타임이 최종 메시지만 반환할 수 있습니다.'
+    },
+    'Connecting to the Copilot Studio GHCP harness through .NET Agent Framework…': {
+      'zh-CN': '正在通过 .NET Agent Framework 连接 Copilot Studio GHCP 框架…',
+      'zh-TW': '正在透過 .NET Agent Framework 連線 Copilot Studio GHCP 框架…',
+      ja: '.NET Agent Framework 経由で Copilot Studio GHCP ハーネスに接続中…',
+      ko: '.NET Agent Framework를 통해 Copilot Studio GHCP 하네스에 연결 중…'
+    },
+    'Connected through .NET Agent Framework. Send a prompt to observe real RunStreamingAsync updates.': {
+      'zh-CN': '已通过 .NET Agent Framework 连接。发送提示以观察真实的 RunStreamingAsync 更新。',
+      'zh-TW': '已透過 .NET Agent Framework 連線。傳送提示以觀察真實的 RunStreamingAsync 更新。',
+      ja: '.NET Agent Framework 経由で接続しました。プロンプトを送信して実際の RunStreamingAsync 更新を確認してください。',
+      ko: '.NET Agent Framework를 통해 연결했습니다. 프롬프트를 보내 실제 RunStreamingAsync 업데이트를 확인하세요.'
+    },
+    '✓ .NET Agent Framework reached the Copilot Studio GHCP /3p runtime. Click Connect to compare streaming.': {
+      'zh-CN': '✓ .NET Agent Framework 已到达 Copilot Studio GHCP /3p 运行时。点击“连接”比较流式响应。',
+      'zh-TW': '✓ .NET Agent Framework 已到達 Copilot Studio GHCP /3p 執行階段。按一下「連線」比較串流。',
+      ja: '✓ .NET Agent Framework が Copilot Studio GHCP /3p ランタイムに到達しました。「接続」でストリーミングを比較できます。',
+      ko: '✓ .NET Agent Framework가 Copilot Studio GHCP /3p 런타임에 도달했습니다. 연결을 눌러 스트리밍을 비교하세요.'
     },
     'Streaming opt-in sent (deliveryMode:"stream") — send a message to see chunks.': {
       'zh-CN': '已发送流式响应 opt-in（deliveryMode:"stream"）— 发送消息查看分块。',
@@ -657,7 +687,7 @@
     'Budget time for the': { 'zh-CN': '把时间预算花在', 'zh-TW': '把時間預算花在', ja: '時間を確保すべきは', ko: '시간을 들여야 할 곳은' },
     'plumbing': { 'zh-CN': '底层管道', 'zh-TW': '底層管線', ja: '配管 (plumbing)', ko: '배관(plumbing)' },
     ', not the UI. The visible chat is easy; the activity reconciliation is where the work is.': { 'zh-CN': '上，而不是 UI。可见的聊天很简单；活动的协调才是真正的工作所在。', 'zh-TW': '上，而不是 UI。可見的聊天很簡單；活動的協調才是真正的工作所在。', ja: 'であって UI ではありません。見えるチャットは簡単で、アクティビティの調整こそが本当の作業です。', ko: '이며 UI가 아닙니다. 보이는 채팅은 쉽고, 활동 조정이 진짜 작업입니다.' },
-    // --- Slides 12-15 (new-agent runtimes, GHCP /3p, takeaways) ---
+    // --- Slides 12-17 (new-agent runtimes, GHCP /3p, Agent Framework, architecture, takeaways) ---
     'Updated August 2026': { 'zh-CN': '更新于 2026 年 8 月', 'zh-TW': '更新於 2026 年 8 月', ja: '2026 年 8 月更新', ko: '2026년 8월 업데이트' },
     'Runtime Split': { 'zh-CN': '运行时分流', 'zh-TW': '執行階段分流', ja: 'ランタイムの分岐', ko: '런타임 분기' },
     'Choose the route by harness and authentication': { 'zh-CN': '按框架和身份验证选择路由', 'zh-TW': '依框架和驗證方式選擇路由', ja: 'ハーネスと認証方式でルートを選ぶ', ko: '하네스와 인증 방식에 따라 경로 선택' },
@@ -745,6 +775,176 @@
       ko: '실험적 지원 경계 — Microsoft가 새 환경 클라이언트의 프로덕션 지원을 게시할 때까지 Microsoft 소스에 근거한 이 개발자 경로는 테스트에만 사용하세요.'
     },
     'Use this Microsoft-source-backed developer path for testing until Microsoft publishes production support for new-experience clients.': { 'zh-CN': '在 Microsoft 发布新体验客户端的生产支持之前，请仅将这个有 Microsoft 源代码依据的开发者路径用于测试。', 'zh-TW': '在 Microsoft 發佈新體驗用戶端的生產支援之前，請僅將這個有 Microsoft 原始碼依據的開發者路徑用於測試。', ja: 'Microsoft が新しいエクスペリエンスのクライアント向け本番サポートを公開するまでは、Microsoft のソースに基づくこの開発者経路をテスト用途に限定してください。', ko: 'Microsoft가 새 환경 클라이언트의 프로덕션 지원을 게시할 때까지 Microsoft 소스에 근거한 이 개발자 경로는 테스트에만 사용하세요.' },
+    'Agent Framework · Live Proof': { 'zh-CN': 'Agent Framework · 实测证明', 'zh-TW': 'Agent Framework · 實測證明', ja: 'Agent Framework · 実環境での検証', ko: 'Agent Framework · 실환경 검증' },
+    '.NET Agent Framework wraps the same Copilot Studio /3p route': { 'zh-CN': '.NET Agent Framework 封装同一条 Copilot Studio /3p 路径', 'zh-TW': '.NET Agent Framework 封裝同一條 Copilot Studio /3p 路徑', ja: '.NET Agent Framework で同じ Copilot Studio /3p ルートをラップ', ko: '.NET Agent Framework로 동일한 Copilot Studio /3p 경로 래핑' },
+    'Live-verified August 6, 2026 against the same published, Microsoft-authenticated Copilot Studio GHCP-harness agent. This is the Copilot Studio provider — not the direct GitHub Copilot CLI provider.': {
+      'zh-CN': '2026 年 8 月 6 日，已针对同一个发布且使用 Microsoft 身份验证的 Copilot Studio GHCP 框架智能体完成实测。这使用 Copilot Studio 提供程序，而不是直接 GitHub Copilot CLI 提供程序。',
+      'zh-TW': '2026 年 8 月 6 日，已針對同一個發佈且使用 Microsoft 驗證的 Copilot Studio GHCP 框架代理程式完成實測。這使用 Copilot Studio 提供者，而不是直接 GitHub Copilot CLI 提供者。',
+      ja: '2026 年 8 月 6 日、同じ公開済み Microsoft 認証 Copilot Studio GHCP ハーネス エージェントで実環境検証を完了しました。使用したのは Copilot Studio プロバイダーであり、直接 GitHub Copilot CLI プロバイダーではありません。',
+      ko: '2026년 8월 6일 동일한 게시된 Microsoft 인증 Copilot Studio GHCP 하네스 에이전트에서 실환경 검증했습니다. 직접 GitHub Copilot CLI 공급자가 아니라 Copilot Studio 공급자를 사용합니다.'
+    },
+    'Browser MSAL acquires the delegated Power Platform token.': { 'zh-CN': '浏览器 MSAL 获取委托的 Power Platform 令牌。', 'zh-TW': '瀏覽器 MSAL 取得委派的 Power Platform 權杖。', ja: 'ブラウザーの MSAL が委任 Power Platform トークンを取得します。', ko: '브라우저 MSAL이 위임된 Power Platform 토큰을 획득합니다.' },
+    '2 · host': { 'zh-CN': '2 · 主机', 'zh-TW': '2 · 主機', ja: '2 · ホスト', ko: '2 · 호스트' },
+    'A loopback .NET 8 sidecar creates the Copilot Studio client.': { 'zh-CN': '本机回环 .NET 8 边车创建 Copilot Studio 客户端。', 'zh-TW': '本機回環 .NET 8 Sidecar 建立 Copilot Studio 用戶端。', ja: 'ループバック .NET 8 サイドカーが Copilot Studio クライアントを作成します。', ko: '루프백 .NET 8 사이드카가 Copilot Studio 클라이언트를 만듭니다.' },
+    '3 · route': { 'zh-CN': '3 · 路径', 'zh-TW': '3 · 路徑', ja: '3 · ルート', ko: '3 · 경로' },
+    'DirectConnectUrl targets the guarded Agentic Runtime controller.': { 'zh-CN': 'DirectConnectUrl 指向受保护的 Agentic Runtime 控制器。', 'zh-TW': 'DirectConnectUrl 指向受保護的 Agentic Runtime 控制器。', ja: 'DirectConnectUrl は保護された Agentic Runtime コントローラーを指定します。', ko: 'DirectConnectUrl은 보호된 Agentic Runtime 컨트롤러를 대상으로 합니다.' },
+    '4 · stream': { 'zh-CN': '4 · 流式响应', 'zh-TW': '4 · 串流', ja: '4 · ストリーム', ko: '4 · 스트림' },
+    'RunStreamingAsync yields provider updates; the browser rebuilds the bubble.': { 'zh-CN': 'RunStreamingAsync 生成提供程序更新；浏览器重建消息气泡。', 'zh-TW': 'RunStreamingAsync 產生提供者更新；瀏覽器重建訊息泡泡。', ja: 'RunStreamingAsync がプロバイダー更新を返し、ブラウザーがバブルを再構築します。', ko: 'RunStreamingAsync가 공급자 업데이트를 생성하고 브라우저가 버블을 재구성합니다.' },
+    'Key adapter finding': { 'zh-CN': '关键适配器发现', 'zh-TW': '關鍵配接器發現', ja: 'アダプターの重要な発見', ko: '핵심 어댑터 발견' },
+    'In this run, Agent Framework updates arrived as text fragments, while the Node client delivered cumulative snapshots. Reusing a stable activity ID without consolidation showed only the latest fragment. The browser now appends ordered text updates per streamId, then replaces one growing bubble with a consolidated snapshot.': {
+      'zh-CN': '在本次实测中，Agent Framework 更新以文本分块到达，而 Node 客户端提供累积快照。若不先合并就复用稳定的活动 ID，界面只会显示最新分块。浏览器现在按 streamId 追加有序文本更新，再用合并后的快照替换同一个增长中的气泡。',
+      'zh-TW': '在本次實測中，Agent Framework 更新以文字區塊到達，而 Node 用戶端提供累積快照。若未先合併就重複使用穩定的活動 ID，介面只會顯示最新區塊。瀏覽器現在依 streamId 附加有序文字更新，再以合併後的快照取代同一個持續增長的泡泡。',
+      ja: '今回の実測では、Agent Framework の更新はテキスト フラグメントとして届き、Node クライアントは累積スナップショットを返しました。統合せずに安定したアクティビティ ID を再利用すると、最新フラグメントだけが表示されます。ブラウザーは streamId ごとに順序付きテキスト更新を連結し、統合スナップショットで 1 つの成長するバブルを更新します。',
+      ko: '이번 실측에서 Agent Framework 업데이트는 텍스트 조각으로 도착했고 Node 클라이언트는 누적 스냅샷을 제공했습니다. 통합 없이 안정적인 활동 ID를 재사용하면 최신 조각만 표시됩니다. 브라우저는 streamId별 순서화된 텍스트 업데이트를 이어 붙인 후 통합 스냅샷으로 하나의 커지는 버블을 갱신합니다.'
+    },
+    'One observed live turn': { 'zh-CN': '一次实时回合的观测', 'zh-TW': '一次即時回合的觀測', ja: '観測した 1 回のライブ ターン', ko: '관찰된 한 번의 라이브 턴' },
+    'real fragments': { 'zh-CN': '实测分块', 'zh-TW': '實測區塊', ja: '実フラグメント', ko: '실제 조각' },
+    'characters': { 'zh-CN': '字符', 'zh-TW': '字元', ja: '文字', ko: '문자' },
+    'matching final': { 'zh-CN': '匹配的最终消息', 'zh-TW': '相符的最終訊息', ja: '一致する final', ko: '일치하는 final' },
+    'Startup proof: the welcome is queued until the adapter reports Online, then rendered in order.': {
+      'zh-CN': '启动证明：欢迎消息会排队，直到适配器报告 Online，再按顺序呈现。',
+      'zh-TW': '啟動證明：歡迎訊息會排隊，直到配接器回報 Online，再依序呈現。',
+      ja: '起動時の検証: アダプターが Online を報告するまでウェルカムをキューに保持し、その後順番に描画します。',
+      ko: '시작 검증: 어댑터가 Online을 보고할 때까지 환영 메시지를 대기열에 두고 순서대로 렌더링합니다.'
+    },
+    'In this run, Agent Framework updates arrived as text fragments; the Node client delivered cumulative snapshots. The browser appends text by streamId, then emits one consolidated bubble.': {
+      'zh-CN': '在本次实测中，Agent Framework 更新以文本分块到达；Node 客户端提供累积快照。浏览器按 streamId 追加文本，再输出一个合并后的气泡。',
+      'zh-TW': '在本次實測中，Agent Framework 更新以文字區塊到達；Node 用戶端提供累積快照。瀏覽器依 streamId 附加文字，再輸出一個合併後的泡泡。',
+      ja: '今回の実測では、Agent Framework の更新はテキスト フラグメントとして届き、Node クライアントは累積スナップショットを返しました。ブラウザーは streamId ごとにテキストを連結し、統合した 1 つのバブルを出力します。',
+      ko: '이번 실측에서 Agent Framework 업데이트는 텍스트 조각으로 도착했고 Node 클라이언트는 누적 스냅샷을 제공했습니다. 브라우저는 streamId별 텍스트를 이어 붙여 통합된 하나의 버블을 출력합니다.'
+    },
+    '15 real fragments · 4→1,164 characters · 1 matching final. Startup proof: the welcome waits until the adapter reports Online, then renders in order.': {
+      'zh-CN': '15 个实测分块 · 4→1,164 个字符 · 1 个匹配的最终消息。启动证明：欢迎消息等待适配器报告 Online，再按顺序呈现。',
+      'zh-TW': '15 個實測區塊 · 4→1,164 個字元 · 1 個相符的最終訊息。啟動證明：歡迎訊息等待配接器回報 Online，再依序呈現。',
+      ja: '15 個の実フラグメント · 4→1,164 文字 · 一致する final 1 件。起動時の検証: ウェルカムはアダプターの Online 報告を待ってから順番に描画されます。',
+      ko: '실제 조각 15개 · 4→1,164자 · 일치하는 final 1개. 시작 검증: 환영 메시지는 어댑터의 Online 보고를 기다린 후 순서대로 렌더링됩니다.'
+    },
+    'RESULT: Agent Framework provides a structured .NET host around the same experimental Copilot Studio /3p route. The progressive Web Chat bubble is adapter reconstruction over preview updates, not a new support contract.': {
+      'zh-CN': '结果：Agent Framework 为同一条实验性 Copilot Studio /3p 路径提供结构化 .NET 宿主。渐进式 Web Chat 气泡是适配器基于预览更新重建的结果，并不是新的支持契约。',
+      'zh-TW': '結果：Agent Framework 為同一條實驗性 Copilot Studio /3p 路徑提供結構化 .NET 主機。漸進式 Web Chat 泡泡是配接器依預覽更新重建的結果，並不是新的支援合約。',
+      ja: '結果: Agent Framework は同じ試験的 Copilot Studio /3p ルートに構造化された .NET ホストを提供します。段階的に成長する Web Chat バブルはプレビュー更新をアダプターが再構築したものであり、新しいサポート契約ではありません。',
+      ko: '결과: Agent Framework는 동일한 실험적 Copilot Studio /3p 경로에 구조화된 .NET 호스트를 제공합니다. 점진적으로 커지는 Web Chat 버블은 미리 보기 업데이트를 어댑터가 재구성한 결과이며 새로운 지원 계약이 아닙니다.'
+    },
+    'RESULT:': { 'zh-CN': '结果：', 'zh-TW': '結果：', ja: '結果:', ko: '결과:' },
+    '.NET Agent Framework: same /3p route, structured host': { 'zh-CN': '.NET Agent Framework：同一 /3p 路径，结构化宿主', 'zh-TW': '.NET Agent Framework：同一 /3p 路徑，結構化主機', ja: '.NET Agent Framework: 同じ /3p ルート、構造化ホスト', ko: '.NET Agent Framework: 동일한 /3p 경로, 구조화된 호스트' },
+    'Live proof · Aug 6, 2026 · Microsoft-authenticated Copilot Studio GHCP-harness agent · Copilot Studio provider, not direct GitHub Copilot CLI': { 'zh-CN': '实时验证 · 2026 年 8 月 6 日 · Microsoft 身份验证的 Copilot Studio GHCP 框架智能体 · Copilot Studio 提供程序，并非直接 GitHub Copilot CLI', 'zh-TW': '即時驗證 · 2026 年 8 月 6 日 · Microsoft 驗證的 Copilot Studio GHCP 框架代理程式 · Copilot Studio 提供者，並非直接 GitHub Copilot CLI', ja: '実環境検証 · 2026 年 8 月 6 日 · Microsoft 認証 Copilot Studio GHCP ハーネス エージェント · Copilot Studio プロバイダー、直接 GitHub Copilot CLI ではない', ko: '실환경 검증 · 2026년 8월 6일 · Microsoft 인증 Copilot Studio GHCP 하네스 에이전트 · 직접 GitHub Copilot CLI가 아닌 Copilot Studio 공급자' },
+    'Delegated token': { 'zh-CN': '委托令牌', 'zh-TW': '委派權杖', ja: '委任トークン', ko: '위임된 토큰' },
+    '.NET 8 sidecar': { 'zh-CN': '.NET 8 边车', 'zh-TW': '.NET 8 Sidecar', ja: '.NET 8 サイドカー', ko: '.NET 8 사이드카' },
+    'Guarded Agentic Runtime': { 'zh-CN': '受保护的 Agentic Runtime', 'zh-TW': '受保護的 Agentic Runtime', ja: '保護された Agentic Runtime', ko: '보호된 Agentic Runtime' },
+    'Provider updates': { 'zh-CN': '提供程序更新', 'zh-TW': '提供者更新', ja: 'プロバイダー更新', ko: '공급자 업데이트' },
+    'Observed update shapes': { 'zh-CN': '观测到的更新形态', 'zh-TW': '觀測到的更新形態', ja: '観測した更新形式', ko: '관찰된 업데이트 형태' },
+    'Agent Framework': { 'zh-CN': 'Agent Framework', 'zh-TW': 'Agent Framework', ja: 'Agent Framework', ko: 'Agent Framework' },
+    'Text fragments in this run': { 'zh-CN': '本次实测为文本分块', 'zh-TW': '本次實測為文字區塊', ja: '今回の実測ではテキスト フラグメント', ko: '이번 실측에서는 텍스트 조각' },
+    'Node client': { 'zh-CN': 'Node 客户端', 'zh-TW': 'Node 用戶端', ja: 'Node クライアント', ko: 'Node 클라이언트' },
+    'Cumulative snapshots': { 'zh-CN': '累积快照', 'zh-TW': '累積快照', ja: '累積スナップショット', ko: '누적 스냅샷' },
+    'Browser adapter': { 'zh-CN': '浏览器适配器', 'zh-TW': '瀏覽器配接器', ja: 'ブラウザー アダプター', ko: '브라우저 어댑터' },
+    'Append text by streamId': { 'zh-CN': '按 streamId 追加文本', 'zh-TW': '依 streamId 附加文字', ja: 'streamId ごとにテキストを連結', ko: 'streamId별 텍스트 이어 붙이기' },
+    'Greeting queued until Online, then rendered in order.': { 'zh-CN': '欢迎消息等待 Online，再按顺序呈现。', 'zh-TW': '歡迎訊息等待 Online，再依序呈現。', ja: 'ウェルカムは Online を待ってから順番に描画。', ko: '환영 메시지는 Online을 기다린 후 순서대로 렌더링됩니다.' },
+    '.NET sidecar': { 'zh-CN': '.NET 边车', 'zh-TW': '.NET Sidecar', ja: '.NET サイドカー', ko: '.NET 사이드카' },
+    'IActivity or text update': { 'zh-CN': 'IActivity 或文本更新', 'zh-TW': 'IActivity 或文字更新', ja: 'IActivity またはテキスト更新', ko: 'IActivity 또는 텍스트 업데이트' },
+    'Append by streamId': { 'zh-CN': '按 streamId 追加', 'zh-TW': '依 streamId 附加', ja: 'streamId ごとに連結', ko: 'streamId별 이어 붙이기' },
+    'Web Chat': { 'zh-CN': 'Web Chat', 'zh-TW': 'Web Chat', ja: 'Web Chat', ko: 'Web Chat' },
+    'One growing activity': { 'zh-CN': '一个增长中的活动', 'zh-TW': '一個持續增長的活動', ja: '1 つの成長するアクティビティ', ko: '하나의 커지는 활동' },
+    'SUPPORT BOUNDARY:': { 'zh-CN': '支持边界：', 'zh-TW': '支援界線：', ja: 'サポート境界:', ko: '지원 경계:' },
+    'Same experimental /3p route. Agent Framework adds a structured .NET host; adapter reconstruction is not a new support contract.': { 'zh-CN': '同一条实验性 /3p 路径。Agent Framework 增加结构化 .NET 宿主；适配器重建并不是新的支持契约。', 'zh-TW': '同一條實驗性 /3p 路徑。Agent Framework 增加結構化 .NET 主機；配接器重建並不是新的支援合約。', ja: '同じ試験的 /3p ルートです。Agent Framework は構造化された .NET ホストを追加しますが、アダプターによる再構築は新しいサポート契約ではありません。', ko: '동일한 실험적 /3p 경로입니다. Agent Framework는 구조화된 .NET 호스트를 추가하지만 어댑터 재구성은 새로운 지원 계약이 아닙니다.' },
+    'Agent Framework · Provider Architecture': { 'zh-CN': 'Agent Framework · 提供程序架构', 'zh-TW': 'Agent Framework · 提供者架構', ja: 'Agent Framework · プロバイダー アーキテクチャ', ko: 'Agent Framework · 공급자 아키텍처' },
+    'One framework, two providers — reuse the published GHCP agent': { 'zh-CN': '一个框架、两个提供程序——复用已发布的 GHCP 智能体', 'zh-TW': '一個架構、兩個提供者——重複使用已發佈的 GHCP 代理程式', ja: '1 つのフレームワーク、2 つのプロバイダー — 公開済み GHCP エージェントを再利用', ko: '하나의 프레임워크, 두 공급자 — 게시된 GHCP 에이전트 재사용' },
+    'Agent Framework provider map — reuse the published GHCP agent': { 'zh-CN': 'Agent Framework 提供程序图——复用已发布的 GHCP 智能体', 'zh-TW': 'Agent Framework 提供者圖——重複使用已發佈的 GHCP 代理程式', ja: 'Agent Framework プロバイダー マップ — 公開済み GHCP エージェントを再利用', ko: 'Agent Framework 공급자 맵 — 게시된 GHCP 에이전트 재사용' },
+    'Select the Copilot Studio provider; it bridges the .NET host to the existing published agent through authenticated /3p.': {
+      'zh-CN': '选择 Copilot Studio 提供程序；它通过经过身份验证的 /3p，将 .NET 宿主连接到现有已发布智能体。',
+      'zh-TW': '選擇 Copilot Studio 提供者；它透過經過驗證的 /3p，將 .NET 主機連接到現有已發佈代理程式。',
+      ja: 'Copilot Studio プロバイダーを選択すると、認証済み /3p を介して .NET ホストを既存の公開済みエージェントへ接続します。',
+      ko: 'Copilot Studio 공급자를 선택하면 인증된 /3p를 통해 .NET 호스트를 기존 게시 에이전트에 연결합니다.'
+    },
+    'Copilot Studio provider → authenticated /3p → existing published GHCP agent.': { 'zh-CN': 'Copilot Studio 提供程序 → 经过身份验证的 /3p → 现有已发布 GHCP 智能体。', 'zh-TW': 'Copilot Studio 提供者 → 經過驗證的 /3p → 現有已發佈 GHCP 代理程式。', ja: 'Copilot Studio プロバイダー → 認証済み /3p → 既存の公開済み GHCP エージェント。', ko: 'Copilot Studio 공급자 → 인증된 /3p → 기존 게시 GHCP 에이전트.' },
+    'The provider is the switch: the Copilot Studio branch reaches your existing published agent through authenticated /3p, while the GitHub Copilot branch creates a separate coding-agent runtime.': {
+      'zh-CN': '提供程序就是切换点：Copilot Studio 分支通过经过身份验证的 /3p 连接现有已发布智能体，而 GitHub Copilot 分支会创建独立的编码智能体运行时。',
+      'zh-TW': '提供者就是切換點：Copilot Studio 分支透過經過驗證的 /3p 連接現有已發佈代理程式，而 GitHub Copilot 分支會建立獨立的程式設計代理程式執行階段。',
+      ja: 'プロバイダーが分岐点です。Copilot Studio 分岐は認証済み /3p を介して既存の公開済みエージェントに到達し、GitHub Copilot 分岐は別のコーディング エージェント ランタイムを作成します。',
+      ko: '공급자가 분기점입니다. Copilot Studio 분기는 인증된 /3p를 통해 기존 게시 에이전트에 연결하고 GitHub Copilot 분기는 별도의 코딩 에이전트 런타임을 만듭니다.'
+    },
+    'The Copilot Studio provider reaches the existing published agent through authenticated /3p; the GitHub Copilot provider creates a separate coding-agent runtime.': {
+      'zh-CN': 'Copilot Studio 提供程序通过经过身份验证的 /3p 连接现有已发布智能体；GitHub Copilot 提供程序会创建独立的编码智能体运行时。',
+      'zh-TW': 'Copilot Studio 提供者透過經過驗證的 /3p 連接現有已發佈代理程式；GitHub Copilot 提供者會建立獨立的程式設計代理程式執行階段。',
+      ja: 'Copilot Studio プロバイダーは認証済み /3p を介して既存の公開済みエージェントに到達し、GitHub Copilot プロバイダーは別のコーディング エージェント ランタイムを作成します。',
+      ko: 'Copilot Studio 공급자는 인증된 /3p를 통해 기존 게시 에이전트에 연결하고 GitHub Copilot 공급자는 별도의 코딩 에이전트 런타임을 만듭니다.'
+    },
+    'Microsoft Agent Framework branches to the GitHub Copilot provider and Copilot Studio provider; the Copilot Studio path reaches an existing published GHCP harness agent through Agentic Runtime /3p.': {
+      'zh-CN': 'Microsoft Agent Framework 分支到 GitHub Copilot 提供程序和 Copilot Studio 提供程序；Copilot Studio 路径通过 Agentic Runtime /3p 连接现有已发布的 GHCP 框架智能体。',
+      'zh-TW': 'Microsoft Agent Framework 分支到 GitHub Copilot 提供者和 Copilot Studio 提供者；Copilot Studio 路徑透過 Agentic Runtime /3p 連接現有已發佈的 GHCP 框架代理程式。',
+      ja: 'Microsoft Agent Framework は GitHub Copilot プロバイダーと Copilot Studio プロバイダーに分岐し、Copilot Studio 経路は Agentic Runtime /3p を介して既存の公開済み GHCP ハーネス エージェントに到達します。',
+      ko: 'Microsoft Agent Framework는 GitHub Copilot 공급자와 Copilot Studio 공급자로 분기되며 Copilot Studio 경로는 Agentic Runtime /3p를 통해 기존 게시 GHCP 하네스 에이전트에 연결됩니다.'
+    },
+    'Pasted architecture · provider split and existing-agent reuse': { 'zh-CN': '粘贴的架构图 · 提供程序分支与现有智能体复用', 'zh-TW': '貼上的架構圖 · 提供者分支與現有代理程式重複使用', ja: '貼り付けたアーキテクチャ · プロバイダー分岐と既存エージェント再利用', ko: '붙여넣은 아키텍처 · 공급자 분기와 기존 에이전트 재사용' },
+    'Choose the provider': { 'zh-CN': '选择提供程序', 'zh-TW': '選擇提供者', ja: 'プロバイダーを選択', ko: '공급자 선택' },
+    'Copilot Studio': { 'zh-CN': 'Copilot Studio', 'zh-TW': 'Copilot Studio', ja: 'Copilot Studio', ko: 'Copilot Studio' },
+    'Copilot Studio provider': { 'zh-CN': 'Copilot Studio 提供程序', 'zh-TW': 'Copilot Studio 提供者', ja: 'Copilot Studio プロバイダー', ko: 'Copilot Studio 공급자' },
+    'Delegated Power Platform token': { 'zh-CN': '委托的 Power Platform 令牌', 'zh-TW': '委派的 Power Platform 權杖', ja: '委任 Power Platform トークン', ko: '위임된 Power Platform 토큰' },
+    'CopilotStudioAgent': { 'zh-CN': 'CopilotStudioAgent', 'zh-TW': 'CopilotStudioAgent', ja: 'CopilotStudioAgent', ko: 'CopilotStudioAgent' },
+    'CopilotStudio CopilotClient': { 'zh-CN': 'CopilotStudio CopilotClient', 'zh-TW': 'CopilotStudio CopilotClient', ja: 'CopilotStudio CopilotClient', ko: 'CopilotStudio CopilotClient' },
+    'RunStreamingAsync updates': { 'zh-CN': 'RunStreamingAsync 更新', 'zh-TW': 'RunStreamingAsync 更新', ja: 'RunStreamingAsync 更新', ko: 'RunStreamingAsync 업데이트' },
+    'Authenticated Agentic Runtime /3p': { 'zh-CN': '经过身份验证的 Agentic Runtime /3p', 'zh-TW': '經過驗證的 Agentic Runtime /3p', ja: '認証済み Agentic Runtime /3p', ko: '인증된 Agentic Runtime /3p' },
+    'SSE conversation + session': { 'zh-CN': 'SSE 对话 + 会话', 'zh-TW': 'SSE 對話 + 工作階段', ja: 'SSE 会話 + セッション', ko: 'SSE 대화 + 세션' },
+    'Existing published runtime': { 'zh-CN': '现有已发布运行时', 'zh-TW': '現有已發佈執行階段', ja: '既存の公開済みランタイム', ko: '기존 게시 런타임' },
+    'Handoff to existing published runtime': { 'zh-CN': '交接到现有已发布运行时', 'zh-TW': '交接到現有已發佈執行階段', ja: '既存の公開済みランタイムへ引き渡し', ko: '기존 게시 런타임으로 인계' },
+    'Handoff: existing published runtime': { 'zh-CN': '交接：现有已发布运行时', 'zh-TW': '交接：現有已發佈執行階段', ja: '引き渡し: 既存の公開済みランタイム', ko: '인계: 기존 게시 런타임' },
+    'REUSED RUNTIME': { 'zh-CN': '复用的运行时', 'zh-TW': '重複使用的執行階段', ja: '再利用するランタイム', ko: '재사용 런타임' },
+    'REUSE BOUNDARY': { 'zh-CN': '复用边界', 'zh-TW': '重複使用界線', ja: '再利用境界', ko: '재사용 경계' },
+    'Existing published Copilot Studio GHCP harness agent': { 'zh-CN': '现有已发布的 Copilot Studio GHCP 框架智能体', 'zh-TW': '現有已發佈的 Copilot Studio GHCP 框架代理程式', ja: '既存の公開済み Copilot Studio GHCP ハーネス エージェント', ko: '기존 게시 Copilot Studio GHCP 하네스 에이전트' },
+    'provider updates': { 'zh-CN': '提供程序更新', 'zh-TW': '提供者更新', ja: 'プロバイダー更新', ko: '공급자 업데이트' },
+    'browser adapter updates': { 'zh-CN': '浏览器适配器更新', 'zh-TW': '瀏覽器配接器更新', ja: 'ブラウザー アダプター更新', ko: '브라우저 어댑터 업데이트' },
+    'streamId merge': { 'zh-CN': 'streamId 合并', 'zh-TW': 'streamId 合併', ja: 'streamId 統合', ko: 'streamId 병합' },
+    'one Web Chat activity': { 'zh-CN': '一个 Web Chat 活动', 'zh-TW': '一個 Web Chat 活動', ja: '1 つの Web Chat アクティビティ', ko: '하나의 Web Chat 활동' },
+    'browser adapter updates  →  streamId merge  →  one Web Chat activity': { 'zh-CN': '浏览器适配器更新  →  streamId 合并  →  一个 Web Chat 活动', 'zh-TW': '瀏覽器配接器更新  →  streamId 合併  →  一個 Web Chat 活動', ja: 'ブラウザー アダプター更新  →  streamId 統合  →  1 つの Web Chat アクティビティ', ko: '브라우저 어댑터 업데이트  →  streamId 병합  →  하나의 Web Chat 활동' },
+    'Use this branch to reuse an existing published agent; the GitHub Copilot branch is a separate coding-agent path.': {
+      'zh-CN': '使用此分支复用现有已发布智能体；GitHub Copilot 分支是独立的编码智能体路径。',
+      'zh-TW': '使用此分支重複使用現有已發佈代理程式；GitHub Copilot 分支是獨立的程式設計代理程式路徑。',
+      ja: 'この分岐で既存の公開済みエージェントを再利用します。GitHub Copilot 分岐は別のコーディング エージェント経路です。',
+      ko: '이 분기를 사용해 기존 게시 에이전트를 재사용합니다. GitHub Copilot 분기는 별도의 코딩 에이전트 경로입니다.'
+    },
+    'Reuse an existing published agent. The GitHub Copilot branch is a separate coding-agent path.': {
+      'zh-CN': '复用现有已发布智能体。GitHub Copilot 分支是独立的编码智能体路径。',
+      'zh-TW': '重複使用現有已發佈代理程式。GitHub Copilot 分支是獨立的程式設計代理程式路徑。',
+      ja: '既存の公開済みエージェントを再利用します。GitHub Copilot 分岐は別のコーディング エージェント経路です。',
+      ko: '기존 게시 에이전트를 재사용합니다. GitHub Copilot 분기는 별도의 코딩 에이전트 경로입니다.'
+    },
+    'Authenticate and route': { 'zh-CN': '进行身份验证并路由', 'zh-TW': '進行驗證並路由', ja: '認証してルーティング', ko: '인증 및 라우팅' },
+    'MSAL': { 'zh-CN': 'MSAL', 'zh-TW': 'MSAL', ja: 'MSAL', ko: 'MSAL' },
+    '.NET host': { 'zh-CN': '.NET 宿主', 'zh-TW': '.NET 主機', ja: '.NET ホスト', ko: '.NET 호스트' },
+    '/3p SSE': { 'zh-CN': '/3p SSE', 'zh-TW': '/3p SSE', ja: '/3p SSE', ko: '/3p SSE' },
+    'CopilotStudioAgent carries the delegated Power Platform token to the guarded Agentic Runtime controller.': {
+      'zh-CN': 'CopilotStudioAgent 将委托的 Power Platform 令牌传递给受保护的 Agentic Runtime 控制器。',
+      'zh-TW': 'CopilotStudioAgent 將委派的 Power Platform 權杖傳遞給受保護的 Agentic Runtime 控制器。',
+      ja: 'CopilotStudioAgent は委任 Power Platform トークンを保護された Agentic Runtime コントローラーへ渡します。',
+      ko: 'CopilotStudioAgent는 위임된 Power Platform 토큰을 보호된 Agentic Runtime 컨트롤러로 전달합니다.'
+    },
+    'Rebuild progressive UX': { 'zh-CN': '重建渐进式体验', 'zh-TW': '重建漸進式體驗', ja: '段階的 UX を再構築', ko: '점진적 UX 재구성' },
+    'updates': { 'zh-CN': '更新', 'zh-TW': '更新', ja: '更新', ko: '업데이트' },
+    'streamId': { 'zh-CN': 'streamId', 'zh-TW': 'streamId', ja: 'streamId', ko: 'streamId' },
+    'RunStreamingAsync exposes preview updates; the browser appends text and emits one cumulative activity.': {
+      'zh-CN': 'RunStreamingAsync 暴露预览更新；浏览器追加文本并输出一个累积活动。',
+      'zh-TW': 'RunStreamingAsync 暴露預覽更新；瀏覽器附加文字並輸出一個累積活動。',
+      ja: 'RunStreamingAsync がプレビュー更新を公開し、ブラウザーがテキストを連結して 1 つの累積アクティビティを出力します。',
+      ko: 'RunStreamingAsync가 미리 보기 업데이트를 제공하고 브라우저가 텍스트를 이어 붙여 하나의 누적 활동을 출력합니다.'
+    },
+    'RunStreamingAsync exposes preview updates; the browser emits one cumulative activity.': {
+      'zh-CN': 'RunStreamingAsync 暴露预览更新；浏览器输出一个累积活动。',
+      'zh-TW': 'RunStreamingAsync 暴露預覽更新；瀏覽器輸出一個累積活動。',
+      ja: 'RunStreamingAsync がプレビュー更新を公開し、ブラウザーが 1 つの累積アクティビティを出力します。',
+      ko: 'RunStreamingAsync가 미리 보기 업데이트를 제공하고 브라우저가 하나의 누적 활동을 출력합니다.'
+    },
+    'REUSE, DON\'T CLONE: Agent Framework hosts the client and session; Copilot Studio remains the published GHCP-harness runtime.': {
+      'zh-CN': '复用，不要克隆：Agent Framework 托管客户端和会话；Copilot Studio 仍是已发布的 GHCP 框架运行时。',
+      'zh-TW': '重複使用，不要複製：Agent Framework 託管用戶端和工作階段；Copilot Studio 仍是已發佈的 GHCP 框架執行階段。',
+      ja: '複製せず再利用: Agent Framework がクライアントとセッションをホストし、Copilot Studio は公開済み GHCP ハーネス ランタイムのままです。',
+      ko: '복제하지 말고 재사용: Agent Framework가 클라이언트와 세션을 호스팅하고 Copilot Studio는 게시된 GHCP 하네스 런타임으로 유지됩니다.'
+    },
+    'REUSE, DON\'T CLONE: Agent Framework hosts the client/session; Copilot Studio remains the published GHCP-harness runtime.': {
+      'zh-CN': '复用，不要克隆：Agent Framework 托管客户端/会话；Copilot Studio 仍是已发布的 GHCP 框架运行时。',
+      'zh-TW': '重複使用，不要複製：Agent Framework 託管用戶端/工作階段；Copilot Studio 仍是已發佈的 GHCP 框架執行階段。',
+      ja: '複製せず再利用: Agent Framework がクライアント/セッションをホストし、Copilot Studio は公開済み GHCP ハーネス ランタイムのままです。',
+      ko: '복제하지 말고 재사용: Agent Framework가 클라이언트/세션을 호스팅하고 Copilot Studio는 게시된 GHCP 하네스 런타임으로 유지됩니다.'
+    },
     'If you remember four things': { 'zh-CN': '请记住四件事', 'zh-TW': '請記住四件事', ja: '覚えておくべき 4 つのこと', ko: '기억해야 할 네 가지' },
     'For an integrated GHCP agent, use the authenticated agenticruntime/3p Direct-to-Engine route — not legacy DTE or Direct Line.': { 'zh-CN': '对于集成身份验证的 GHCP 智能体，请使用经过身份验证的 agenticruntime/3p Direct-to-Engine 路由，而不是旧版 DTE 或 Direct Line。', 'zh-TW': '對於整合驗證的 GHCP 代理程式，請使用經過驗證的 agenticruntime/3p Direct-to-Engine 路由，而不是舊版 DTE 或 Direct Line。', ja: '統合認証 GHCP エージェントでは、従来の DTE や Direct Line ではなく、認証付き agenticruntime/3p Direct-to-Engine ルートを使います。', ko: '통합 인증 GHCP 에이전트에는 레거시 DTE나 Direct Line이 아니라 인증된 agenticruntime/3p Direct-to-Engine 경로를 사용합니다.' },
     'Integrated GHCP: use authenticated agenticruntime/3p DTE — never legacy DTE or Direct Line.': { 'zh-CN': '集成身份验证的 GHCP：使用经过身份验证的 agenticruntime/3p DTE，绝不要使用旧版 DTE 或 Direct Line。', 'zh-TW': '整合驗證的 GHCP：使用經過驗證的 agenticruntime/3p DTE，絕不要使用舊版 DTE 或 Direct Line。', ja: '統合認証 GHCP: 認証付き agenticruntime/3p DTE を使い、従来の DTE や Direct Line は使いません。', ko: '통합 인증 GHCP: 인증된 agenticruntime/3p DTE를 사용하고 레거시 DTE나 Direct Line은 사용하지 않습니다.' },
@@ -752,8 +952,14 @@
     '11 · RUNTIME SPLIT': { 'zh-CN': '11 · 运行时分流', 'zh-TW': '11 · 執行階段分流', ja: '11 · ランタイムの分岐', ko: '11 · 런타임 분기' },
     '12 · NO-AUTH ALTERNATIVE': { 'zh-CN': '12 · 无身份验证替代方案', 'zh-TW': '12 · 無驗證替代方案', ja: '12 · 認証なしの代替経路', ko: '12 · 인증 없음 대안' },
     '13 · NEW AGENT EXPERIENCE': { 'zh-CN': '13 · 新智能体体验', 'zh-TW': '13 · 新代理程式體驗', ja: '13 · 新しいエージェント エクスペリエンス', ko: '13 · 새 에이전트 환경' },
+    '14 · AGENT FRAMEWORK POC': { 'zh-CN': '14 · AGENT FRAMEWORK POC', 'zh-TW': '14 · AGENT FRAMEWORK POC', ja: '14 · AGENT FRAMEWORK POC', ko: '14 · AGENT FRAMEWORK POC' },
+    '15 · PROVIDER ARCHITECTURE': { 'zh-CN': '15 · 提供程序架构', 'zh-TW': '15 · 提供者架構', ja: '15 · プロバイダー アーキテクチャ', ko: '15 · 공급자 아키텍처' },
     '14 · TAKEAWAYS': { 'zh-CN': '14 · 要点', 'zh-TW': '14 · 重點', ja: '14 · 要点', ko: '14 · 핵심 요점' },
     '15 · COMMUNITY SHARE': { 'zh-CN': '15 · 社区分享', 'zh-TW': '15 · 社區分享', ja: '15 · コミュニティ共有', ko: '15 · 커뮤니티 공유' },
+    '15 · TAKEAWAYS': { 'zh-CN': '15 · 要点', 'zh-TW': '15 · 重點', ja: '15 · 要点', ko: '15 · 핵심 요점' },
+    '16 · COMMUNITY SHARE': { 'zh-CN': '16 · 社区分享', 'zh-TW': '16 · 社區分享', ja: '16 · コミュニティ共有', ko: '16 · 커뮤니티 공유' },
+    '16 · TAKEAWAYS': { 'zh-CN': '16 · 要点', 'zh-TW': '16 · 重點', ja: '16 · 要点', ko: '16 · 핵심 요점' },
+    '17 · COMMUNITY SHARE': { 'zh-CN': '17 · 社区分享', 'zh-TW': '17 · 社區分享', ja: '17 · コミュニティ共有', ko: '17 · 커뮤니티 공유' },
     // --- Legacy takeaways fragments ---
     'Both': { 'zh-CN': '两者：', 'zh-TW': '兩者：', ja: '両方:', ko: '둘 다:' },
     'and': { 'zh-CN': '和', 'zh-TW': '和', ja: 'と', ko: '및' },

@@ -144,14 +144,74 @@ body {
 
 /* Layout */
 .layout {
+  --connection-panel-width: 320px;
   display: grid;
-  grid-template-columns: 320px 1fr 360px;
-  gap: 16px;
+  grid-template-columns:
+    var(--connection-panel-width) 16px minmax(0, 1fr) 16px 360px;
+  column-gap: 0;
+  row-gap: 16px;
   padding: 16px;
   align-items: stretch;
   /* Fill the viewport below the sticky header so panels flex with window height. */
   flex: 1;
   min-height: 0;
+}
+
+.config-resize-handle {
+  position: relative;
+  grid-column: 2;
+  z-index: 8;
+  width: 16px;
+  align-self: stretch;
+  cursor: col-resize;
+  touch-action: none;
+  outline: none;
+}
+
+.config-resize-handle::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: 7px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--border);
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.config-resize-handle:hover::before,
+.config-resize-handle:focus-visible::before,
+body.connection-panel-resizing .config-resize-handle::before {
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(99, 68, 197, 0.55);
+}
+
+body.connection-panel-resizing {
+  cursor: col-resize;
+  user-select: none;
+}
+
+.config {
+  grid-column: 1;
+}
+
+.chat {
+  grid-column: 3;
+}
+
+.inspector {
+  grid-column: 5;
+}
+
+@media (min-width: 1101px) {
+  .layout.connection-collapsed {
+    grid-template-columns: 48px 16px minmax(0, 1fr) 16px 360px;
+  }
+
+  .layout.connection-collapsed .config-resize-handle {
+    display: none;
+  }
 }
 
 @media (max-width: 1100px) {
@@ -167,6 +227,16 @@ body {
     /* Stack vertically and let the page scroll instead of squeezing panels. */
     flex: none;
     min-height: 0;
+  }
+
+  .config,
+  .chat,
+  .inspector {
+    grid-column: 1;
+  }
+
+  .config-resize-handle {
+    display: none;
   }
 
   /* Each panel sizes to its content when stacked; cap the log so it scrolls
@@ -195,6 +265,76 @@ body {
    own panel instead of stretching the locked layout. */
 .config {
   overflow-y: auto;
+}
+
+.config-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 6px;
+  background: var(--panel);
+  flex: 0 0 auto;
+}
+
+.config-head h2 {
+  margin: 0;
+}
+
+.panel-toggle {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--muted);
+  background: var(--panel-2);
+  font: inherit;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.panel-toggle:hover,
+.panel-toggle:focus-visible {
+  color: var(--text);
+  border-color: var(--accent);
+  outline: none;
+}
+
+.config-head + .field {
+  margin-top: 12px;
+}
+
+.layout.connection-collapsed .config {
+  padding: 9px;
+  overflow: hidden;
+}
+
+.layout.connection-collapsed .config > :not(.config-head) {
+  display: none !important;
+}
+
+.layout.connection-collapsed .config-head {
+  justify-content: center;
+  width: 100%;
+}
+
+.layout.connection-collapsed .config-head h2 {
+  display: none;
+}
+
+@media (max-width: 1100px) {
+  .layout.connection-collapsed .config {
+    min-height: 48px;
+    max-height: 48px;
+  }
 }
 
 .panel h2 {

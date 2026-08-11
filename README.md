@@ -16,7 +16,7 @@ end-to-end on either transport.
 
 ## 📊 Tech-note deck
 
-A 16-slide walkthrough of what works, what doesn't, and the gotchas we hit — across
+An 18-slide walkthrough of what works, what doesn't, and the gotchas we hit — across
 both Direct Line and the Direct-to-Engine SDK. Available in **English, 简体中文, 繁體中文,
 日本語, and 한국어** (HTML view + PowerPoint export):
 
@@ -77,6 +77,7 @@ The UI includes dedicated modes for the supported transports and runtime experim
 | **Direct Line · live streaming** *(experimental)* | Direct Line (WebSocket) | Diagnose progressive Web Chat livestream activities | Secret/token/URL in browser (test only) |
 | **No-auth agent · Agentic Direct Line** *(diagnostic)* | Direct Line (WebSocket) | Probe a no-auth agenticruntime token endpoint; responses may still be final-only | Short-lived Direct Line token in browser |
 | **GHCP harness · Agentic Runtime /3p** *(experimental)* | Direct-to-Engine (SSE) | Test a published Dracarys/GitHub Copilot harness agent with delegated Entra authentication | No secret; signed-in user's delegated token is relayed through the local sidecar |
+| **Copilot Studio GHCP harness · .NET Agent Framework /3p POC** | Agent Framework over Copilot Studio SSE | Compare the same `/3p` agent through `CopilotStudioAgent.RunStreamingAsync` | No secret; browser sends the delegated token to loopback, which forwards it only to the allowlisted Power Platform `/3p` host |
 
 ### GHCP harness · Agentic Runtime /3p
 
@@ -125,6 +126,86 @@ change the support boundary below.
 > production support contract. Use the documented Teams, Microsoft 365, or Web
 > app iframe channel for production unless Microsoft confirms support for your
 > scenario.
+
+### .NET Agent Framework `/3p` proof of concept
+
+This isolated mode wraps the same Copilot Studio `/3p` connection in Microsoft
+Agent Framework for .NET. It does **not** use the direct GitHub Copilot CLI
+provider described in the Agent Framework announcement, and it does not modify
+the proven Node-sidecar mode.
+
+References:
+
+- [Build Production-Ready Agents with the GitHub Copilot Harness and Agent Framework](https://devblogs.microsoft.com/agent-framework/build-production-ready-agents-with-the-github-copilot-harness-and-agent-framework/)
+  describes the separate, direct GitHub Copilot CLI/SDK provider.
+- [Agent Framework Copilot Studio provider](https://learn.microsoft.com/agent-framework/agents/providers/copilot-studio)
+  supplies the `CopilotStudioAgent` wrapper used by this POC.
+
+Run the two local processes in separate terminals:
+
+```powershell
+npm start
+npm run agent-framework:poc
+```
+
+Prerequisites for the POC are the .NET 8 SDK and network access to restore the
+preview NuGet packages on the first run. Confirm the SDK with `dotnet --version`.
+
+The second command starts
+`sidecars/AgentFrameworkGhcp/AgentFrameworkGhcp.csproj` on
+`http://127.0.0.1:3980`. In the playground:
+
+1. Select **Copilot Studio GHCP harness · .NET Agent Framework /3p POC**.
+2. Use the same client ID, tenant ID, environment ID, and schema name as the
+   working Node `/3p` mode.
+3. Click **Test connection** to prove the .NET provider can start a real Copilot
+   Studio conversation through the generated `/3p` URL.
+4. Click **Connect**, then send a longer generative prompt.
+
+The visible proof is:
+
+- status changes to **Online · .NET Agent Framework connected**;
+- the answer bubble grows from the real `RunStreamingAsync` updates;
+- inspector activities include `channelData.pocProvider =
+  "agent-framework-dotnet"`;
+- the same `streamType`, `streamId`, and cumulative text behavior can be
+  compared with the Node mode.
+
+Agent Framework's preview Copilot Studio provider projects streaming `typing`
+activities into `AgentResponseUpdate` objects and keeps the original activity in
+`RawRepresentation`. In the live Agent Framework path, those `typing` texts are
+**delta fragments**, unlike the cumulative snapshots observed through the Node
+client. The browser consolidates each ordered fragment by `streamId`, emits a
+growing snapshot under the stable Web Chat activity ID, and finalizes the last
+consolidated snapshot when the provider completes. Raw inspector entries include
+`pocTextShape` and `pocFragmentLength` so this transformation remains visible.
+If the provider emits no streaming updates, the canvas shows an explicit
+provider-gap message instead of presenting cosmetic streaming as evidence.
+
+**Live verification — August 6, 2026:** a real Copilot Studio GHCP-harness turn
+arrived as 15 Agent Framework delta fragments. The browser consolidated them
+into snapshots growing from 4 to 1,164 characters, every snapshot extended the
+previous one, and the single final message exactly matched the last snapshot.
+
+The connection panel has a sticky mini-chevron control and a desktop resize
+separator on its right edge. Drag the separator, or focus it and use the arrow
+keys, to resize the expanded panel between its safe bounds. The last resized
+width is stored locally and restored after collapse/expand and reload; when no
+saved width exists it falls back to 320px. On desktop, collapse reduces the form
+to a 48px rail so the chat canvas expands; on mobile it reduces the panel to a
+48px header and hides the resize separator. Agent Framework initialization
+activities are held until the adapter reports `Online`, then delivered one
+event-loop turn at a time. This ensures the agent's streamed welcome/final
+greeting appears in Web Chat instead of being consumed while the connection is
+still starting.
+
+This POC uses `Microsoft.Agents.AI.CopilotStudio`
+`1.13.0-preview.260703.1`. Agent Framework provides a useful `AIAgent` hosting
+surface, sessions, middleware, and telemetry, but it does not turn the
+undocumented Copilot Studio `/3p` route into a production-supported contract.
+That provider currently restores `Microsoft.Agents.CopilotStudio.Client`
+`1.3.171-beta`; the POC's outbound request guard pins every request back to the
+validated host/path and `api-version=1` before the delegated bearer is attached.
 
 ### Copilot Studio SDK · Direct-to-Engine
 

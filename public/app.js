@@ -43,6 +43,13 @@ const ghcp3pTenantId = el('ghcp3pTenantId');
 const ghcp3pEnvironmentId = el('ghcp3pEnvironmentId');
 const ghcp3pSchemaName = el('ghcp3pSchemaName');
 const ghcp3pUrl = el('ghcp3pUrl');
+const ghcpAgentFrameworkField = el('ghcpAgentFrameworkField');
+const afGhcpClientId = el('afGhcpClientId');
+const afGhcpTenantId = el('afGhcpTenantId');
+const afGhcpEnvironmentId = el('afGhcpEnvironmentId');
+const afGhcpSchemaName = el('afGhcpSchemaName');
+const afGhcpUrl = el('afGhcpUrl');
+const afGhcpSidecarUrl = el('afGhcpSidecarUrl');
 const forceWebSocket = el('forceWebSocket');
 const autoInspect = el('autoInspect');
 const typewriterToggle = el('typewriter');
@@ -63,10 +70,21 @@ const mFinal = el('mFinal');
 const diagnosisEl = el('diagnosis');
 const languageSelect = el('languageSelect');
 const deckLink = document.querySelector('.deck-link');
+const layoutEl = document.querySelector('.layout');
+const configToggle = el('configToggle');
+const configToggleIcon = configToggle && configToggle.querySelector('span');
+const configResizeHandle = el('configResizeHandle');
 
 const i18n = window.StreamingI18n;
 let currentLang = i18n ? i18n.getInitialLang() : 'en';
 let lastHint = { message: '', kind: '', vars: null };
+let connectionPanelCollapsed = false;
+const CONNECTION_PANEL_WIDTH_KEY = 'connectionPanelWidth';
+const CONNECTION_PANEL_DEFAULT_WIDTH = 320;
+const CONNECTION_PANEL_MIN_WIDTH = 260;
+const CONNECTION_PANEL_MAX_WIDTH = 560;
+let connectionPanelWidth = readStoredConnectionPanelWidth();
+let connectionPanelResizeState = null;
 
 function t(key, vars) {
   return i18n ? i18n.translate(key, currentLang, vars) : key;
@@ -74,6 +92,61 @@ function t(key, vars) {
 
 function formatConversation(id) {
   return t('conversation: {id}', { id: id || '—' });
+}
+
+function readStoredConnectionPanelWidth() {
+  try {
+    const stored = Number(localStorage.getItem(CONNECTION_PANEL_WIDTH_KEY));
+    if (Number.isFinite(stored) && stored >= CONNECTION_PANEL_MIN_WIDTH) {
+      return Math.min(stored, CONNECTION_PANEL_MAX_WIDTH);
+    }
+  } catch { /* storage unavailable */ }
+  return CONNECTION_PANEL_DEFAULT_WIDTH;
+}
+
+function getConnectionPanelMaxWidth() {
+  if (!layoutEl) return CONNECTION_PANEL_MAX_WIDTH;
+  const available = layoutEl.clientWidth - 32 - 32 - 360 - 320;
+  return Math.max(
+    CONNECTION_PANEL_MIN_WIDTH,
+    Math.min(CONNECTION_PANEL_MAX_WIDTH, available)
+  );
+}
+
+function getRenderedConnectionPanelWidth(width = connectionPanelWidth) {
+  return Math.round(Math.max(
+    CONNECTION_PANEL_MIN_WIDTH,
+    Math.min(width, getConnectionPanelMaxWidth())
+  ));
+}
+
+function renderConnectionPanelWidth() {
+  if (!layoutEl) return;
+  const renderedWidth = getRenderedConnectionPanelWidth();
+  layoutEl.style.setProperty('--connection-panel-width', `${renderedWidth}px`);
+  if (configResizeHandle) {
+    configResizeHandle.setAttribute('aria-valuemax', String(getConnectionPanelMaxWidth()));
+    configResizeHandle.setAttribute('aria-valuenow', String(renderedWidth));
+  }
+}
+
+function storeConnectionPanelWidth() {
+  try {
+    localStorage.setItem(CONNECTION_PANEL_WIDTH_KEY, String(connectionPanelWidth));
+  } catch { /* storage unavailable */ }
+}
+
+function renderConnectionPanelState() {
+  if (!layoutEl || !configToggle) return;
+  renderConnectionPanelWidth();
+  layoutEl.classList.toggle('connection-collapsed', connectionPanelCollapsed);
+  const label = t(
+    connectionPanelCollapsed ? 'Expand connection panel' : 'Collapse connection panel'
+  );
+  configToggle.setAttribute('aria-label', label);
+  configToggle.setAttribute('title', label);
+  configToggle.setAttribute('aria-expanded', String(!connectionPanelCollapsed));
+  if (configToggleIcon) configToggleIcon.textContent = connectionPanelCollapsed ? '›' : '‹';
 }
 
 function syncDeckLink() {
@@ -92,12 +165,77 @@ function applyLanguage(lang) {
   }
   document.title = t('Copilot Studio · Streaming Chat Playground');
   syncDeckLink();
+  renderConnectionPanelState();
   renderHint(lastHint.message, lastHint.kind, lastHint.vars);
   if (convoIdLabel && convoIdLabel.textContent.trim().endsWith('—')) {
     convoIdLabel.textContent = formatConversation('—');
   }
   updateDiagnosis();
 }
+
+if (configToggle) {
+  configToggle.addEventListener('click', () => {
+    connectionPanelCollapsed = !connectionPanelCollapsed;
+    renderConnectionPanelState();
+  });
+}
+
+if (configResizeHandle) {
+  configResizeHandle.addEventListener('pointerdown', (event) => {
+    if (
+      connectionPanelCollapsed ||
+      !window.matchMedia('(min-width: 1101px)').matches ||
+      event.button !== 0
+    ) return;
+    event.preventDefault();
+    configResizeHandle.setPointerCapture(event.pointerId);
+    connectionPanelResizeState = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startWidth: getRenderedConnectionPanelWidth()
+    };
+    document.body.classList.add('connection-panel-resizing');
+  });
+
+  configResizeHandle.addEventListener('pointermove', (event) => {
+    if (!connectionPanelResizeState || event.pointerId !== connectionPanelResizeState.pointerId) {
+      return;
+    }
+    connectionPanelWidth = getRenderedConnectionPanelWidth(
+      connectionPanelResizeState.startWidth + event.clientX - connectionPanelResizeState.startX
+    );
+    renderConnectionPanelWidth();
+  });
+
+  const finishConnectionPanelResize = (event) => {
+    if (!connectionPanelResizeState || event.pointerId !== connectionPanelResizeState.pointerId) {
+      return;
+    }
+    connectionPanelResizeState = null;
+    document.body.classList.remove('connection-panel-resizing');
+    storeConnectionPanelWidth();
+  };
+  configResizeHandle.addEventListener('pointerup', finishConnectionPanelResize);
+  configResizeHandle.addEventListener('pointercancel', finishConnectionPanelResize);
+  configResizeHandle.addEventListener('lostpointercapture', finishConnectionPanelResize);
+
+  configResizeHandle.addEventListener('keydown', (event) => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home'].includes(event.key)) return;
+    event.preventDefault();
+    if (event.key === 'Home') {
+      connectionPanelWidth = CONNECTION_PANEL_DEFAULT_WIDTH;
+    } else {
+      const direction = event.key === 'ArrowRight' ? 1 : -1;
+      connectionPanelWidth = getRenderedConnectionPanelWidth(
+        getRenderedConnectionPanelWidth() + direction * (event.shiftKey ? 32 : 16)
+      );
+    }
+    renderConnectionPanelWidth();
+    storeConnectionPanelWidth();
+  });
+}
+
+window.addEventListener('resize', renderConnectionPanelWidth);
 
 // ---------------------------------------------------------------------------
 // State
@@ -172,13 +310,19 @@ function refreshModeUI() {
   if (newAgentDLField) newAgentDLField.hidden = mode !== 'newAgentDL';
   if (newAgentDTEField) newAgentDTEField.hidden = mode !== 'newAgentDTE';
   if (ghcp3pField) ghcp3pField.hidden = mode !== 'ghcp3p';
+  if (ghcpAgentFrameworkField) ghcpAgentFrameworkField.hidden = mode !== 'ghcpAgentFramework';
   // Web Socket transport only applies to Direct Line modes (and is mandatory
   // for the live-streaming adapter, so it is forced/locked there).
   forceWebSocket.disabled =
-    mode === 'sdk' || mode === 'newAgent' || mode === 'dlStream' || mode === 'newAgentDL' || mode === 'newAgentDTE' || mode === 'ghcp3p';
+    mode === 'sdk' || mode === 'newAgent' || mode === 'dlStream' || mode === 'newAgentDL' || mode === 'newAgentDTE' || mode === 'ghcp3p' || mode === 'ghcpAgentFramework';
   if (mode === 'dlStream' || mode === 'newAgentDL') forceWebSocket.checked = true;
 }
-modeSel.addEventListener('change', refreshModeUI);
+modeSel.addEventListener('change', () => {
+  refreshModeUI();
+  if (modeSel.value === 'ghcpAgentFramework') {
+    setHint('Start the .NET sidecar with npm run agent-framework:poc, then click Test connection or Connect.');
+  }
+});
 
 // ---------------------------------------------------------------------------
 // Discover server-side configuration
@@ -216,6 +360,11 @@ async function loadServerConfig() {
     if (sdk.tenantId && ghcp3pTenantId && !ghcp3pTenantId.value) ghcp3pTenantId.value = sdk.tenantId;
     if (sdk.environmentId && ghcp3pEnvironmentId && !ghcp3pEnvironmentId.value) {
       ghcp3pEnvironmentId.value = sdk.environmentId;
+    }
+    if (sdk.clientId && afGhcpClientId && !afGhcpClientId.value) afGhcpClientId.value = sdk.clientId;
+    if (sdk.tenantId && afGhcpTenantId && !afGhcpTenantId.value) afGhcpTenantId.value = sdk.tenantId;
+    if (sdk.environmentId && afGhcpEnvironmentId && !afGhcpEnvironmentId.value) {
+      afGhcpEnvironmentId.value = sdk.environmentId;
     }
 
     // Pre-fill the client-side "Direct Line secret / token" input from .env
@@ -480,6 +629,103 @@ function restoreGhcp3pConfig() {
   .forEach((input) => {
     input.addEventListener('change', saveGhcp3pConfig);
     input.addEventListener('input', syncGhcp3pUrl);
+  });
+
+const GHCP_AGENT_FRAMEWORK_FIELDS_KEY = 'ghcpAgentFrameworkFields';
+
+function readGhcpAgentFrameworkConfigRaw() {
+  const environmentId = (afGhcpEnvironmentId && afGhcpEnvironmentId.value.trim()) || '';
+  const schemaName = (afGhcpSchemaName && afGhcpSchemaName.value.trim()) || '';
+  return {
+    clientId: (afGhcpClientId && afGhcpClientId.value.trim()) || '',
+    tenantId: (afGhcpTenantId && afGhcpTenantId.value.trim()) || '',
+    environmentId,
+    schemaName,
+    directConnectUrl: buildGhcp3pDirectConnectUrl(environmentId, schemaName),
+    sidecarUrl: ((afGhcpSidecarUrl && afGhcpSidecarUrl.value.trim()) || 'http://127.0.0.1:3980').replace(/\/+$/, ''),
+    cloud: sdkCloud || 'Prod',
+    copilotAgentType: 'Published',
+    useExperimentalEndpoint: false,
+    runtime: 'ghcpAgentFramework'
+  };
+}
+
+function syncGhcpAgentFrameworkUrl() {
+  if (!afGhcpUrl) return;
+  try {
+    afGhcpUrl.value = readGhcpAgentFrameworkConfigRaw().directConnectUrl;
+  } catch {
+    afGhcpUrl.value = '';
+  }
+}
+
+function readGhcpAgentFrameworkConfig() {
+  const cfg = readGhcpAgentFrameworkConfigRaw();
+  if (!window.CopilotStudioSDK || !window.CopilotStudioSDK.ready) {
+    throw new Error('Copilot Studio SDK is still loading. Wait a moment and retry.');
+  }
+  if (!window.msal) throw new Error('MSAL did not load. Check your network/CDN access and reload.');
+  if (!cfg.clientId) throw new Error('Enter the Entra application (client) ID.');
+  if (!cfg.tenantId) throw new Error('Enter the directory (tenant) ID.');
+  if (!cfg.environmentId) throw new Error('Enter the Copilot Studio Environment ID.');
+  if (!cfg.schemaName) throw new Error('Enter the Copilot Studio GHCP agent schema name.');
+  const sidecar = new URL(cfg.sidecarUrl);
+  const loopbackHosts = new Set(['127.0.0.1', 'localhost', '[::1]']);
+  if (
+    !['http:', 'https:'].includes(sidecar.protocol) ||
+    !loopbackHosts.has(sidecar.hostname) ||
+    sidecar.username ||
+    sidecar.password ||
+    (sidecar.pathname !== '/' && sidecar.pathname !== '') ||
+    sidecar.search ||
+    sidecar.hash
+  ) {
+    throw new Error('Agent Framework sidecar URL must be a loopback origin, such as http://127.0.0.1:3980.');
+  }
+  cfg.sidecarUrl = sidecar.origin;
+  return cfg;
+}
+
+function readGhcpAgentFrameworkConfigSafe() {
+  if (!window.CopilotStudioSDK || !window.CopilotStudioSDK.ready || !window.msal) return null;
+  const cfg = readGhcpAgentFrameworkConfigRaw();
+  if (!cfg.clientId || !cfg.tenantId || !cfg.environmentId || !cfg.schemaName) return null;
+  return cfg;
+}
+
+function saveGhcpAgentFrameworkConfig() {
+  try {
+    const cfg = readGhcpAgentFrameworkConfigRaw();
+    sessionStorage.setItem(GHCP_AGENT_FRAMEWORK_FIELDS_KEY, JSON.stringify({
+      clientId: cfg.clientId,
+      tenantId: cfg.tenantId,
+      environmentId: cfg.environmentId,
+      schemaName: cfg.schemaName,
+      sidecarUrl: cfg.sidecarUrl
+    }));
+  } catch { /* storage unavailable */ }
+  syncGhcpAgentFrameworkUrl();
+}
+
+function restoreGhcpAgentFrameworkConfig() {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(GHCP_AGENT_FRAMEWORK_FIELDS_KEY) || '{}');
+    if (saved.clientId && afGhcpClientId && !afGhcpClientId.value) afGhcpClientId.value = saved.clientId;
+    if (saved.tenantId && afGhcpTenantId && !afGhcpTenantId.value) afGhcpTenantId.value = saved.tenantId;
+    if (saved.environmentId && afGhcpEnvironmentId && !afGhcpEnvironmentId.value) {
+      afGhcpEnvironmentId.value = saved.environmentId;
+    }
+    if (saved.schemaName && afGhcpSchemaName && !afGhcpSchemaName.value) afGhcpSchemaName.value = saved.schemaName;
+    if (saved.sidecarUrl && afGhcpSidecarUrl) afGhcpSidecarUrl.value = saved.sidecarUrl;
+  } catch { /* ignore */ }
+  syncGhcpAgentFrameworkUrl();
+}
+
+[afGhcpClientId, afGhcpTenantId, afGhcpEnvironmentId, afGhcpSchemaName, afGhcpSidecarUrl]
+  .filter(Boolean)
+  .forEach((input) => {
+    input.addEventListener('change', saveGhcpAgentFrameworkConfig);
+    input.addEventListener('input', syncGhcpAgentFrameworkUrl);
   });
 
 async function acquireNewAgentDLToken() {
@@ -836,6 +1082,7 @@ async function acquireSdkToken(cfg, mode = 'sdk') {
   if (mode === 'newAgent') saveNewAgentConfig();
   else if (mode === 'newAgentDTE') saveNewAgentDTEConfig();
   else if (mode === 'ghcp3p') saveGhcp3pConfig();
+  else if (mode === 'ghcpAgentFramework') saveGhcpAgentFrameworkConfig();
   else saveSdkConfig();
   sessionStorage.setItem(SDK_RESUME_KEY, mode);
   await pca.acquireTokenRedirect(request);
@@ -872,11 +1119,14 @@ async function processSdkRedirect() {
         ? 'newAgentDTE'
         : resuming === 'ghcp3p'
           ? 'ghcp3p'
-          : 'sdk';
+          : resuming === 'ghcpAgentFramework'
+            ? 'ghcpAgentFramework'
+            : 'sdk';
   const cfg =
     resumeMode === 'newAgent'    ? readNewAgentConfigSafe()    :
     resumeMode === 'newAgentDTE' ? readNewAgentDTEConfigSafe() :
     resumeMode === 'ghcp3p'      ? readGhcp3pConfigSafe()      :
+    resumeMode === 'ghcpAgentFramework' ? readGhcpAgentFrameworkConfigSafe() :
                                    readSdkConfigSafe();
   if (!cfg) return;
   const pca = await getMsalInstance(cfg);
@@ -1714,6 +1964,21 @@ function attachAutoScroll() {
   autoScrollObserver = observer;
 }
 
+function mergeProgressiveText(previousText, incomingText, textMode = 'delta') {
+  const previous = String(previousText || '');
+  const incoming = String(incomingText || '');
+  if (!previous) return { text: incoming, shape: 'initial' };
+  if (!incoming) return { text: previous, shape: 'empty' };
+
+  if (textMode === 'cumulative') {
+    if (incoming === previous) return { text: previous, shape: 'duplicate' };
+    if (incoming.startsWith(previous)) return { text: incoming, shape: 'cumulative' };
+    if (previous.startsWith(incoming)) return { text: previous, shape: 'stale' };
+    return { text: incoming, shape: 'cumulative-replacement' };
+  }
+  return { text: previous + incoming, shape: 'delta' };
+}
+
 // ---------------------------------------------------------------------------
 // Server-sidecar Direct-to-Engine adapter
 //
@@ -1729,7 +1994,15 @@ function attachAutoScroll() {
 // so that one replays its current value. Streaming chunks are folded into one
 // growing bubble by reusing normalizeStreamingForWebChat (stable id = streamId).
 // ---------------------------------------------------------------------------
-function createSidecarConnection({ token, settings }) {
+function createSidecarConnection({
+  token,
+  settings,
+  startUrl = '/api/dte/start',
+  sendUrl = '/api/dte/send',
+  endUrl = '',
+  synthesizeAgentFrameworkFinal = false,
+  serializeActivityDelivery = false
+}) {
   const asObserver = (o, e, c) =>
     typeof o === 'function' ? { next: o, error: e, complete: c } : o || {};
 
@@ -1755,12 +2028,38 @@ function createSidecarConnection({ token, settings }) {
   // (flush() is called right after renderWebChat) so the greeting is never lost.
   const activityObservers = new Set();
   const activityBuffer = [];
+  const activityDeliveryQueue = [];
   let flushing = false;
-  const emitActivity = (a) => {
-    if (!flushing) { activityBuffer.push(a); return; }
+  let activityDeliveryReady = !serializeActivityDelivery;
+  let activityDeliveryTimer = null;
+  const deliverActivity = (a) => {
+    if (ended) return;
     for (const obs of activityObservers) {
       try { obs.next && obs.next(a); } catch { /* noop */ }
     }
+  };
+  const scheduleActivityDelivery = () => {
+    if (
+      activityDeliveryTimer ||
+      ended ||
+      !flushing ||
+      !activityDeliveryReady ||
+      !activityDeliveryQueue.length
+    ) return;
+    activityDeliveryTimer = setTimeout(() => {
+      activityDeliveryTimer = null;
+      if (ended) return;
+      const activity = activityDeliveryQueue.shift();
+      if (activity) deliverActivity(activity);
+      scheduleActivityDelivery();
+    }, 0);
+  };
+  const emitActivity = (a) => {
+    if (ended) return;
+    if (!flushing) { activityBuffer.push(a); return; }
+    if (!serializeActivityDelivery) return deliverActivity(a);
+    activityDeliveryQueue.push(a);
+    scheduleActivityDelivery();
   };
   const activity$ = {
     subscribe(o, e, c) {
@@ -1772,6 +2071,44 @@ function createSidecarConnection({ token, settings }) {
 
   let conversationId = '';
   let ended = false;
+  let agentFrameworkTurn = 0;
+  const activeControllers = new Set();
+  const echoTimers = new Set();
+  const agentFrameworkStreamText = new Map();
+
+  const consolidateAgentFrameworkActivity = (activity, textMode = 'delta') => {
+    const channelData = activity.channelData || {};
+    const info = getStreamInfo(activity);
+    const streamId = info?.sessionId;
+    if (
+      info?.streamType !== 'streaming' ||
+      !streamId ||
+      typeof activity.text !== 'string'
+    ) {
+      return {
+        ...activity,
+        channelData: { ...channelData, pocProvider: 'agent-framework-dotnet' }
+      };
+    }
+
+    const fragment = activity.text;
+    const merged = mergeProgressiveText(
+      agentFrameworkStreamText.get(streamId)?.text,
+      fragment,
+      textMode
+    );
+    agentFrameworkStreamText.set(streamId, { text: merged.text, textMode });
+    return {
+      ...activity,
+      text: merged.text,
+      channelData: {
+        ...channelData,
+        pocProvider: 'agent-framework-dotnet',
+        pocTextShape: merged.shape,
+        pocFragmentLength: fragment.length
+      }
+    };
+  };
 
   const toWebChat = (a) => {
     let act = normalizeStreamingForWebChat(a); // stable id=streamId + role:bot for chunks
@@ -1789,50 +2126,171 @@ function createSidecarConnection({ token, settings }) {
   };
 
   async function streamTurn(url, body) {
-    const resp = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    if (!resp.ok || !resp.body) {
-      let msg = `HTTP ${resp.status}`;
-      try { msg = (await resp.json()).error || msg; } catch { /* noop */ }
-      throw new Error(msg);
-    }
-    const reader = resp.body.getReader();
-    const decoder = new TextDecoder();
-    let buf = '';
-    const handle = (line) => {
-      if (!line.trim()) return;
-      let frame;
-      try { frame = JSON.parse(line); } catch { return; }
-      if (frame.type === 'activity' && frame.activity) {
-        const a = frame.activity;
-        if (a.conversation?.id) conversationId = a.conversation.id;
-        emitActivity(toWebChat(a));
-      } else if (frame.type === 'done') {
-        if (frame.conversationId) conversationId = frame.conversationId;
-      } else if (frame.type === 'error') {
-        emitActivity({
-          type: 'message',
-          id: 'err-' + Math.random().toString(36).slice(2, 10),
-          from: { id: 'bot', role: 'bot' },
-          text: `⚠️ Sidecar error: ${frame.error}`,
-          timestamp: new Date().toISOString()
-        });
+    const agentFrameworkTurnId = body.text ? ++agentFrameworkTurn : agentFrameworkTurn;
+    const controller = new AbortController();
+    const touchedAgentFrameworkStreams = new Set();
+    activeControllers.add(controller);
+    try {
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+      if (!resp.ok || !resp.body) {
+        let msg = `HTTP ${resp.status}`;
+        try {
+          const errorBody = await resp.json();
+          msg = errorBody.error || errorBody.detail || msg;
+        } catch { /* noop */ }
+        throw new Error(msg);
       }
-    };
-    while (!ended) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buf += decoder.decode(value, { stream: true });
-      let nl;
-      while ((nl = buf.indexOf('\n')) >= 0) {
-        handle(buf.slice(0, nl));
-        buf = buf.slice(nl + 1);
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = '';
+      let updateCount = 0;
+      let sawDone = false;
+      const finalizedAgentFrameworkStreams = new Set();
+      const lastAgentFrameworkActivities = new Map();
+      const handle = (line) => {
+        if (!line.trim()) return;
+        let frame;
+        try { frame = JSON.parse(line); } catch { return; }
+        if (frame.type === 'activity' && frame.activity) {
+          let a = frame.provider === 'agent-framework-dotnet'
+            ? consolidateAgentFrameworkActivity(frame.activity, frame.textMode || 'delta')
+            : frame.activity;
+          updateCount += 1;
+          const info = getStreamInfo(a);
+          if (frame.provider === 'agent-framework-dotnet') {
+            const streamId = info?.sessionId;
+            if (streamId) touchedAgentFrameworkStreams.add(streamId);
+            if (info?.streamType === 'streaming' && streamId) {
+              lastAgentFrameworkActivities.set(streamId, a);
+            } else if (info?.streamType === 'final') {
+              const accumulatedText = streamId
+                ? agentFrameworkStreamText.get(streamId)?.text
+                : '';
+              if (!a.text && accumulatedText) a = { ...a, text: accumulatedText };
+              if (streamId) finalizedAgentFrameworkStreams.add(streamId);
+              if (streamId) agentFrameworkStreamText.delete(streamId);
+            }
+          }
+          if (a.conversation?.id) conversationId = a.conversation.id;
+          emitActivity(toWebChat(a));
+          if (
+            synthesizeAgentFrameworkFinal &&
+            frame.finishReason &&
+            info?.streamType !== 'final' &&
+            a.text
+          ) {
+            const streamId = info?.sessionId || a.id;
+            if (streamId && !finalizedAgentFrameworkStreams.has(streamId)) {
+              const channelData = { ...(a.channelData || {}) };
+              delete channelData.streamSequence;
+              emitActivity(toWebChat({
+                ...a,
+                type: 'message',
+                id: `${streamId}-agent-framework-final`,
+                channelData: { ...channelData, streamType: 'final', streamId }
+              }));
+              touchedAgentFrameworkStreams.add(streamId);
+              finalizedAgentFrameworkStreams.add(streamId);
+              agentFrameworkStreamText.delete(streamId);
+            }
+          }
+        } else if (frame.type === 'agentFrameworkUpdate' && frame.text) {
+          updateCount += 1;
+          const streamId = `${conversationId || 'agent-framework'}-turn-${agentFrameworkTurnId}`;
+          touchedAgentFrameworkStreams.add(streamId);
+          const activity = consolidateAgentFrameworkActivity({
+            type: 'typing',
+            id: `${streamId}-${updateCount}`,
+            from: { id: 'agent-framework', role: 'bot' },
+            text: frame.text,
+            channelData: {
+              streamType: 'streaming',
+              streamId,
+              streamSequence: updateCount,
+              pocProvider: 'agent-framework-dotnet'
+            }
+          }, frame.textMode || 'delta');
+          lastAgentFrameworkActivities.set(streamId, activity);
+          emitActivity(toWebChat(activity));
+          if (frame.finishReason && !finalizedAgentFrameworkStreams.has(streamId)) {
+            emitActivity(toWebChat({
+              ...activity,
+              type: 'message',
+              id: `${streamId}-agent-framework-final`,
+              channelData: {
+                streamType: 'final',
+                streamId,
+                pocProvider: 'agent-framework-dotnet'
+              }
+            }));
+            finalizedAgentFrameworkStreams.add(streamId);
+            agentFrameworkStreamText.delete(streamId);
+          }
+        } else if (frame.type === 'done') {
+          sawDone = true;
+          if (frame.conversationId) conversationId = frame.conversationId;
+          if (synthesizeAgentFrameworkFinal) {
+            for (const [streamId, lastActivity] of lastAgentFrameworkActivities) {
+              if (finalizedAgentFrameworkStreams.has(streamId) || !lastActivity.text) continue;
+              const channelData = { ...(lastActivity.channelData || {}) };
+              delete channelData.streamSequence;
+              emitActivity(toWebChat({
+                ...lastActivity,
+                type: 'message',
+                id: `${streamId}-agent-framework-final`,
+                channelData: { ...channelData, streamType: 'final', streamId }
+              }));
+              finalizedAgentFrameworkStreams.add(streamId);
+              agentFrameworkStreamText.delete(streamId);
+            }
+          }
+          if (
+            synthesizeAgentFrameworkFinal &&
+            body.text &&
+            lastAgentFrameworkActivities.size === 0 &&
+            finalizedAgentFrameworkStreams.size === 0
+          ) {
+            emitActivity({
+              type: 'message',
+              id: `af-empty-${Date.now().toString(36)}`,
+              from: { id: 'agent-framework', role: 'bot' },
+              text: 'Agent Framework completed without emitting typing updates. This runtime may have returned a final-only response that the preview provider does not surface in streaming mode.',
+              channelData: {
+                pocProvider: 'agent-framework-dotnet',
+                finalOnlyProviderGap: true
+              }
+            });
+          }
+        } else if (frame.type === 'error') {
+          throw new Error(frame.error || 'Sidecar returned an unknown error.');
+        }
+      };
+      while (!ended) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        let nl;
+        while ((nl = buf.indexOf('\n')) >= 0) {
+          handle(buf.slice(0, nl));
+          buf = buf.slice(nl + 1);
+        }
       }
+      if (buf) handle(buf);
+      if (!ended && !sawDone) throw new Error('Sidecar stream ended before its completion frame.');
+      if (!ended && !body.text && !conversationId) {
+        throw new Error('Sidecar start completed without a conversation ID.');
+      }
+    } finally {
+      touchedAgentFrameworkStreams.forEach((streamId) => {
+        agentFrameworkStreamText.delete(streamId);
+      });
+      activeControllers.delete(controller);
     }
-    if (buf) handle(buf);
   }
 
   // Open the conversation as soon as the adapter is created. The greeting
@@ -1840,9 +2298,14 @@ function createSidecarConnection({ token, settings }) {
   (async () => {
     setStatusValue(1); // Connecting
     try {
-      await streamTurn('/api/dte/start', { token, settings });
-      if (!ended) setStatusValue(2); // Online
+      await streamTurn(startUrl, { token, settings });
+      if (!ended) {
+        setStatusValue(2); // Online
+        activityDeliveryReady = true;
+        scheduleActivityDelivery();
+      }
     } catch (e) {
+      if (ended) return;
       console.error('[sidecar] start failed', e);
       emitActivity({
         type: 'message',
@@ -1851,7 +2314,11 @@ function createSidecarConnection({ token, settings }) {
         text: `⚠️ Could not start the sidecar conversation: ${e.message}`,
         timestamp: new Date().toISOString()
       });
-      if (!ended) setStatusValue(4); // FailedToConnect
+      if (!ended) {
+        setStatusValue(4); // FailedToConnect
+        activityDeliveryReady = true;
+        scheduleActivityDelivery();
+      }
     }
   })();
 
@@ -1861,20 +2328,30 @@ function createSidecarConnection({ token, settings }) {
     activity$,
     // Web Chat subscribes ~5×; flush replays the buffered greeting once to all
     // present subscribers, then switches to live pass-through.
-    __flushActivities() { flushing = true; const items = activityBuffer.splice(0); items.forEach(emitActivity); },
+    __flushActivities() {
+      if (ended) return;
+      flushing = true;
+      const items = activityBuffer.splice(0);
+      items.forEach(emitActivity);
+    },
     postActivity(activity) {
       const id = 'u-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-      if (activity && activity.type === 'message' && activity.from?.role !== 'bot') {
+      if (!ended && activity && activity.type === 'message' && activity.from?.role !== 'bot') {
         // Echo the user's message so Web Chat moves the bubble from "sending"
         // to "sent" (it reconciles by channelData.clientActivityID). Defer so
         // Web Chat registers the outgoing activity before the echo arrives.
-        setTimeout(() => emitActivity({ ...activity, id, timestamp: new Date().toISOString() }), 0);
-        streamTurn('/api/dte/send', {
+        const echoTimer = setTimeout(() => {
+          echoTimers.delete(echoTimer);
+          emitActivity({ ...activity, id, timestamp: new Date().toISOString() });
+        }, 0);
+        echoTimers.add(echoTimer);
+        streamTurn(sendUrl, {
           token,
           conversationId,
           text: activity.text || '',
           settings
         }).catch((e) => {
+          if (ended) return;
           console.error('[sidecar] send failed', e);
           emitActivity({
             type: 'message',
@@ -1893,7 +2370,27 @@ function createSidecarConnection({ token, settings }) {
         }
       };
     },
-    end() { ended = true; setStatusValue(5); }
+    end() {
+      if (ended) return;
+      ended = true;
+      activeControllers.forEach((controller) => controller.abort());
+      activeControllers.clear();
+      echoTimers.forEach((timer) => clearTimeout(timer));
+      echoTimers.clear();
+      if (activityDeliveryTimer) clearTimeout(activityDeliveryTimer);
+      activityDeliveryTimer = null;
+      activityDeliveryQueue.length = 0;
+      agentFrameworkStreamText.clear();
+      if (endUrl && conversationId) {
+        fetch(endUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ conversationId }),
+          keepalive: true
+        }).catch((e) => console.warn('sidecar session cleanup failed', e));
+      }
+      setStatusValue(5);
+    }
   };
 }
 
@@ -1923,16 +2420,17 @@ async function connect() {
     // error #321 ("Invalid hook call").
     let webChatLib = WebChat;
 
-    if (mode === 'sdk' || mode === 'newAgent' || mode === 'newAgentDTE' || mode === 'ghcp3p') {
+    if (mode === 'sdk' || mode === 'newAgent' || mode === 'newAgentDTE' || mode === 'ghcp3p' || mode === 'ghcpAgentFramework') {
       // Direct-to-Engine: MSAL sign-in, then a Web Chat-compatible connection.
       const cfg =
         mode === 'newAgent'    ? readNewAgentConfig()    :
         mode === 'newAgentDTE' ? readNewAgentDTEConfig() :
         mode === 'ghcp3p'      ? readGhcp3pConfig()      :
+        mode === 'ghcpAgentFramework' ? readGhcpAgentFrameworkConfig() :
                                  readSdkConfig();
       setHint('Signing in with Entra ID…');
       const { token, settings } = await acquireSdkToken(cfg, mode);
-      if ((mode === 'newAgentDTE' && cfg.viaSidecar) || mode === 'ghcp3p') {
+      if ((mode === 'newAgentDTE' && cfg.viaSidecar) || mode === 'ghcp3p' || mode === 'ghcpAgentFramework') {
         // Server-sidecar Direct-to-Engine: the correct transport for an MS-auth
         // modern agent. The server runs the identical CopilotStudioClient with
         // the delegated user token and — unlike the CORS-blocked browser — can
@@ -1944,12 +2442,18 @@ async function connect() {
         // the island URL the SDK learns from turn 1's response header persists
         // into every later turn — the first USER message already lands on the
         // island runtime.
-        setHint(mode === 'ghcp3p' ? 'Connecting to GHCP /3p runtime via server sidecar…' : 'Streaming via server sidecar…');
+        setHint(
+          mode === 'ghcpAgentFramework'
+            ? 'Connecting to the Copilot Studio GHCP harness through .NET Agent Framework…'
+            : mode === 'ghcp3p'
+              ? 'Connecting to GHCP /3p runtime via server sidecar…'
+              : 'Streaming via server sidecar…'
+        );
 
         // A manually pasted Direct connect URL (Channels → Web/Native app →
         // "Microsoft 365 Agents SDK") always wins; otherwise leave it empty so
         // the experimental island redirect can engage on the server.
-        const directConnectUrl = mode === 'ghcp3p'
+        const directConnectUrl = mode === 'ghcp3p' || mode === 'ghcpAgentFramework'
           ? cfg.directConnectUrl
           : readNewAgentDTEConfigRaw().directConnectUrl || cfg.directConnectUrl || '';
 
@@ -1963,7 +2467,16 @@ async function connect() {
             useExperimentalEndpoint: cfg.useExperimentalEndpoint,
             directConnectUrl,
             runtime: cfg.runtime
-          }
+          },
+          ...(mode === 'ghcpAgentFramework'
+            ? {
+                startUrl: `${cfg.sidecarUrl}/api/agent-framework/start`,
+                sendUrl: `${cfg.sidecarUrl}/api/agent-framework/send`,
+                endUrl: `${cfg.sidecarUrl}/api/agent-framework/end`,
+                synthesizeAgentFrameworkFinal: true,
+                serializeActivityDelivery: true
+              }
+            : {})
         });
       } else {
         const { CopilotStudioClient, CopilotStudioWebChat } = window.CopilotStudioSDK;
@@ -2011,11 +2524,17 @@ async function connect() {
         const meta = STATUS[status] || { label: `Status ${status}`, state: 'idle' };
         setStatus(
           meta.state,
-          status === 2 && mode === 'newAgentDL' ? 'Online · Direct Line connected' : meta.label
+          status === 2 && mode === 'newAgentDL'
+            ? 'Online · Direct Line connected'
+            : status === 2 && mode === 'ghcpAgentFramework'
+              ? 'Online · .NET Agent Framework connected'
+              : meta.label
         );
         if (status === 2) {
           setHint(
-            mode === 'newAgentDL'
+            mode === 'ghcpAgentFramework'
+              ? 'Connected through .NET Agent Framework. Send a prompt to observe real RunStreamingAsync updates.'
+              : mode === 'newAgentDL'
               ? 'Connected to no-auth Agentic Direct Line. The runtime may return final-only.'
               : 'Connected. Send a message to see streaming chunks arrive.',
             'ok'
@@ -2244,28 +2763,36 @@ async function testConnection() {
     } catch (err) {
       setHint('✗ {message}', 'err', { message: err.message });
     }
-  } else if (modeSel.value === 'sdk' || modeSel.value === 'newAgent' || modeSel.value === 'newAgentDTE' || modeSel.value === 'ghcp3p') {
+  } else if (modeSel.value === 'sdk' || modeSel.value === 'newAgent' || modeSel.value === 'newAgentDTE' || modeSel.value === 'ghcp3p' || modeSel.value === 'ghcpAgentFramework') {
     setHint('Checking existing Entra session…');
     try {
       const cfg =
         modeSel.value === 'newAgent'    ? readNewAgentConfig()    :
         modeSel.value === 'newAgentDTE' ? readNewAgentDTEConfig() :
         modeSel.value === 'ghcp3p'      ? readGhcp3pConfig()      :
+        modeSel.value === 'ghcpAgentFramework' ? readGhcpAgentFrameworkConfig() :
                                           readSdkConfig();
       const { token } = await acquireSdkTokenSilent(cfg);
-      if (modeSel.value === 'ghcp3p') {
+      if (modeSel.value === 'ghcp3p' || modeSel.value === 'ghcpAgentFramework') {
+        const isAgentFramework = modeSel.value === 'ghcpAgentFramework';
         setHint('Testing GHCP /3p runtime…');
-        const response = await fetch('/api/dte/preflight', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token, settings: cfg })
-        });
+        const response = await fetch(
+          isAgentFramework ? `${cfg.sidecarUrl}/api/agent-framework/preflight` : '/api/dte/preflight',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, settings: cfg })
+          }
+        );
         const body = await response.json().catch(() => ({}));
-        if (!response.ok || !body.ok) throw new Error(body.error || `HTTP ${response.status}`);
-        setHint('✓ GHCP /3p runtime reached · HTTP {status} · {elapsedMs}ms. Click Connect to chat.', 'ok', {
-          status: body.status,
-          elapsedMs: body.elapsedMs
-        });
+        if (!response.ok || !body.ok) throw new Error(body.error || body.detail || `HTTP ${response.status}`);
+        setHint(
+          isAgentFramework
+            ? '✓ .NET Agent Framework reached the Copilot Studio GHCP /3p runtime. Click Connect to compare streaming.'
+            : '✓ GHCP /3p runtime reached · HTTP {status} · {elapsedMs}ms. Click Connect to chat.',
+          'ok',
+          { status: body.status, elapsedMs: body.elapsedMs }
+        );
       } else {
         setHint(
           '✓ Signed in · token acquired ({chars} chars). Click Connect to chat.',
@@ -2318,6 +2845,7 @@ async function start() {
   restoreNewAgentDLConfig();
   restoreNewAgentDTEConfig();
   restoreGhcp3pConfig();
+  restoreGhcpAgentFrameworkConfig();
   await whenSdkReady();
   // Complete a returning Entra redirect (if any) and auto-resume Connect.
   await processSdkRedirect();

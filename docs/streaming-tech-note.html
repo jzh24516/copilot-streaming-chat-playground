@@ -231,6 +231,38 @@
   .ghcp-slide .card h3 { font-size: 16px; margin-bottom: 6px; }
   .ghcp-slide .card p { font-size: 12.5px !important; line-height: 1.35; }
   .ghcp-slide .takeaway { padding: 10px 14px; font-size: 13.5px; line-height: 1.35; }
+  .agent-framework-slide h2 { margin-bottom: 12px; }
+  .agent-framework-slide .lead { font-size: 15px; line-height: 1.38; margin-bottom: 8px !important; }
+  .agent-framework-slide .flow .step { padding: 10px 12px; }
+  .agent-framework-slide .flow .step .desc { font-size: 12px; line-height: 1.3; }
+  .agent-framework-slide .proof-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 14px; margin-top: 10px; }
+  .agent-framework-slide .proof-grid .card { padding: 12px 15px; }
+  .agent-framework-slide .proof-grid h3 { font-size: 15px; margin-bottom: 6px; }
+  .agent-framework-slide .proof-grid p { font-size: 12.5px !important; line-height: 1.34; }
+  .agent-framework-slide .proof-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+  .agent-framework-slide .proof-stat { padding: 8px; border-radius: 8px; background: var(--cp-surface-soft); text-align: center; }
+  .agent-framework-slide .proof-stat b { display: block; color: var(--cp-accent); font-size: 18px; }
+  .agent-framework-slide pre { margin-top: 10px !important; padding: 10px 12px; font-size: 10.5px !important; line-height: 1.28 !important; }
+  .agent-framework-slide .takeaway { padding: 9px 13px; font-size: 12.8px; line-height: 1.3; }
+  .agent-architecture-slide h2 { margin-bottom: 6px; }
+  .agent-architecture-slide .lead { font-size: 14px; line-height: 1.32; margin-bottom: 7px !important; }
+  .agent-architecture-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; min-height: 0; flex: 1; }
+  .agent-architecture-figure { margin: 0; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; border: 1px solid var(--cp-border); border-radius: 8px; background: #ffffff; padding: 8px 12px 7px; overflow: hidden; }
+  .agent-architecture-figure img { display: block; width: min(100%, 470px); max-height: 430px; object-fit: contain; object-position: top center; }
+  .agent-architecture-figure figcaption { margin-top: 3px; color: var(--cp-text-soft); font-size: 11px; text-align: center; }
+  .agent-architecture-zoom { min-height: 0; display: flex; flex-direction: column; align-items: stretch; justify-content: center; }
+  .agent-architecture-node { border: 1.5px solid var(--cp-info); border-radius: 7px; background: var(--cp-surface); padding: 7px 12px; text-align: center; color: var(--cp-text); }
+  .agent-architecture-node b { display: block; font-size: 13px; line-height: 1.22; }
+  .agent-architecture-node small { display: block; margin-top: 2px; color: var(--cp-text-soft); font-size: 10.5px; }
+  .agent-architecture-connector { display: grid; grid-template-columns: 1fr 22px 1fr; align-items: center; min-height: 33px; color: var(--cp-text-soft); }
+  .agent-architecture-connector span { justify-self: end; padding-right: 7px; font-size: 10.5px; font-weight: 650; }
+  .agent-architecture-connector i { justify-self: center; color: var(--cp-info); font-style: normal; font-size: 18px; line-height: 1; }
+  .agent-architecture-connector.reuse span, .agent-architecture-connector.reuse i { color: var(--cp-success); }
+  .agent-architecture-node.reused { position: relative; border: 2px solid var(--cp-success); background: rgba(42, 183, 155, 0.1); padding: 12px; }
+  .agent-architecture-node.reused em { position: absolute; top: -9px; left: 12px; border-radius: 4px; background: var(--cp-success); color: #ffffff; padding: 2px 7px; font-size: 9px; font-style: normal; font-weight: 800; letter-spacing: 0.04em; }
+  .agent-architecture-stream { margin-top: 9px; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--cp-border); border-radius: 7px; background: var(--cp-surface-soft); padding: 7px; font: 700 10px/1.2 "Cascadia Code", Consolas, monospace; color: var(--cp-text); }
+  .agent-architecture-stream span { padding: 3px 6px; border-radius: 4px; background: var(--cp-surface); }
+  .agent-architecture-stream i { color: var(--cp-success); font-style: normal; }
 
   /* ---- Title slide ---- */
   .title-slide { justify-content: center; }
@@ -724,7 +756,67 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
     <div class="takeaway">EXPERIMENTAL SUPPORT BOUNDARY — Use this Microsoft-source-backed developer path for testing until Microsoft publishes production support for new-experience clients.</div>
   </section>
 
-  <!-- 15. Summary -->
+  <!-- 15. .NET Agent Framework /3p live proof -->
+  <section class="slide agent-framework-slide">
+    <div class="kicker">Agent Framework · Live Proof</div>
+    <h2>.NET Agent Framework wraps the same Copilot Studio /3p route</h2>
+    <p class="lead">Live-verified August 6, 2026 against the same published, Microsoft-authenticated Copilot Studio GHCP-harness agent. This is the Copilot Studio provider — not the direct GitHub Copilot CLI provider.</p>
+    <div class="flow">
+      <div class="step"><span class="tag">1 · identity</span><div class="desc">Browser MSAL acquires the delegated Power Platform token.</div><span class="mono">CopilotStudio.Copilots.Invoke</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="tag">2 · host</span><div class="desc">A loopback .NET 8 sidecar creates the Copilot Studio client.</div><span class="mono">CopilotStudioAgent</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="tag">3 · route</span><div class="desc">DirectConnectUrl targets the guarded Agentic Runtime controller.</div><span class="mono">/agenticruntime/3p</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="tag">4 · stream</span><div class="desc">RunStreamingAsync yields provider updates; the browser rebuilds the bubble.</div><span class="mono">AgentResponseUpdate</span></div>
+    </div>
+    <div class="proof-grid">
+      <div class="card">
+        <h3>Key adapter finding</h3>
+        <p>In this run, Agent Framework updates arrived as text fragments, while the Node client delivered cumulative snapshots. Reusing a stable activity ID without consolidation showed only the latest fragment. The browser now appends ordered text updates per streamId, then replaces one growing bubble with a consolidated snapshot.</p>
+      </div>
+      <div class="card good">
+        <h3>One observed live turn</h3>
+        <div class="proof-stats">
+          <div class="proof-stat"><b>15</b><span>real fragments</span></div>
+          <div class="proof-stat"><b>4→1,164</b><span>characters</span></div>
+          <div class="proof-stat"><b>1</b><span>matching final</span></div>
+        </div>
+        <p style="margin-top:8px;">Startup proof: the welcome is queued until the adapter reports Online, then rendered in order.</p>
+      </div>
+    </div>
+    <pre><span class="tok-com">// Sidecar: forward one of the two preview-provider update shapes</span>
+<span class="tok-key">await foreach</span> (AgentResponseUpdate update <span class="tok-key">in</span> agent.RunStreamingAsync(prompt, session))
+  <span class="tok-key">if</span> (update.RawRepresentation <span class="tok-key">is</span> IActivity activity) writeActivity(activity);
+  <span class="tok-key">else</span> writeTextUpdate(update.Text, textMode: <span class="tok-str">"delta"</span>);
+<span class="tok-com">// Browser: append text by streamId → one cumulative Web Chat activity</span></pre>
+    <div class="takeaway">RESULT: Agent Framework provides a structured .NET host around the same experimental Copilot Studio /3p route. The progressive Web Chat bubble is adapter reconstruction over preview updates, not a new support contract.</div>
+  </section>
+
+  <!-- 16. Agent Framework provider architecture -->
+  <section class="slide agent-architecture-slide">
+    <div class="kicker">Agent Framework · Provider Architecture</div>
+    <h2>Agent Framework provider map — reuse the published GHCP agent</h2>
+    <p class="lead">Copilot Studio provider → authenticated /3p → existing published GHCP agent.</p>
+    <div class="agent-architecture-layout">
+      <figure class="agent-architecture-figure">
+        <img src="/agent-framework-provider-architecture.svg" alt="Microsoft Agent Framework branches to the GitHub Copilot provider and Copilot Studio provider; the Copilot Studio path reaches an existing published GHCP harness agent through Agentic Runtime /3p." />
+        <figcaption>Pasted architecture · provider split and existing-agent reuse</figcaption>
+      </figure>
+      <div class="agent-architecture-zoom">
+        <div class="agent-architecture-node"><b>Copilot Studio provider</b></div>
+        <div class="agent-architecture-connector"><span>Delegated Power Platform token</span><i>↓</i></div>
+        <div class="agent-architecture-node"><b>CopilotStudioAgent</b><small>CopilotStudio CopilotClient</small></div>
+        <div class="agent-architecture-connector"><span>RunStreamingAsync updates</span><i>↓</i></div>
+        <div class="agent-architecture-node"><b>Authenticated Agentic Runtime /3p</b><small>SSE conversation + session</small></div>
+        <div class="agent-architecture-connector reuse"><span>Handoff to existing published runtime</span><i>↓</i></div>
+        <div class="agent-architecture-node reused"><em>REUSE BOUNDARY</em><b>Existing published Copilot Studio GHCP harness agent</b></div>
+        <div class="agent-architecture-stream"><span>browser adapter updates</span><i>→</i><span>streamId merge</span><i>→</i><span>one Web Chat activity</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 17. Summary -->
   <section class="slide title-slide">
     <span class="badge">TAKEAWAYS</span>
     <h2 style="font-size:34px;">If you remember four things</h2>
@@ -740,7 +832,7 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
     </div>
   </section>
 
-  <!-- 16. Community sharing -->
+  <!-- 18. Community sharing -->
   <section class="slide">
     <div class="kicker" data-i18nTextSource="Community Share">Community Share</div>
     <h2 data-i18nTextSource="Discover more and test with your own agent">Discover more and test with your own agent</h2>
@@ -772,7 +864,7 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
 
 <div class="chrome">
   <button class="nav-btn" id="prev" aria-label="Previous slide">‹</button>
-  <span class="count" id="count">1 / 16</span>
+  <span class="count" id="count">1 / 18</span>
   <button class="nav-btn" id="next" aria-label="Next slide">›</button>
   <label class="deck-language" aria-label="Language">
     <span>Language</span>
@@ -866,6 +958,18 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
   const CODE_BG = "F6F2EA";
   const GREEN = "16A34A";
   const RED = "DC2626";
+  const AGENT_FRAMEWORK_ARCHITECTURE_DATA = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NjQiIGhlaWdodD0iNzMzIiB2aWV3Qm94PSIwIDAgNjY0IDczMyIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsbGVkYnk9InRpdGxlIGRlc2MiPg0KICA8dGl0bGUgaWQ9InRpdGxlIj5NaWNyb3NvZnQgQWdlbnQgRnJhbWV3b3JrIHByb3ZpZGVyIGFyY2hpdGVjdHVyZTwvdGl0bGU+DQogIDxkZXNjIGlkPSJkZXNjIj5NaWNyb3NvZnQgQWdlbnQgRnJhbWV3b3JrIGJyYW5jaGVzIHRvIHRoZSBHaXRIdWIgQ29waWxvdCBwcm92aWRlciBmb3IgYSBuZXcgY29kaW5nIGFnZW50IGFuZCB0byB0aGUgQ29waWxvdCBTdHVkaW8gcHJvdmlkZXIgZm9yIGFuIGV4aXN0aW5nIHB1Ymxpc2hlZCBHSENQIGhhcm5lc3MgYWdlbnQgdGhyb3VnaCBBZ2VudGljIFJ1bnRpbWUgc2xhc2ggM3AuPC9kZXNjPg0KICA8ZGVmcz4NCiAgICA8bWFya2VyIGlkPSJhcnJvdyIgdmlld0JveD0iMCAwIDEwIDEwIiByZWZYPSI4LjUiIHJlZlk9IjUiIG1hcmtlcldpZHRoPSI3IiBtYXJrZXJIZWlnaHQ9IjciIG9yaWVudD0iYXV0by1zdGFydC1yZXZlcnNlIj4NCiAgICAgIDxwYXRoIGQ9Ik0gMCAwIEwgMTAgNSBMIDAgMTAgeiIgZmlsbD0iIzJmNmY5ZiIgLz4NCiAgICA8L21hcmtlcj4NCiAgICA8c3R5bGU+DQogICAgICAuYm94IHsgZmlsbDogI2ZmZmZmZjsgc3Ryb2tlOiAjMmY2ZjlmOyBzdHJva2Utd2lkdGg6IDEuNDsgfQ0KICAgICAgLmxpbmUgeyBmaWxsOiBub25lOyBzdHJva2U6ICMyZjZmOWY7IHN0cm9rZS13aWR0aDogMS41OyBtYXJrZXItZW5kOiB1cmwoI2Fycm93KTsgfQ0KICAgICAgLmxhYmVsIHsgZmlsbDogIzUyNTI1MjsgZm9udDogMTZweCAiU2Vnb2UgVUkiLCBBcmlhbCwgc2Fucy1zZXJpZjsgdGV4dC1hbmNob3I6IG1pZGRsZTsgZG9taW5hbnQtYmFzZWxpbmU6IG1pZGRsZTsgfQ0KICAgICAgLnNtYWxsIHsgZm9udC1zaXplOiAxNXB4OyB9DQogICAgPC9zdHlsZT4NCiAgPC9kZWZzPg0KDQogIDxyZWN0IHdpZHRoPSI2NjQiIGhlaWdodD0iNzMzIiBmaWxsPSIjZmZmZmZmIiAvPg0KDQogIDxyZWN0IGNsYXNzPSJib3giIHg9IjE3NyIgeT0iMSIgd2lkdGg9IjI3NiIgaGVpZ2h0PSI2MSIgLz4NCiAgPHRleHQgY2xhc3M9ImxhYmVsIiB4PSIzMTUiIHk9IjMyIj5NaWNyb3NvZnQgQWdlbnQgRnJhbWV3b3JrPC90ZXh0Pg0KDQogIDxwYXRoIGNsYXNzPSJsaW5lIiBkPSJNIDIzNSA2MiBDIDE4OCA3OSwgMTUzIDkyLCAxNTIgMTI1IiAvPg0KICA8cGF0aCBjbGFzcz0ibGluZSIgZD0iTSAzOTUgNjIgQyA0NDcgODAsIDQ3NiA5NCwgNDc3IDEyNSIgLz4NCg0KICA8cmVjdCBjbGFzcz0iYm94IiB4PSIyOCIgeT0iMTI1IiB3aWR0aD0iMjQ3IiBoZWlnaHQ9IjYyIiAvPg0KICA8dGV4dCBjbGFzcz0ibGFiZWwiIHg9IjE1MS41IiB5PSIxNTYiPkdpdEh1YiBDb3BpbG90IHByb3ZpZGVyPC90ZXh0Pg0KDQogIDxyZWN0IGNsYXNzPSJib3giIHg9IjM1NiIgeT0iMTI1IiB3aWR0aD0iMjQyIiBoZWlnaHQ9IjYyIiAvPg0KICA8dGV4dCBjbGFzcz0ibGFiZWwiIHg9IjQ3NyIgeT0iMTU2Ij5Db3BpbG90IFN0dWRpbyBwcm92aWRlcjwvdGV4dD4NCg0KICA8cGF0aCBjbGFzcz0ibGluZSIgZD0iTSAxNTIgMTg3IEwgMTUyIDI0OSIgLz4NCiAgPHBhdGggY2xhc3M9ImxpbmUiIGQ9Ik0gNDc3IDE4NyBMIDQ3NyAyNDkiIC8+DQoNCiAgPHJlY3QgY2xhc3M9ImJveCIgeD0iMjUiIHk9IjI0OSIgd2lkdGg9IjI1NCIgaGVpZ2h0PSI2MyIgLz4NCiAgPHRleHQgY2xhc3M9ImxhYmVsIiB4PSIxNTIiIHk9IjI4MSI+R2l0SHViIENvcGlsb3QgQ0xJIC8gU0RLPC90ZXh0Pg0KDQogIDxyZWN0IGNsYXNzPSJib3giIHg9IjM0MSIgeT0iMjQ5IiB3aWR0aD0iMjcyIiBoZWlnaHQ9IjYzIiAvPg0KICA8dGV4dCBjbGFzcz0ibGFiZWwiIHg9IjQ3NyIgeT0iMjgxIj5Db3BpbG90U3R1ZGlvIENvcGlsb3RDbGllbnQ8L3RleHQ+DQoNCiAgPHBhdGggY2xhc3M9ImxpbmUiIGQ9Ik0gMTUyIDMxMiBMIDE1MiAzNzQiIC8+DQogIDxwYXRoIGNsYXNzPSJsaW5lIiBkPSJNIDQ3NyAzMTIgTCA0NzcgMzc0IiAvPg0KDQogIDxyZWN0IGNsYXNzPSJib3giIHg9IjEiIHk9IjM3NCIgd2lkdGg9IjMwMiIgaGVpZ2h0PSI2MyIgLz4NCiAgPHRleHQgY2xhc3M9ImxhYmVsIiB4PSIxNTIiIHk9IjQwNiI+TmV3IGluZGVwZW5kZW50IGNvZGluZyBhZ2VudDwvdGV4dD4NCg0KICA8cmVjdCBjbGFzcz0iYm94IiB4PSIzNjUiIHk9IjM3NCIgd2lkdGg9IjIyNCIgaGVpZ2h0PSI2MyIgLz4NCiAgPHRleHQgY2xhc3M9ImxhYmVsIiB4PSI0NzciIHk9IjQwNiI+QWdlbnRpYyBSdW50aW1lIC8zcDwvdGV4dD4NCg0KICA8cGF0aCBjbGFzcz0ibGluZSIgZD0iTSA0NzcgNDM3IEwgNDc3IDQ5OSIgLz4NCg0KICA8cmVjdCBjbGFzcz0iYm94IiB4PSIzMTQiIHk9IjQ5OSIgd2lkdGg9IjMyNiIgaGVpZ2h0PSI3MiIgLz4NCiAgPHRleHQgY2xhc3M9ImxhYmVsIHNtYWxsIiB4PSI0NzciIHk9IjUyNSI+RXhpc3RpbmcgcHVibGlzaGVkIENvcGlsb3QgU3R1ZGlvPC90ZXh0Pg0KICA8dGV4dCBjbGFzcz0ibGFiZWwgc21hbGwiIHg9IjQ3NyIgeT0iNTQ4Ij5HSENQIGhhcm5lc3MgYWdlbnQ8L3RleHQ+DQo8L3N2Zz4=";
+  const AGENT_FRAMEWORK_ARCHITECTURE_CROPPED_DATA = (() => {
+    const svg = atob(AGENT_FRAMEWORK_ARCHITECTURE_DATA.split(",")[1])
+      .replace('height="733"', 'height="590"')
+      .replace('viewBox="0 0 664 733"', 'viewBox="0 0 664 590"')
+      .replace('height="733" fill="#ffffff"', 'height="590" fill="#ffffff"')
+      .replace('stroke-width: 1.4', 'stroke-width: 1.7')
+      .replace('stroke-width: 1.5', 'stroke-width: 1.7')
+      .replace('fill: #525252; font: 16px', 'fill: #333333; font: 18px')
+      .replace('font-size: 15px', 'font-size: 17px');
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
+  })();
 
   let ST = null;
 
@@ -892,7 +996,7 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
     s.addText("2026 \u00B7 Internal \u2014 Streaming Chat Playground", { x: 0.6, y: 7.05, w: 8, h: 0.34, color: SOFT, fontSize: 10 });
     s.addText([
       { text: "Copilot Studio Streaming", options: { color: ACCENT, bold: true } },
-      { text: "    " + n + " / 16", options: { color: SOFT } }
+      { text: "    " + n + " / 18", options: { color: SOFT } }
     ], { x: 7.7, y: 7.05, w: 5.03, h: 0.34, fontSize: 10, align: "right" });
   }
 
@@ -1320,9 +1424,112 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
     ], { x: 0.85, y: 6.12, w: 11.65, h: 0.55, fontSize: 10.5, valign: "middle", margin: 0 });
     footer(s, 14);
 
-    // 15 — Takeaways
+    // 15 — .NET Agent Framework /3p live proof
     s = pptx.addSlide();
-    header(s, "14 \u00B7 TAKEAWAYS", "If you remember four things");
+    header(s, "14 \u00B7 AGENT FRAMEWORK POC", ".NET Agent Framework: same /3p route, structured host");
+    s.addText("Live proof · Aug 6, 2026 · Microsoft-authenticated Copilot Studio GHCP-harness agent · Copilot Studio provider, not direct GitHub Copilot CLI", { x: 0.6, y: 1.56, w: 12.13, h: 0.34, color: "4B5563", fontSize: 13.2, margin: 0 });
+    const afSteps = [
+      { tag: "1 \u00B7 identity", desc: "Delegated token", mono: "CopilotStudio.Copilots.Invoke" },
+      { tag: "2 \u00B7 host", desc: ".NET 8 sidecar", mono: "CopilotStudioAgent" },
+      { tag: "3 \u00B7 route", desc: "Guarded Agentic Runtime", mono: "/agenticruntime/3p" },
+      { tag: "4 \u00B7 stream", desc: "Provider updates", mono: "RunStreamingAsync" }
+    ];
+    afSteps.forEach((stp, i) => {
+      const x = 0.6 + i * 3.11;
+      s.addShape(ST.roundRect, { x, y: 2.08, w: 2.78, h: 1.02, fill: { color: PANEL }, line: { color: "D8CBB5", width: 1 }, rectRadius: 0.08 });
+      s.addText([
+        { text: stp.tag, options: { bold: true, color: ACCENT, fontSize: 10.8, breakLine: true } },
+        { text: stp.desc, options: { bold: true, color: INK, fontSize: 12.2, breakLine: true } },
+        { text: stp.mono, options: { color: "4B5563", fontSize: 9.4, fontFace: "Consolas" } }
+      ], { x: x + 0.15, y: 2.18, w: 2.48, h: 0.82, valign: "top", margin: 0 });
+      if (i < 3) s.addText("\u2192", { x: x + 2.79, y: 2.08, w: 0.31, h: 1.02, color: "667085", fontSize: 19, bold: true, align: "center", valign: "middle" });
+    });
+    s.addShape(ST.rect, { x: 0.6, y: 3.37, w: 5.88, h: 1.4, fill: { color: PANEL }, line: { color: "D8CBB5", width: 1 } });
+    s.addShape(ST.rect, { x: 0.6, y: 3.37, w: 0.09, h: 1.4, fill: { color: ACCENT2 }, line: { type: "none" } });
+    s.addText("Observed update shapes", { x: 0.85, y: 3.5, w: 5.3, h: 0.24, color: INK, bold: true, fontSize: 14, margin: 0 });
+    const afShapeRows = [
+      { label: "Agent Framework", value: "Text fragments in this run", color: ACCENT2 },
+      { label: "Node client", value: "Cumulative snapshots", color: ACCENT },
+      { label: "Browser adapter", value: "Append text by streamId", color: GREEN }
+    ];
+    afShapeRows.forEach((row, i) => {
+      const y = 3.86 + i * 0.27;
+      s.addText(row.label, { x: 0.85, y, w: 1.65, h: 0.22, color: row.color, bold: true, fontSize: 11.4, margin: 0 });
+      s.addText(row.value, { x: 2.53, y, w: 3.62, h: 0.22, color: "374151", fontSize: 11.4, margin: 0 });
+    });
+
+    s.addShape(ST.rect, { x: 6.75, y: 3.37, w: 5.98, h: 1.4, fill: { color: PANEL }, line: { color: "D8CBB5", width: 1 } });
+    s.addShape(ST.rect, { x: 6.75, y: 3.37, w: 0.09, h: 1.4, fill: { color: GREEN }, line: { type: "none" } });
+    s.addText("One observed live turn", { x: 7.0, y: 3.5, w: 5.35, h: 0.24, color: INK, bold: true, fontSize: 14, margin: 0 });
+    const afStats = [
+      { value: "15", label: "real fragments" },
+      { value: "4→1,164", label: "characters" },
+      { value: "1", label: "matching final" }
+    ];
+    afStats.forEach((stat, i) => {
+      const x = 7.0 + i * 1.74;
+      s.addText(stat.value, { x, y: 3.81, w: 1.55, h: 0.36, color: GREEN, bold: true, fontSize: 23, margin: 0, align: "center" });
+      s.addText(stat.label, { x, y: 4.18, w: 1.55, h: 0.2, color: "374151", fontSize: 10.4, margin: 0, align: "center" });
+    });
+    s.addText("Greeting queued until Online, then rendered in order.", { x: 7.0, y: 4.49, w: 5.32, h: 0.19, color: "4B5563", italic: true, fontSize: 10.5, margin: 0, align: "center" });
+
+    const afAdapter = [
+      { x: 0.6, w: 3.58, title: ".NET sidecar", body: "IActivity or text update", color: ACCENT2 },
+      { x: 4.57, w: 4.16, title: "Browser adapter", body: "Append by streamId", color: GREEN },
+      { x: 9.12, w: 3.61, title: "Web Chat", body: "One growing activity", color: ACCENT }
+    ];
+    afAdapter.forEach((item) => {
+      s.addShape(ST.roundRect, { x: item.x, y: 5.04, w: item.w, h: 0.76, fill: { color: "FFFFFF" }, line: { color: item.color, width: 1.6 }, rectRadius: 0.06 });
+      s.addText(item.title, { x: item.x + 0.16, y: 5.15, w: item.w - 0.32, h: 0.22, color: item.color, bold: true, fontSize: 12.3, align: "center", margin: 0 });
+      s.addText(item.body, { x: item.x + 0.16, y: 5.4, w: item.w - 0.32, h: 0.19, color: "374151", fontSize: 11, align: "center", margin: 0 });
+    });
+    s.addText("\u2192", { x: 4.18, y: 5.04, w: 0.39, h: 0.76, color: "667085", fontSize: 20, bold: true, align: "center", valign: "middle", margin: 0 });
+    s.addText("\u2192", { x: 8.73, y: 5.04, w: 0.39, h: 0.76, color: "667085", fontSize: 20, bold: true, align: "center", valign: "middle", margin: 0 });
+
+    s.addShape(ST.rect, { x: 0.6, y: 6.08, w: 12.13, h: 0.62, fill: { color: "FDECEC" }, line: { color: "F5C2C2", width: 1 } });
+    s.addShape(ST.rect, { x: 0.6, y: 6.08, w: 0.09, h: 0.62, fill: { color: RED }, line: { type: "none" } });
+    s.addText([
+      { text: "SUPPORT BOUNDARY: ", options: { bold: true, color: RED } },
+      { text: "Same experimental /3p route. Agent Framework adds a structured .NET host; adapter reconstruction is not a new support contract.", options: { color: INK } }
+    ], { x: 0.85, y: 6.08, w: 11.62, h: 0.62, fontSize: 11.8, valign: "middle", margin: 0 });
+    footer(s, 15);
+
+    // 16 — Agent Framework provider architecture
+    s = pptx.addSlide();
+    header(s, "15 \u00B7 PROVIDER ARCHITECTURE", "Agent Framework provider map — reuse the published GHCP agent");
+    s.addText("Copilot Studio provider → authenticated /3p → existing published GHCP agent.", { x: 0.6, y: 1.5, w: 12.13, h: 0.3, color: "4B5563", fontSize: 13.2, margin: 0 });
+    s.addShape(ST.roundRect, { x: 0.6, y: 1.86, w: 5.75, h: 4.88, fill: { color: "FFFFFF" }, line: { color: "D8CBB5", width: 1.2 }, rectRadius: 0.06 });
+    s.addImage({ data: AGENT_FRAMEWORK_ARCHITECTURE_CROPPED_DATA, x: 1.045, y: 1.98, w: 4.86, h: 4.32 });
+    s.addText("Pasted architecture · provider split and existing-agent reuse", { x: 0.85, y: 6.43, w: 5.25, h: 0.2, color: "4B5563", fontSize: 10.5, italic: true, align: "center", margin: 0 });
+
+    const zoomX = 6.65;
+    const zoomW = 6.08;
+    const addArchitectureNode = (y, h, title, subtitle, color = ACCENT2, fill = "FFFFFF", lineWidth = 1.6) => {
+      s.addShape(ST.roundRect, { x: zoomX, y, w: zoomW, h, fill: { color: fill }, line: { color, width: lineWidth }, rectRadius: 0.06 });
+      s.addText(title, { x: zoomX + 0.2, y: y + 0.1, w: zoomW - 0.4, h: subtitle ? 0.25 : h - 0.2, color: INK, bold: true, fontSize: 14.2, align: "center", valign: subtitle ? "top" : "middle", margin: 0 });
+      if (subtitle) s.addText(subtitle, { x: zoomX + 0.2, y: y + 0.39, w: zoomW - 0.4, h: 0.2, color: "4B5563", fontSize: 10.8, align: "center", margin: 0 });
+    };
+    const addArchitectureConnector = (y, label, color = ACCENT2) => {
+      s.addText(label, { x: zoomX, y, w: 2.7, h: 0.22, color, bold: true, fontSize: 10.4, align: "right", margin: 0 });
+      s.addText("\u2193", { x: zoomX + 2.82, y: y - 0.05, w: 0.66, h: 0.3, color, bold: true, fontSize: 19, align: "center", margin: 0 });
+    };
+
+    addArchitectureNode(1.88, 0.56, "Copilot Studio provider", "");
+    addArchitectureConnector(2.5, "Delegated Power Platform token");
+    addArchitectureNode(2.78, 0.7, "CopilotStudioAgent", "CopilotStudio CopilotClient");
+    addArchitectureConnector(3.55, "RunStreamingAsync updates");
+    addArchitectureNode(3.83, 0.7, "Authenticated Agentic Runtime /3p", "SSE conversation + session");
+    addArchitectureConnector(4.6, "Handoff: existing published runtime", GREEN);
+    addArchitectureNode(4.9, 1.02, "Existing published Copilot Studio GHCP harness agent", "", GREEN, "EAF7EE", 2.2);
+    s.addShape(ST.roundRect, { x: zoomX + 0.2, y: 4.79, w: 1.5, h: 0.24, fill: { color: GREEN }, line: { type: "none" }, rectRadius: 0.04 });
+    s.addText("REUSE BOUNDARY", { x: zoomX + 0.2, y: 4.79, w: 1.5, h: 0.24, color: "FFFFFF", bold: true, fontSize: 8.5, align: "center", valign: "middle", margin: 0 });
+    s.addShape(ST.roundRect, { x: zoomX, y: 6.16, w: zoomW, h: 0.5, fill: { color: PANEL }, line: { color: "D8CBB5", width: 1 }, rectRadius: 0.05 });
+    s.addText("browser adapter updates  →  streamId merge  →  one Web Chat activity", { x: zoomX + 0.18, y: 6.16, w: zoomW - 0.36, h: 0.5, color: GREEN, bold: true, fontFace: "Consolas", fontSize: 10.5, align: "center", valign: "middle", margin: 0 });
+    footer(s, 16);
+
+    // 17 — Takeaways
+    s = pptx.addSlide();
+    header(s, "16 \u00B7 TAKEAWAYS", "If you remember four things");
     const tk = [
       [{ text: "Both " }, { text: "Direct Line", bold: true }, { text: " and " }, { text: "Direct-to-Engine", bold: true }, { text: " stream \u2014 DtE is native; DL needs " }, { text: "deliveryMode:\"stream\"", mono: true }, { text: "." }],
       [{ text: "Web Chat groups bubbles by activity " }, { text: "id", bold: true }, { text: "; force " }, { text: "id = streamId", mono: true }, { text: " for one growing bubble." }],
@@ -1344,11 +1551,11 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
       { text: "Questions?", options: { bold: true, color: INK } },
       { text: " Reach out \u2014 happy to walk through the inspector live.", options: { color: SOFT } }
     ], { x: 0.6, y: 6.22, w: 12, h: 0.3, fontSize: 13, margin: 0 });
-    footer(s, 15);
+    footer(s, 17);
 
-    // 16 — Community share
+    // 18 — Community share
     s = pptx.addSlide();
-    header(s, "15 \u00B7 COMMUNITY SHARE", "Discover more and test with your own agent");
+    header(s, "17 \u00B7 COMMUNITY SHARE", "Discover more and test with your own agent");
     s.addText("We shared this streaming reference publicly so teams can reproduce progressive-response UX, then validate the actual wire behavior with the same inspector patterns.", { x: 0.6, y: 1.8, w: 12.13, h: 0.9, color: MUTED, fontSize: 14 });
     s.addShape(ST.roundRect, { x: 0.6, y: 2.7, w: 7.2, h: 3.2, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.08 });
     s.addText("Repository snapshot", { x: 0.85, y: 2.9, w: 6.7, h: 0.4, color: INK, bold: true, fontSize: 15 });
@@ -1371,7 +1578,7 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
     });
     s.addText(shareText, { x: 8.23, y: 2.92, w: 4.28, h: 2.5, valign: "top" });
     takeaway(s, "Start from the repo, run locally, and use this deck + inspector to shorten streaming rollout time for your own Copilot Studio projects.");
-    footer(s, 16);
+    footer(s, 18);
   }
 
   const exportBtn = document.getElementById("exportPptx");

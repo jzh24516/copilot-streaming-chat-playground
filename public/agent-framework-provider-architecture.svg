@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="664" height="590" viewBox="0 0 664 590" role="img" aria-labelledby="title desc">
+  <title id="title">Microsoft Agent Framework provider architecture</title>
+  <desc id="desc">Microsoft Agent Framework branches to the GitHub Copilot provider for a new coding agent and to the Copilot Studio provider for an existing published GHCP harness agent through Agentic Runtime slash 3p.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2f6f9f" />
+    </marker>
+    <style>
+      .box { fill: #ffffff; stroke: #2f6f9f; stroke-width: 1.7; }
+      .line { fill: none; stroke: #2f6f9f; stroke-width: 1.7; marker-end: url(#arrow); }
+      .label { fill: #333333; font: 18px "Segoe UI", Arial, sans-serif; text-anchor: middle; dominant-baseline: middle; }
+      .small { font-size: 17px; }
+    </style>
+  </defs>
+
+  <rect width="664" height="590" fill="#ffffff" />
+
+  <rect class="box" x="177" y="1" width="276" height="61" />
+  <text class="label" x="315" y="32">Microsoft Agent Framework</text>
+
+  <path class="line" d="M 235 62 C 188 79, 153 92, 152 125" />
+  <path class="line" d="M 395 62 C 447 80, 476 94, 477 125" />
+
+  <rect class="box" x="28" y="125" width="247" height="62" />
+  <text class="label" x="151.5" y="156">GitHub Copilot provider</text>
+
+  <rect class="box" x="356" y="125" width="242" height="62" />
+  <text class="label" x="477" y="156">Copilot Studio provider</text>
+
+  <path class="line" d="M 152 187 L 152 249" />
+  <path class="line" d="M 477 187 L 477 249" />
+
+  <rect class="box" x="25" y="249" width="254" height="63" />
+  <text class="label" x="152" y="281">GitHub Copilot CLI / SDK</text>
+
+  <rect class="box" x="341" y="249" width="272" height="63" />
+  <text class="label" x="477" y="281">CopilotStudio CopilotClient</text>
+
+  <path class="line" d="M 152 312 L 152 374" />
+  <path class="line" d="M 477 312 L 477 374" />
+
+  <rect class="box" x="1" y="374" width="302" height="63" />
+  <text class="label" x="152" y="406">New independent coding agent</text>
+
+  <rect class="box" x="365" y="374" width="224" height="63" />
+  <text class="label" x="477" y="406">Agentic Runtime /3p</text>
+
+  <path class="line" d="M 477 437 L 477 499" />
+
+  <rect class="box" x="314" y="499" width="326" height="72" />
+  <text class="label small" x="477" y="525">Existing published Copilot Studio</text>
+  <text class="label small" x="477" y="548">GHCP harness agent</text>
+</svg>

@@ -57,7 +57,17 @@
     <main class="layout">
       <!-- Configuration panel -->
       <section class="panel config" aria-label="Connection configuration">
-        <h2>Connection</h2>
+        <div class="config-head">
+          <h2>Connection</h2>
+          <button
+            type="button"
+            id="configToggle"
+            class="panel-toggle"
+            aria-label="Collapse connection panel"
+            title="Collapse connection panel"
+            aria-expanded="true"
+          ><span aria-hidden="true">‹</span></button>
+        </div>
 
         <label class="field">
           <span>Connection mode</span>
@@ -68,6 +78,7 @@
             <option value="newAgentDL">No-auth agent · Agentic Direct Line (WebSocket diagnostic · may be final-only)</option>
             <option value="newAgentDTE">Published-bot DTE · island sidecar diagnostic (Entra · non-GHCP)</option>
             <option value="ghcp3p">GHCP harness · Agentic Runtime /3p (Entra auth · experimental)</option>
+            <option value="ghcpAgentFramework">Copilot Studio GHCP harness · .NET Agent Framework /3p POC</option>
           </select>
         </label>
 
@@ -344,6 +355,83 @@
           </small>
         </div>
 
+        <div class="field-group" id="ghcpAgentFrameworkField" hidden>
+          <small class="field-note">
+            Isolated proof of concept for the same published <strong>Copilot Studio
+            GHCP-harness agent</strong> and authenticated <code>/3p</code> route, hosted by
+            <strong>Microsoft Agent Framework for .NET</strong>. It does not replace or modify
+            the proven Node sidecar mode above.
+          </small>
+          <label class="field">
+            <span>Entra application (client) ID</span>
+            <input
+              type="text"
+              id="afGhcpClientId"
+              placeholder="00000000-0000-0000-0000-000000000000"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <small>SPA registration with the <code>CopilotStudio.Copilots.Invoke</code> delegated permission.</small>
+          </label>
+          <label class="field">
+            <span>Directory (tenant) ID</span>
+            <input
+              type="text"
+              id="afGhcpTenantId"
+              placeholder="00000000-0000-0000-0000-000000000000"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Environment ID</span>
+            <input
+              type="text"
+              id="afGhcpEnvironmentId"
+              placeholder="Copilot Studio environment GUID"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Agent schema name</span>
+            <input
+              type="text"
+              id="afGhcpSchemaName"
+              placeholder="e.g. cr123_myAgent_AbCdEf"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Generated /3p Direct Connect URL</span>
+            <input
+              type="text"
+              id="afGhcpUrl"
+              placeholder="Enter environment ID and schema name"
+              readonly
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>.NET Agent Framework sidecar URL</span>
+            <input
+              type="url"
+              id="afGhcpSidecarUrl"
+              value="http://127.0.0.1:3980"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <small class="field-note">
+            Start the isolated host with <code>npm run agent-framework:poc</code>. The .NET
+            sidecar wraps the Copilot Studio client in <code>CopilotStudioAgent</code> and
+            exposes its real <code>RunStreamingAsync</code> updates. This remains an
+            experimental <code>/3p</code> integration; Agent Framework does not change that
+            support boundary.
+          </small>
+        </div>
+
         <label class="field" id="tokenEndpointField" hidden>
           <span>Token endpoint URL</span>
           <input
@@ -454,6 +542,17 @@
           </ul>
         </div>
       </section>
+      <div
+        id="configResizeHandle"
+        class="config-resize-handle"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize connection panel"
+        aria-valuemin="260"
+        aria-valuemax="560"
+        aria-valuenow="320"
+        tabindex="0"
+      ></div>
 
       <!-- Web Chat canvas -->
       <section class="panel chat" aria-label="Chat canvas">
