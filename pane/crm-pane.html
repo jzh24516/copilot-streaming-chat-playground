@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI assistant</title>
+    <link rel="stylesheet" href="/crm-pane.css" />
+    <!--
+      Pinned MSAL build. The pane runs inside a Dynamics iframe, so it uses
+      acquireTokenSilent followed by a user-gesture popup. Entra sign-in pages
+      cannot be rendered in a framed document, which rules out the redirect flow
+      the diagnostic playground uses.
+    -->
+    <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@4.13.1/lib/msal-browser.min.js"></script>
+    <!--
+      Agents answer in Markdown (tables, bold, lists). marked converts it and
+      DOMPurify sanitizes the result before it reaches the DOM — model output is
+      untrusted, so it is never assigned as raw HTML.
+
+      Both are pinned with subresource integrity: if jsDelivr ever served
+      altered bytes the browser refuses to run them, and crm-pane.js falls back
+      to plain text rather than failing open.
+    -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js"
+      integrity="sha384-H+hy9ULve6xfxRkWIh/YOtvDdpXgV2fmAGQkIDTxIgZwNoaoBal14Di2YTMR6MzR"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js"
+      integrity="sha384-eEu5CTj3qGvu9PdJuS+YlkNi7d2XxQROAFYOr59zgObtlcux1ae1Il3u7jvdCSWu"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <div class="pane" role="application" aria-label="AI assistant">
+      <header class="pane-header">
+        <div class="pane-identity">
+          <h1 class="pane-title" id="agentName">AI assistant</h1>
+          <p class="pane-context" id="recordContext" hidden></p>
+        </div>
+        <button class="icon-button" id="signOutButton" type="button" title="Sign out" hidden>
+          Sign out
+        </button>
+      </header>
+
+      <p class="pane-status" id="status" role="status" aria-live="polite">Starting&hellip;</p>
+
+      <div class="pane-alert" id="alert" role="alert" hidden>
+        <span id="alertText"></span>
+        <button class="link-button" id="alertAction" type="button" hidden></button>
+      </div>
+
+      <main class="transcript" id="transcript" tabindex="0" aria-label="Conversation" aria-busy="false"></main>
+
+      <form class="composer" id="composer" autocomplete="off">
+        <label class="visually-hidden" for="messageInput">Message</label>
+        <textarea
+          id="messageInput"
+          rows="1"
+          placeholder="Ask about this record&hellip;"
+          disabled
+        ></textarea>
+        <button class="send-button" id="sendButton" type="submit" disabled title="Send">
+          <span class="visually-hidden">Send</span>
+          <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+            <path d="M2 10 18 3l-4 14-3.5-5.5L2 10Z" fill="currentColor" />
+          </svg>
+        </button>
+      </form>
+    </div>
+
+    <script src="/crm-pane.js" type="module"></script>
+  </body>
+</html>

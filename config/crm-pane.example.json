@@ -1,0 +1,17 @@
+{
+  "$comment": [
+    "Copy to config/crm-pane.json for local runs, or set the PANE_* environment",
+    "variables instead (environment variables win). Nothing here is a secret:",
+    "it is the pinned agent target plus the Dynamics origins allowed to frame",
+    "the pane. config/crm-pane.json is git-ignored so a real org URL and",
+    "environment id are not committed."
+  ],
+  "tenantId": "00000000-0000-0000-0000-000000000000",
+  "clientId": "00000000-0000-0000-0000-000000000000",
+  "environmentId": "00000000-0000-0000-0000-000000000000",
+  "schemaName": "prefix_agentschemaname",
+  "dynamicsOrigins": ["https://contoso.crm.dynamics.com"],
+  "agentDisplayName": "AI assistant",
+  "maxMessageLength": 4000,
+  "requestsPerMinute": 30
+}

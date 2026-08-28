@@ -1,0 +1,454 @@
+/*
+ * Dynamics 365 side-pane widget.
+ *
+ * Layout constraint: the pane is user-resizable between roughly 300px and
+ * 600px, so everything is fluid and nothing relies on a fixed width. Colours
+ * follow the host CRM's light theme and respond to prefers-color-scheme.
+ */
+
+:root {
+  --pane-bg: #ffffff;
+  --pane-fg: #1a1a1a;
+  --pane-muted: #616161;
+  --pane-border: #e1dfdd;
+  --pane-accent: #0f6cbd;
+  --pane-accent-fg: #ffffff;
+  --pane-bot-bubble: #f3f2f1;
+  --pane-code-bg: #ecebe9;
+  --pane-table-head: #ecebe9;
+  --pane-danger-bg: #fdf3f4;
+  --pane-danger-fg: #a4262c;
+  --pane-danger-border: #f1bbbe;
+  --pane-radius: 8px;
+  --pane-gap: 12px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --pane-bg: #1f1f1f;
+    --pane-fg: #f5f5f5;
+    --pane-muted: #adadad;
+    --pane-border: #3d3d3d;
+    --pane-accent: #479ef5;
+    --pane-accent-fg: #06213d;
+    --pane-bot-bubble: #2b2b2b;
+    --pane-code-bg: #383838;
+    --pane-table-head: #383838;
+    --pane-danger-bg: #3b2325;
+    --pane-danger-fg: #f1707b;
+    --pane-danger-border: #6d383c;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--pane-bg);
+  color: var(--pane-fg);
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.pane {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 280px;
+}
+
+/* Header ------------------------------------------------------------------ */
+
+.pane-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px var(--pane-gap) 8px;
+  border-bottom: 1px solid var(--pane-border);
+}
+
+.pane-identity {
+  min-width: 0;
+}
+
+.pane-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pane-context {
+  margin: 2px 0 0;
+  color: var(--pane-muted);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.icon-button,
+.link-button {
+  flex: none;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: none;
+  color: var(--pane-accent);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.icon-button:hover,
+.link-button:hover {
+  background: var(--pane-bot-bubble);
+}
+
+.icon-button:focus-visible,
+.link-button:focus-visible,
+.send-button:focus-visible,
+#messageInput:focus-visible,
+.transcript:focus-visible {
+  outline: 2px solid var(--pane-accent);
+  outline-offset: 1px;
+}
+
+/* Status and alerts -------------------------------------------------------- */
+
+.pane-status {
+  margin: 0;
+  padding: 6px var(--pane-gap);
+  color: var(--pane-muted);
+  font-size: 12px;
+}
+
+.pane-status[data-state="error"] {
+  color: var(--pane-danger-fg);
+}
+
+.pane-alert {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 var(--pane-gap) 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--pane-danger-border);
+  border-radius: var(--pane-radius);
+  background: var(--pane-danger-bg);
+  color: var(--pane-danger-fg);
+  font-size: 12px;
+}
+
+.pane-alert .link-button {
+  color: var(--pane-danger-fg);
+  border-color: currentColor;
+}
+
+/* Transcript --------------------------------------------------------------- */
+
+.transcript {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: var(--pane-gap);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  max-width: 92%;
+}
+
+.message[data-role="user"] {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.message[data-role="bot"] {
+  align-self: flex-start;
+}
+
+.bubble {
+  padding: 8px 10px;
+  border-radius: var(--pane-radius);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.message[data-role="user"] .bubble {
+  background: var(--pane-accent);
+  color: var(--pane-accent-fg);
+}
+
+.message[data-role="bot"] .bubble {
+  background: var(--pane-bot-bubble);
+}
+
+/* Interim "working on it" text from the runtime, replaced by the answer. */
+.message[data-kind="informative"] .bubble {
+  color: var(--pane-muted);
+  font-style: italic;
+}
+
+.typing-dots {
+  display: inline-flex;
+  gap: 3px;
+  padding: 2px 0;
+}
+
+.typing-dots span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--pane-muted);
+  animation: pane-blink 1.2s infinite ease-in-out both;
+}
+
+.typing-dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing-dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes pane-blink {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typing-dots span {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+/* Rendered Markdown -------------------------------------------------------- */
+
+/*
+ * Agent answers arrive as Markdown. Everything below is scoped to .bubble so it
+ * can only affect message content, and spacing is tuned for a 300-600px pane.
+ */
+
+.bubble > *:first-child {
+  margin-top: 0;
+}
+
+.bubble > *:last-child {
+  margin-bottom: 0;
+}
+
+.bubble p {
+  margin: 0 0 8px;
+}
+
+.bubble h1,
+.bubble h2,
+.bubble h3,
+.bubble h4,
+.bubble h5,
+.bubble h6 {
+  margin: 12px 0 6px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* Headings stay close to body size; a pane has no room for display type. */
+.bubble h1 { font-size: 1.15em; }
+.bubble h2 { font-size: 1.1em; }
+.bubble h3 { font-size: 1.05em; }
+.bubble h4,
+.bubble h5,
+.bubble h6 { font-size: 1em; }
+
+.bubble ul,
+.bubble ol {
+  margin: 0 0 8px;
+  padding-left: 20px;
+}
+
+.bubble li {
+  margin: 2px 0;
+}
+
+.bubble li > p {
+  margin: 0;
+}
+
+.bubble a {
+  color: var(--pane-accent);
+}
+
+.bubble code {
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: var(--pane-code-bg);
+  font-family: Consolas, "Cascadia Mono", monospace;
+  font-size: 0.9em;
+}
+
+.bubble pre {
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  overflow-x: auto;
+  border-radius: var(--pane-radius);
+  background: var(--pane-code-bg);
+}
+
+.bubble pre code {
+  padding: 0;
+  background: none;
+}
+
+.bubble blockquote {
+  margin: 0 0 8px;
+  padding: 2px 0 2px 10px;
+  border-left: 3px solid var(--pane-border);
+  color: var(--pane-muted);
+}
+
+.bubble hr {
+  margin: 10px 0;
+  border: 0;
+  border-top: 1px solid var(--pane-border);
+}
+
+/*
+ * Tables are the main reason the pane needs Markdown at all, and the main thing
+ * that would blow out its width. Each table gets its own horizontal scroller so
+ * the pane layout stays fixed no matter how many columns the agent returns.
+ */
+.table-scroll {
+  margin: 0 0 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.bubble table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.92em;
+}
+
+.bubble th,
+.bubble td {
+  padding: 5px 8px;
+  border: 1px solid var(--pane-border);
+  text-align: left;
+  vertical-align: top;
+  /* Let long cells wrap instead of forcing an extreme scroll width. */
+  min-width: 72px;
+}
+
+.bubble th {
+  background: var(--pane-table-head);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* User bubbles are on an accent fill, so borders and code need to invert. */
+.message[data-role="user"] .bubble code,
+.message[data-role="user"] .bubble pre {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.message[data-role="user"] .bubble a {
+  color: inherit;
+}
+
+/* Composer ----------------------------------------------------------------- */
+
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: var(--pane-gap);
+  border-top: 1px solid var(--pane-border);
+}
+
+#messageInput {
+  flex: 1;
+  min-width: 0;
+  max-height: 120px;
+  padding: 8px 10px;
+  border: 1px solid var(--pane-border);
+  border-radius: var(--pane-radius);
+  background: var(--pane-bg);
+  color: var(--pane-fg);
+  font: inherit;
+  resize: none;
+}
+
+#messageInput:disabled {
+  opacity: 0.6;
+}
+
+.send-button {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: var(--pane-radius);
+  background: var(--pane-accent);
+  color: var(--pane-accent-fg);
+  cursor: pointer;
+}
+
+.send-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.send-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Narrow panes: reclaim horizontal space. */
+@media (max-width: 340px) {
+  :root {
+    --pane-gap: 8px;
+  }
+
+  .message {
+    max-width: 100%;
+  }
+}

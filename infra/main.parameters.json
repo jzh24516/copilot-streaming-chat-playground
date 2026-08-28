@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appName": {
+      "value": "REPLACE-agent-pane"
+    },
+    "skuName": {
+      "value": "B1"
+    },
+    "paneTenantId": {
+      "value": "REPLACE-entra-tenant-guid"
+    },
+    "paneClientId": {
+      "value": "REPLACE-entra-spa-client-guid"
+    },
+    "paneEnvironmentId": {
+      "value": "REPLACE-copilot-studio-environment-guid"
+    },
+    "paneSchemaName": {
+      "value": "REPLACE_agent_schema_name"
+    },
+    "paneDynamicsOrigins": {
+      "value": "https://REPLACE.crm.dynamics.com"
+    },
+    "paneAgentDisplayName": {
+      "value": "AI assistant"
+    }
+  }
+}

@@ -19,6 +19,9 @@ import {
   readLocalS2SConfig,
   writeLocalS2SConfig
 } from './s2s-local-config.js';
+import { loadPaneConfig } from './crm-pane-config.js';
+import { createPaneRouter } from './crm-pane-routes.js';
+import { getGhcp3pConversationUrl as guard3pUrl } from './ghcp3p-url.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -40,7 +43,12 @@ const PORT = process.env.PORT || 3978;
 // Copilot Studio /conversations call. This is the diagnostic for "is the
 // server emitting any generative-orchestration signal (or x-ms-* hint) that the
 // SDK silently discards before we ever see the rendered fallback text?".
-const DTE_RAW_CAPTURE = /^(1|true|yes)$/i.test(process.env.DTE_RAW_CAPTURE || '1');
+// Raw capture dumps full prompts and responses to stdout. That is the right
+// default for a local diagnostic session and the wrong one for any deployed
+// host, so production defaults to off unless explicitly re-enabled.
+const DTE_RAW_CAPTURE = /^(1|true|yes)$/i.test(
+  process.env.DTE_RAW_CAPTURE || (process.env.NODE_ENV === 'production' ? '0' : '1')
+);
 const __nativeFetch = globalThis.fetch.bind(globalThis);
 globalThis.fetch = async (input, init) => {
   const url = typeof input === 'string' ? input : input?.url || String(input);
@@ -175,6 +183,35 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/public', express.static(path.join(__dirname, 'public')));
 // Serve the knowledge-sharing tech note deck (and any future docs).
 app.use('/docs', express.static(path.join(__dirname, 'docs')));
+
+// ---------------------------------------------------------------------------
+// Dynamics 365 side-pane widget.
+//
+// Opt-in: stays completely inert until the pinned agent target and the allowed
+// Dynamics origins are configured. The playground is unaffected either way.
+// The route handlers are hoisted function declarations defined further down.
+// ---------------------------------------------------------------------------
+const paneConfig = loadPaneConfig({ baseDir: __dirname });
+if (paneConfig.enabled) {
+  app.use(
+    createPaneRouter({
+      config: paneConfig,
+      paneHtmlPath: path.join(__dirname, 'pane', 'crm-pane.html'),
+      buildClient: buildDteClient,
+      preflight: preflightGhcp3p,
+      pumpTurn
+    })
+  );
+  console.log(
+    `[pane] Side pane enabled for agent "${paneConfig.schemaName}". ` +
+    `Framing allowed from: ${paneConfig.frameAncestors.join(', ')}`
+  );
+  if (DTE_RAW_CAPTURE) {
+    console.warn('[pane] DTE_RAW_CAPTURE is on — prompts and responses are being written to the log. Set DTE_RAW_CAPTURE=0.');
+  }
+} else {
+  console.log(`[pane] ${paneConfig.reason}`);
+}
 
 /**
  * Reports which connection mode the server is configured for, without leaking
@@ -382,32 +419,7 @@ function buildDteClient(token, settings = {}) {
 }
 
 function getGhcp3pConversationUrl(settings = {}) {
-  const value = String(settings.directConnectUrl || '').trim();
-  if (!value) throw new Error('Missing GHCP /3p Direct Connect URL.');
-
-  const url = new URL(value);
-  const validHost = /^[a-f0-9]{30}\.[a-f0-9]{2}\.environment\.api\.powerplatform\.com$/i.test(
-    url.hostname
-  );
-  const validPath = /^\/copilotstudio\/agenticruntime\/3p\/dataverse-backed\/authenticated\/bots\/[^/]+$/i.test(
-    url.pathname.replace(/\/+$/, '').replace(/\/conversations(?:\/[^/]+)?$/i, '')
-  );
-  if (
-    url.protocol !== 'https:' ||
-    url.port ||
-    url.username ||
-    url.password ||
-    !validHost ||
-    !validPath ||
-    url.searchParams.get('api-version') !== '1'
-  ) {
-    throw new Error('Invalid GHCP /3p Direct Connect URL.');
-  }
-
-  url.pathname = url.pathname
-    .replace(/\/+$/, '')
-    .replace(/\/conversations(?:\/[^/]+)?$/i, '') + '/conversations';
-  return url;
+  return guard3pUrl(settings);
 }
 
 async function preflightGhcp3p(token, settings) {

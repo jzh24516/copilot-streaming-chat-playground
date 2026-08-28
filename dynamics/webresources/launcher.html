@@ -1,0 +1,117 @@
+<!doctype html>
+<!--
+  Dynamics 365 web resource: {prefix}_/agent/launcher.html
+
+  A thin bridge. Dynamics can only host a web resource from its own origin, so
+  this page runs inside the pane and frames the externally hosted widget.
+
+  It carries no credential and no agent identifier — only the record context the
+  command collected. The widget authenticates the user itself and the relay pins
+  the agent server-side.
+
+  BEFORE IMPORTING: set WIDGET_ORIGIN to your deployed HTTPS origin.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI assistant</title>
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+      }
+
+      iframe {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+
+      .launcher-error {
+        margin: 0;
+        padding: 16px;
+        color: #a4262c;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <iframe
+      id="agentFrame"
+      title="AI assistant"
+      allow="clipboard-write"
+      referrerpolicy="no-referrer"
+    ></iframe>
+
+    <script>
+      (function () {
+        "use strict";
+
+        // ------------------------------------------------------------------
+        // The single value to change per deployment.
+        // Must be an exact https origin with no trailing path.
+        // ------------------------------------------------------------------
+        var WIDGET_ORIGIN = "https://REPLACE-ME.azurewebsites.net";
+
+        var CONTEXT_KEYS = ["entityName", "recordId", "appId", "organizationUrl"];
+
+        function fail(message) {
+          var notice = document.createElement("p");
+          notice.className = "launcher-error";
+          notice.textContent = message;
+          document.body.replaceChildren(notice);
+        }
+
+        function readContext() {
+          var raw = new URLSearchParams(window.location.search).get("data") || "";
+          if (!raw) return {};
+          try {
+            var parsed = JSON.parse(decodeURIComponent(raw));
+            return parsed && typeof parsed === "object" ? parsed : {};
+          } catch (error) {
+            // A malformed context should degrade to a working, context-free
+            // assistant rather than a blank pane.
+            console.warn("[AgentPane] Ignoring invalid pane context.", error);
+            return {};
+          }
+        }
+
+        if (WIDGET_ORIGIN.indexOf("REPLACE-ME") !== -1) {
+          fail("This web resource has not been configured. Set WIDGET_ORIGIN to the deployed assistant URL.");
+          return;
+        }
+
+
+        var widgetUrl;
+        try {
+          widgetUrl = new URL("/crm-pane", WIDGET_ORIGIN);
+        } catch (error) {
+          fail("The configured assistant URL is not valid.");
+          return;
+        }
+
+        if (widgetUrl.protocol !== "https:") {
+          fail("The assistant must be hosted over HTTPS.");
+          return;
+        }
+
+        var context = readContext();
+        CONTEXT_KEYS.forEach(function (key) {
+          var value = context[key];
+          // Bound the values: they are forwarded into the widget URL.
+          if (typeof value === "string" && value && value.length <= 256) {
+            widgetUrl.searchParams.set(key, value);
+          }
+        });
+
+        document.getElementById("agentFrame").src = widgetUrl.toString();
+      })();
+    </script>
+  </body>
+</html>
