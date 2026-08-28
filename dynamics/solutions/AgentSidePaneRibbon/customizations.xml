@@ -196,34 +196,8 @@
   <FieldSecurityProfiles>
   </FieldSecurityProfiles>
   <Templates />
-  <EntityMaps>
-    <EntityMap>
-      <EntitySource>incident</EntitySource>
-      <EntityTarget>incident</EntityTarget>
-      <AttributeMaps>
-        <AttributeMap>
-          <AttributeSource>caseorigincode</AttributeSource>
-          <AttributeTarget>caseorigincode</AttributeTarget>
-        </AttributeMap>
-        <AttributeMap>
-          <AttributeSource>mjsrc_complaintdate</AttributeSource>
-          <AttributeTarget>mjsrc_complaintdate</AttributeTarget>
-        </AttributeMap>
-        <AttributeMap>
-          <AttributeSource>mjsrc_contactinformation</AttributeSource>
-          <AttributeTarget>mjsrc_contactinformation</AttributeTarget>
-        </AttributeMap>
-        <AttributeMap>
-          <AttributeSource>mjsrc_preferredmodeofcontact</AttributeSource>
-          <AttributeTarget>mjsrc_preferredmodeofcontact</AttributeTarget>
-        </AttributeMap>
-        <AttributeMap>
-          <AttributeSource>prioritycode</AttributeSource>
-          <AttributeTarget>prioritycode</AttributeTarget>
-        </AttributeMap>
-      </AttributeMaps>
-    </EntityMap>
-  </EntityMaps>
+  <!-- Deliberately empty: attribute maps are per-environment and break a clean import. -->
+  <EntityMaps />
   <EntityRelationships />
   <OrganizationSettings />
   <optionsets />
@@ -231,8 +205,5 @@
   <EntityDataProviders />
   <Languages>
     <Language>1033</Language>
-    <Language>2052</Language>
-    <Language>3076</Language>
-    <Language>1028</Language>
   </Languages>
 </ImportExportXml>

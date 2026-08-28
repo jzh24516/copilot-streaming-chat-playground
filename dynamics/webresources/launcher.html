@@ -9,7 +9,9 @@
   command collected, plus the signed-in user's UPN as an Entra SSO hint. The
   widget authenticates the user itself and the relay pins the agent server-side.
 
-  BEFORE IMPORTING: set WIDGET_ORIGIN to your deployed HTTPS origin.
+  CONFIGURATION: the deployed origin comes from the mjsrc_AgentWidgetOrigin
+  environment variable, forwarded by openPane.js. WIDGET_ORIGIN below is only
+  the fallback used when that variable is unset.
 -->
 <html lang="en">
   <head>
@@ -82,15 +84,25 @@
           }
         }
 
-        if (WIDGET_ORIGIN.indexOf("REPLACE-ME") !== -1) {
-          fail("This web resource has not been configured. Set WIDGET_ORIGIN to the deployed assistant URL.");
+        var context = readContext();
+
+        // The environment variable wins so one solution can serve every
+        // environment; WIDGET_ORIGIN remains the fallback when it is unset.
+        var configuredOrigin =
+          typeof context.widgetOrigin === "string" ? context.widgetOrigin.trim() : "";
+        var origin = configuredOrigin || WIDGET_ORIGIN;
+
+        if (!origin || origin.indexOf("REPLACE-ME") !== -1) {
+          fail(
+            "This web resource has not been configured. Set the " +
+              "mjsrc_AgentWidgetOrigin environment variable to the deployed assistant URL."
+          );
           return;
         }
 
-
         var widgetUrl;
         try {
-          widgetUrl = new URL("/crm-pane", WIDGET_ORIGIN);
+          widgetUrl = new URL("/crm-pane", origin);
         } catch (error) {
           fail("The configured assistant URL is not valid.");
           return;
@@ -101,7 +113,6 @@
           return;
         }
 
-        var context = readContext();
         CONTEXT_KEYS.forEach(function (key) {
           var value = context[key];
           // Bound the values: they are forwarded into the widget URL.

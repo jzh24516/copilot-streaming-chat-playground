@@ -20,6 +20,10 @@ var AgentPane = (function () {
   // Schema name of the launcher web resource, including the publisher prefix.
   var LAUNCHER_WEB_RESOURCE = "mjsrc_/agent/launcher.html";
 
+  // Schema name of the environment variable holding the deployed widget origin.
+  // Lets one solution be imported into any environment without editing a file.
+  var ORIGIN_VARIABLE = "mjsrc_AgentWidgetOrigin";
+
   var PANE_TITLE = "AI assistant";
   var DEFAULT_WIDTH = 420;
 
@@ -78,6 +82,29 @@ var AgentPane = (function () {
       });
   }
 
+  /**
+   * Current value of the widget-origin environment variable, or "" when it is
+   * unset or unreadable. The launcher falls back to its own constant, so a
+   * failure here degrades to the previous behaviour rather than breaking.
+   */
+  function getWidgetOrigin() {
+    var query =
+      "?$select=defaultvalue" +
+      "&$expand=environmentvariabledefinition_environmentvariablevalue($select=value)" +
+      "&$filter=schemaname eq '" + ORIGIN_VARIABLE + "'";
+    return Xrm.WebApi.retrieveMultipleRecords("environmentvariabledefinition", query)
+      .then(function (result) {
+        var definition = result && result.entities && result.entities[0];
+        if (!definition) return "";
+        var values = definition.environmentvariabledefinition_environmentvariablevalue;
+        var current = values && values.length ? values[0].value : "";
+        return String(current || definition.defaultvalue || "").trim();
+      })
+      .catch(function () {
+        return "";
+      });
+  }
+
   function getOrCreatePane() {
     var existing = Xrm.App.sidePanes.getPane(PANE_ID);
     if (existing) {
@@ -103,10 +130,11 @@ var AgentPane = (function () {
     var context = buildContext(primaryControl);
     var globalContext = Xrm.Utility.getGlobalContext();
 
-    return Promise.all([getAppId(globalContext), getLoginHint(globalContext)])
+    return Promise.all([getAppId(globalContext), getLoginHint(globalContext), getWidgetOrigin()])
       .then(function (results) {
         context.appId = results[0];
         context.loginHint = results[1];
+        context.widgetOrigin = results[2];
         return getOrCreatePane();
       })
       .then(function (pane) {
