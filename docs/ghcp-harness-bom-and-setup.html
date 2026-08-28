@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("scoutTheme");
+      const theme =
+        param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <title>Embedded GHCP Harness Experience — Bill of Materials &amp; Setup</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --cp-bg: #f7f4ef;
+      --cp-bg-elevated: #fcfbf8;
+      --cp-surface: #ffffff;
+      --cp-surface-soft: #f5f5f5;
+      --cp-border: #dedede;
+      --cp-border-strong: #919191;
+      --cp-text: #242424;
+      --cp-text-muted: #5c5c5c;
+      --cp-text-soft: #6f6f6f;
+      --cp-accent: #b11f4b;
+      --cp-accent-hover: #9a1a41;
+      --cp-accent-soft: rgba(177, 31, 75, 0.08);
+      --cp-accent-fg: #ffffff;
+      --cp-success: #16a34a;
+      --cp-danger: #dc2626;
+      --cp-warning: #f59e0b;
+      /* The band border can be vivid; glyph text on white cannot. */
+      --cp-warning-text: #b45309;
+      --cp-link: #0b5cab;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+      --cp-panel-strong: rgba(255, 255, 255, 0.96);
+      --cp-highlight: rgba(177, 31, 75, 0.12);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --cp-bg: #3d3b3a;
+      --cp-bg-elevated: #343231;
+      --cp-surface: #292929;
+      --cp-surface-soft: #2e2e2e;
+      --cp-border: #474747;
+      --cp-border-strong: #5f5f5f;
+      --cp-text: #dedede;
+      --cp-text-muted: #b5b5b5;
+      --cp-text-soft: #b0b0b0;
+      --cp-accent: #fd8ea1;
+      --cp-accent-hover: #fb7b91;
+      --cp-accent-soft: rgba(253, 142, 161, 0.14);
+      --cp-accent-fg: #1a1a1a;
+      --cp-success: #4ade80;
+      --cp-danger: #f87171;
+      --cp-warning: #fbbf24;
+      --cp-warning-text: #fbbf24;
+      --cp-link: #7ec2ff;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+      --cp-panel-strong: rgba(41, 41, 41, 0.96);
+      --cp-highlight: rgba(253, 142, 161, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--cp-bg), var(--cp-bg-elevated));
+      color: var(--cp-text);
+      font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    a { color: var(--cp-link); }
+    button { font: inherit; }
+    code, pre { font-family: Consolas, "Courier New", Courier, monospace; }
+    code { overflow-wrap: anywhere; color: var(--cp-accent); font-size: 0.92em; }
+
+    .topbar {
+      position: sticky; top: 0; z-index: 20;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; min-height: 60px;
+      padding: 10px clamp(16px, 4vw, 56px);
+      border-bottom: 1px solid var(--cp-border);
+      background: var(--cp-panel-strong);
+      backdrop-filter: blur(12px);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .brand-mark {
+      display: grid; flex: 0 0 34px; width: 34px; height: 34px;
+      place-items: center; border-radius: 8px;
+      background: var(--cp-accent);
+      color: var(--cp-accent-fg);
+      font-weight: 800; font-size: 13px;
+    }
+    .brand strong { display: block; font-size: 14px; }
+    .brand div > span { display: block; color: var(--cp-text-muted); font-size: 12px; }
+    .top-actions { display: flex; align-items: center; gap: 8px; }
+    .top-link, .reset-button {
+      min-height: 36px; padding: 8px 12px;
+      border: 1px solid var(--cp-border); border-radius: 8px;
+      background: var(--cp-surface); color: var(--cp-text);
+      cursor: pointer; text-decoration: none;
+    }
+    .top-link:hover, .reset-button:hover { border-color: var(--cp-accent); color: var(--cp-accent); }
+
+    main { padding-bottom: 72px; }
+    .hero {
+      display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+      gap: 32px; align-items: start;
+      padding: 56px clamp(16px, 4vw, 56px) 32px;
+    }
+    .eyebrow {
+      margin: 0 0 10px; color: var(--cp-accent);
+      font-size: 12px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+    }
+    h1 { margin: 0 0 16px; font-size: clamp(30px, 4.4vw, 46px); line-height: 1.08; }
+    .hero-copy { margin: 0; max-width: 62ch; font-size: 17px; line-height: 1.62; color: var(--cp-text-soft); }
+    .scope-box {
+      padding: 20px 22px; border: 1px solid var(--cp-border); border-radius: 14px;
+      background: var(--cp-surface); box-shadow: var(--cp-shadow);
+    }
+    .scope-box strong { display: block; margin-bottom: 8px; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--cp-accent); }
+    .scope-box p { margin: 0; font-size: 14px; line-height: 1.6; color: var(--cp-text-soft); }
+
+    .warning-band { padding: 0 clamp(16px, 4vw, 56px) 8px; }
+    .warning-inner {
+      display: flex; gap: 14px; padding: 16px 20px;
+      border: 1px solid var(--cp-warning); border-left-width: 4px; border-radius: 12px;
+      background: var(--cp-surface);
+    }
+    .warning-icon { color: var(--cp-warning-text); font-size: 20px; line-height: 1.2; }
+    .warning-inner strong { display: block; margin-bottom: 6px; font-size: 14px; }
+    .warning-inner p { margin: 0; font-size: 14px; line-height: 1.6; color: var(--cp-text-soft); }
+
+    .workspace {
+      display: grid; grid-template-columns: 232px minmax(0, 1fr);
+      gap: 36px; padding: 28px clamp(16px, 4vw, 56px) 0;
+    }
+    .rail-inner { position: sticky; top: 84px; display: grid; gap: 16px; }
+    .progress-panel { padding: 14px 16px; border: 1px solid var(--cp-border); border-radius: 12px; background: var(--cp-surface); }
+    .progress-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--cp-text-muted); margin-bottom: 8px; }
+    .progress-track { height: 6px; border-radius: 999px; background: var(--cp-surface-soft); overflow: hidden; }
+    .progress-fill { height: 100%; width: 0; border-radius: 999px; background: var(--cp-accent); transition: width 0.25s ease; }
+    .rail nav { display: grid; gap: 2px; }
+    .rail nav a {
+      padding: 7px 10px; border-radius: 8px; color: var(--cp-text-muted);
+      font-size: 13px; text-decoration: none;
+    }
+    .rail nav a:hover { background: var(--cp-accent-soft); color: var(--cp-accent); }
+
+    .section { padding: 40px 0 8px; scroll-margin-top: 84px; }
+    .section-kicker { margin: 0 0 6px; color: var(--cp-accent); font-size: 12px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; }
+    .section h2 { margin: 0 0 12px; font-size: clamp(22px, 2.6vw, 30px); }
+    .section-lead { margin: 0 0 22px; max-width: 74ch; font-size: 15px; line-height: 1.68; color: var(--cp-text-soft); }
+    .section h3 { margin: 26px 0 10px; font-size: 16px; }
+
+    table { width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 14px; }
+    caption {
+      caption-side: top; text-align: left; padding: 0 0 8px;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.05em;
+      text-transform: uppercase; color: var(--cp-text-muted);
+    }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--cp-border); text-align: left; vertical-align: top; line-height: 1.5; }
+    th { font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--cp-text-muted); }
+    tbody tr:hover { background: var(--cp-accent-soft); }
+    .table-scroll { overflow-x: auto; }
+    /* Key names read as one token; the scroll wrapper absorbs the extra width. */
+    .key-table td:first-child code { overflow-wrap: normal; white-space: nowrap; }
+
+    .tag {
+      display: inline-block; padding: 2px 8px; border-radius: 999px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.03em; white-space: nowrap;
+    }
+    /* Flat surface, not the accent tint: the tint drops 11px bold text under 4.5:1 in dark. */
+    .tag-req { background: var(--cp-surface-soft); color: var(--cp-accent); }
+    .tag-opt { background: var(--cp-surface-soft); color: var(--cp-text-muted); }
+    .tag-derived { background: var(--cp-surface-soft); color: var(--cp-text-soft); }
+
+    .flow { display: grid; gap: 10px; margin: 4px 0 18px; }
+    .flow-row {
+      display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 14px;
+      padding: 14px 16px; border: 1px solid var(--cp-border); border-radius: 12px; background: var(--cp-surface);
+    }
+    .flow-row strong { font-size: 13px; }
+    .flow-row p { margin: 4px 0 0; font-size: 13.5px; line-height: 1.55; color: var(--cp-text-soft); }
+    .flow-tier { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--cp-accent); padding-top: 2px; }
+
+    .step-list { display: grid; gap: 12px; }
+    .step-card {
+      display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 16px;
+      padding: 18px 20px; border: 1px solid var(--cp-border); border-radius: 14px; background: var(--cp-surface);
+    }
+    .step-card:has(.step-check:checked) { border-color: var(--cp-success); background: var(--cp-surface-soft); }
+    .step-check { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--cp-accent); cursor: pointer; }
+    .step-card h3 { margin: 0 0 6px; font-size: 16px; }
+    .step-card p { margin: 0 0 10px; font-size: 14px; line-height: 1.62; color: var(--cp-text-soft); }
+    .step-card p:last-child { margin-bottom: 0; }
+    .step-where { display: inline-block; margin-bottom: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--cp-accent); }
+    .step-card ul { margin: 0 0 10px; padding-left: 20px; font-size: 14px; line-height: 1.62; color: var(--cp-text-soft); }
+    .step-card li { margin-bottom: 4px; }
+
+    pre {
+      margin: 0 0 12px; padding: 14px 16px; overflow-x: auto;
+      border: 1px solid var(--cp-border); border-radius: 10px;
+      background: var(--cp-surface-soft); font-size: 12.5px; line-height: 1.6;
+    }
+    pre code { color: var(--cp-text); }
+
+    .callout {
+      padding: 14px 18px; margin: 14px 0;
+      border: 1px solid var(--cp-border); border-left: 4px solid var(--cp-accent);
+      border-radius: 10px; background: var(--cp-surface);
+      font-size: 14px; line-height: 1.62; color: var(--cp-text-soft);
+    }
+    .callout strong { color: var(--cp-text); }
+
+    footer {
+      margin-top: 48px; padding: 24px clamp(16px, 4vw, 56px);
+      border-top: 1px solid var(--cp-border);
+      font-size: 13px; color: var(--cp-text-muted);
+    }
+
+    @media (max-width: 1040px) {
+      .hero { grid-template-columns: minmax(0, 1fr); }
+      .workspace { grid-template-columns: minmax(0, 1fr); }
+      .rail-inner { position: static; }
+      .rail nav { grid-auto-flow: column; grid-auto-columns: max-content; overflow-x: auto; }
+    }
+    @media (max-width: 640px) {
+      .flow-row { grid-template-columns: minmax(0, 1fr); }
+      .step-card { grid-template-columns: 26px minmax(0, 1fr); padding: 15px; }
+      table { display: block; overflow-x: auto; white-space: nowrap; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .progress-fill { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">BOM</span>
+      <div>
+        <strong>Embedded GHCP Harness Experience</strong>
+        <span>Bill of materials &amp; configuration guide</span>
+      </div>
+    </div>
+    <div class="top-actions">
+      <a class="top-link" href="dynamics-sidepane-deployment.html">Deployment runbook</a>
+      <button class="reset-button" id="resetProgress" type="button">Reset progress</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Manifest &amp; setup guide · 28 August 2026</p>
+        <h1>Everything you need to stand this up — and the order to do it in.</h1>
+        <p class="hero-copy">
+          This deck is the parts list and the assembly instructions for embedding a
+          GHCP-harness Copilot Studio agent as a Dynamics 365 side pane. Part one is the
+          bill of materials: every Azure resource, identity object, Dataverse component,
+          source file and configuration key. Part two is the ordered runbook that turns
+          those parts into a working experience.
+        </p>
+      </div>
+      <div class="scope-box">
+        <strong>What you end up with</strong>
+        <p>
+          A command-bar button on a model-driven form that opens a 420&nbsp;px side pane. The pane
+          signs the user in silently against their existing Dynamics session, streams progressive
+          responses from an authenticated agent over the Agentic Runtime <code>/3p</code> route, and
+          renders sanitised Markdown — with the agent pinned server-side so the browser cannot
+          redirect it.
+        </p>
+      </div>
+    </section>
+
+    <section class="warning-band" aria-label="Experimental support warning">
+      <div class="warning-inner">
+        <span class="warning-icon" aria-hidden="true">&#9651;</span>
+        <div>
+          <strong>The <code>/3p</code> route is experimental. Treat this as an internal pilot.</strong>
+          <p>
+            Microsoft Learn documents Copilot Studio Client support for standard-harness agents and
+            states that GHCP-harness agents are not yet officially supported. Confirm the support
+            contract and SLA for your tenant before production use, and keep a supported Teams,
+            Microsoft 365 or Web channel fallback.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <div class="workspace">
+      <aside class="rail" aria-label="Guide navigation">
+        <div class="rail-inner">
+          <div class="progress-panel">
+            <div class="progress-row">
+              <span>Setup progress</span>
+              <span id="progressText">0 / 10</span>
+            </div>
+            <div class="progress-track" aria-hidden="true">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+          <nav>
+            <a href="#shape">Shape of the system</a>
+            <a href="#bom">Bill of materials</a>
+            <a href="#config-keys">Configuration keys</a>
+            <a href="#steps">Setup steps</a>
+            <a href="#verify">Verification</a>
+            <a href="#failures">Known failure modes</a>
+            <a href="#sources">References</a>
+          </nav>
+        </div>
+      </aside>
+
+      <div>
+        <!-- ============================================================ -->
+        <section class="section" id="shape">
+          <p class="section-kicker">Orientation</p>
+          <h2>Five tiers, four trust boundaries</h2>
+          <p class="section-lead">
+            Read the bill of materials against this layout. Each tier owns exactly one concern, and
+            the parts list is grouped the same way.
+          </p>
+
+          <div class="flow">
+            <div class="flow-row">
+              <span class="flow-tier">Tier 1 · Host</span>
+              <div>
+                <strong>Model-driven app (Dynamics 365)</strong>
+                <p>
+                  Owns the command bar, the side pane and the record context. Contributes the ribbon
+                  button and three web resources. Never sees a token.
+                </p>
+              </div>
+            </div>
+            <div class="flow-row">
+              <span class="flow-tier">Tier 2 · Bridge</span>
+              <div>
+                <strong>Launcher web resource</strong>
+                <p>
+                  A same-origin HTML shim. Dynamics can only host web resources from its own origin,
+                  so this page frames the externally hosted widget and forwards non-secret context.
+                </p>
+              </div>
+            </div>
+            <div class="flow-row">
+              <span class="flow-tier">Tier 3 · Client</span>
+              <div>
+                <strong>Hosted widget (App Service)</strong>
+                <p>
+                  Acquires a delegated token via MSAL, streams NDJSON from the relay, and renders
+                  Markdown through a strict DOMPurify allow-list. Served with a CSP that pins
+                  <code>frame-ancestors</code> to your Dynamics origin.
+                </p>
+              </div>
+            </div>
+            <div class="flow-row">
+              <span class="flow-tier">Tier 4 · Relay</span>
+              <div>
+                <strong>Node relay (same App Service)</strong>
+                <p>
+                  Pins the agent server-side, inspects the delegated token, rate-limits per subject,
+                  and holds conversation sessions bound to the token subject. Re-validates the
+                  outbound <code>/3p</code> URL against an SSRF guard on every call.
+                </p>
+              </div>
+            </div>
+            <div class="flow-row">
+              <span class="flow-tier">Tier 5 · Agent</span>
+              <div>
+                <strong>Copilot Studio Agentic Runtime</strong>
+                <p>
+                  The real authorization boundary. The relay is not the token audience — <code>/3p</code>
+                  validates the user token and enforces agent sharing. An unshared agent returns 403
+                  no matter how cleanly the user authenticated.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="callout">
+            <strong>Why the relay is not the security boundary.</strong> The relay inspects the
+            delegated token to fail fast and to key its session map, but it does not mint, exchange or
+            downgrade it. Removing the relay's checks would not grant a caller any additional access
+            at the agent — it would only make failures louder and later.
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <section class="section" id="bom">
+          <p class="section-kicker">Part one</p>
+          <h2>Bill of materials</h2>
+          <p class="section-lead">
+            Every artefact required, grouped by the system that owns it. Identifiers are shown as
+            placeholders — substitute your own values and keep real tenant, client and environment
+            GUIDs out of source control.
+          </p>
+
+          <h3>A · Azure subscription</h3>
+          <div class="table-scroll">
+            <table>
+              <caption>Provisioned by <code>infra/main.bicep</code></caption>
+              <thead>
+                <tr><th>Component</th><th>Type / SKU</th><th>Purpose</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Resource group</td><td>—</td><td>Deployment container for all widget infrastructure.</td></tr>
+                <tr><td>App Service plan</td><td>Linux · B1</td><td>Compute for the relay. B1 is the floor for an always-on pilot; scale up before broad rollout.</td></tr>
+                <tr><td>Web App</td><td>Linux · <code>NODE|20-lts</code></td><td>Serves <code>/crm-pane</code>, the static client assets and the <code>/api/pane/*</code> relay endpoints.</td></tr>
+                <tr><td>Application Insights</td><td>web</td><td>Request, dependency and exception telemetry.</td></tr>
+                <tr><td>Log Analytics workspace</td><td>PerGB2018</td><td>Backing store for Application Insights.</td></tr>
+                <tr><td>App settings</td><td>—</td><td>The <code>PANE_*</code> keys in the next section. No secrets are required.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>B · Microsoft Entra ID</h3>
+          <div class="table-scroll">
+            <table>
+              <caption>One application registration — no secret, no certificate</caption>
+              <thead>
+                <tr><th>Component</th><th>Setting</th><th>Notes</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>App registration</td><td>Single tenant</td><td>Represents the pane in your directory.</td></tr>
+                <tr><td>Platform</td><td>Single-page application</td><td><strong>Not</strong> Web. The SPA platform issues tokens via PKCE with no client secret.</td></tr>
+                <tr><td>Redirect URI (prod)</td><td><code>https://&lt;app&gt;.azurewebsites.net/crm-pane</code></td><td>Must match the deployed pane URL exactly.</td></tr>
+                <tr><td>Redirect URI (dev)</td><td><code>http://localhost:3978</code></td><td>Optional; local development only.</td></tr>
+                <tr><td>API permission</td><td>Power Platform API → <code>CopilotStudio.Copilots.Invoke</code></td><td><span class="tag tag-req">Delegated</span> Application permission will not work — <code>/3p</code> rejects app-only tokens.</td></tr>
+                <tr><td>Admin consent</td><td>Granted</td><td>Required; users cannot self-consent to this permission in most tenants.</td></tr>
+                <tr><td>App roles</td><td>None</td><td>Deliberately zero. Authorization lives at the agent, not in this registration.</td></tr>
+                <tr><td>Client secret</td><td>None</td><td>A public client must not hold one.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>C · Copilot Studio</h3>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr><th>Component</th><th>Requirement</th><th>Notes</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Agent</td><td>GHCP harness</td><td>The agent you want embedded.</td></tr>
+                <tr><td>Authentication</td><td>Authenticate with Microsoft (Entra)</td><td>The <code>/authenticated/</code> segment of the <code>/3p</code> URL requires this.</td></tr>
+                <tr><td>Publish state</td><td>Published</td><td>The relay requests <code>copilotAgentType: "Published"</code>.</td></tr>
+                <tr><td>Sharing</td><td>Shared with every pilot user</td><td>The most common cause of a 403 that looks like an auth bug.</td></tr>
+                <tr><td>Environment ID</td><td>GUID</td><td>Feeds <code>PANE_ENVIRONMENT_ID</code>.</td></tr>
+                <tr><td>Agent schema name</td><td>e.g. <code>cr123_myAgent_aB3xY</code></td><td>Feeds <code>PANE_SCHEMA_NAME</code>. Not the display name.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>D · Dataverse / model-driven app</h3>
+          <div class="table-scroll">
+            <table>
+              <caption>Two unmanaged solutions</caption>
+              <thead>
+                <tr><th>Component</th><th>Type</th><th>Purpose</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Publisher</td><td>Prefix <code>&lt;prefix&gt;</code></td><td>Owns the web resource namespace and the ribbon customisation.</td></tr>
+                <tr><td><code>&lt;prefix&gt;_/agent/openPane.js</code></td><td>Web resource · JavaScript</td><td>Command handler. Creates or reuses the side pane and navigates it to the launcher.</td></tr>
+                <tr><td><code>&lt;prefix&gt;_/agent/launcher.html</code></td><td>Web resource · HTML</td><td>Same-origin bridge that frames the hosted widget. Holds <code>WIDGET_ORIGIN</code>.</td></tr>
+                <tr><td><code>&lt;prefix&gt;_/agent/agent-icon.svg</code></td><td>Web resource · SVG</td><td>Command bar button icon.</td></tr>
+                <tr><td>Ribbon solution</td><td><code>RibbonDiffXml</code></td><td>Adds the command-bar button to the target table's main form.</td></tr>
+                <tr><td>Target table</td><td>e.g. Case / <code>Incident</code></td><td>Must be included as a component of the app module you are testing in.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout">
+            <strong>Classic ribbon is entity-scoped, not form-scoped.</strong> A
+            <code>CustomAction</code> at <code>Mscrm.Form.&lt;table&gt;.MainTab.Save.Controls._children</code>
+            appears on <em>every</em> active main form for that table across every app. You cannot
+            target a single form this way, and the modern <code>appaction</code> tables are
+            <code>IsCustomizable=false</code>.
+          </div>
+
+          <h3>E · Application source</h3>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr><th>File</th><th>Responsibility</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>server.js</code></td><td>Express host. Mounts the pane router alongside the existing playground.</td></tr>
+                <tr><td><code>crm-pane-config.js</code></td><td>Loads and validates pinned config; derives the environment API host and <code>/3p</code> URL; normalises frame ancestors.</td></tr>
+                <tr><td><code>crm-pane-auth.js</code></td><td>Delegated-token inspection (audience, tenant, scope, expiry, subject) and the per-subject rate limiter.</td></tr>
+                <tr><td><code>crm-pane-routes.js</code></td><td>Router, CSP, and the session map bound to token subject. Serves <code>/crm-pane</code> and <code>/api/pane/*</code>.</td></tr>
+                <tr><td><code>ghcp3p-url.js</code></td><td>Shared SSRF guard for the outbound <code>/3p</code> URL.</td></tr>
+                <tr><td><code>pane/crm-pane.html</code></td><td>Widget shell. Held <em>outside</em> <code>public/</code> so static middleware can never serve it without a CSP.</td></tr>
+                <tr><td><code>public/crm-pane.js</code></td><td>MSAL sign-in, silent SSO, NDJSON streaming, progressive-text merge, Markdown sanitisation.</td></tr>
+                <tr><td><code>public/crm-pane.css</code></td><td>Responsive 300–600&nbsp;px pane styling.</td></tr>
+                <tr><td><code>dynamics/webresources/*</code></td><td>Source of truth for the three Dataverse web resources.</td></tr>
+                <tr><td><code>infra/main.bicep</code></td><td>Azure infrastructure as code.</td></tr>
+                <tr><td><code>test/crm-pane-*.test.js</code></td><td>Unit coverage for config derivation and token inspection.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>F · Dependencies</h3>
+          <div class="table-scroll">
+            <table>
+              <caption>Server — npm</caption>
+              <thead>
+                <tr><th>Package</th><th>Version</th><th>Role</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>express</code></td><td>^4.19.2</td><td>HTTP host.</td></tr>
+                <tr><td><code>@microsoft/agents-copilotstudio-client</code></td><td>^1.6.1</td><td>Copilot Studio conversation client.</td></tr>
+                <tr><td><code>@azure/msal-node</code></td><td>^5.5.0</td><td>Server-side token flows for the playground routes.</td></tr>
+                <tr><td><code>dotenv</code></td><td>^16.4.5</td><td>Local configuration loading.</td></tr>
+                <tr><td>Node.js</td><td>&gt;=18 (App Service runs 20 LTS)</td><td>Runtime.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <caption>Browser — CDN, Subresource-Integrity pinned</caption>
+              <thead>
+                <tr><th>Library</th><th>Version</th><th>Role</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>@azure/msal-browser</code></td><td>4.13.1</td><td>Delegated token acquisition (silent SSO, then popup).</td></tr>
+                <tr><td><code>marked</code></td><td>15.0.7</td><td>Markdown to HTML.</td></tr>
+                <tr><td><code>dompurify</code></td><td>3.2.4</td><td>Sanitises that HTML before it reaches the DOM.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout">
+            <strong>These three are the only permitted remote scripts.</strong> The pane's CSP allows
+            <code>script-src 'self' https://cdn.jsdelivr.net</code> and nothing else. If you vendor them
+            locally instead, tighten the CSP to <code>'self'</code> at the same time.
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <section class="section" id="config-keys">
+          <p class="section-kicker">Part one · continued</p>
+          <h2>Configuration keys</h2>
+          <p class="section-lead">
+            Set these as App Service application settings, or in <code>config/crm-pane.json</code> for
+            local development. Environment variables always win over the file, so a deployed instance
+            can be reconfigured without redeploying code. None of these are secrets.
+          </p>
+
+          <div class="table-scroll">
+            <table class="key-table">
+              <thead>
+                <tr><th>Key</th><th>Required</th><th>Default</th><th>Notes</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>PANE_ENVIRONMENT_ID</code></td>
+                  <td><span class="tag tag-req">Required</span></td><td>—</td>
+                  <td>Copilot Studio environment GUID.</td>
+                </tr>
+                <tr>
+                  <td><code>PANE_SCHEMA_NAME</code></td>
+                  <td><span class="tag tag-req">Required</span></td><td>—</td>
+                  <td>Agent schema name. 1–128 chars of <code>A–Z a–z 0–9 _ -</code>.</td>
+                </tr>
+                <tr>
+                  <td><code>PANE_TENANT_ID</code></td>
+                  <td><span class="tag tag-req">Required</span></td><td>—</td>
+                  <td>GUID. Falls back to <code>ENTRA_TENANT_ID</code>.</td>
+                </tr>
+                <tr>
+                  <td><code>PANE_CLIENT_ID</code></td>
+                  <td><span class="tag tag-req">Required</span></td><td>—</td>
+                  <td>GUID of the SPA registration. Falls back to <code>ENTRA_CLIENT_ID</code>.</td>
+                </tr>
+                <tr>
+                  <td><code>PANE_DYNAMICS_ORIGINS</code></td>
+                  <td><span class="tag tag-req">Required</span></td><td>—</td>
+                  <td>Comma-separated https origins allowed to frame the pane. Each must be a bare origin — no path, query, fragment, credentials or whitespace.</td>
+                </tr>
+                <tr>
+                  <td><code>PANE_AGENT_DISPLAY_NAME</code></td>
+                  <td><span class="tag tag-opt">Optional</span></td><td><code>AI assistant</code></td>
+                  <td>Pane header label and document title.</td>
+                </tr>
+                <tr>
+                  <td><code>PANE_MAX_MESSAGE_LENGTH</code></td>
+                  <td><span class="tag tag-opt">Optional</span></td><td><code>4000</code></td>
+                  <td>Rejects oversized turns before they reach the agent.</td>
+                </tr>
+                <tr>
+                  <td><code>PANE_REQUESTS_PER_MINUTE</code></td>
+                  <td><span class="tag tag-opt">Optional</span></td><td><code>30</code></td>
+                  <td>Fixed-window limit, keyed per token subject.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Derived automatically — do not configure</h3>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr><th>Value</th><th>Derivation</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Authority</td><td><code>https://login.microsoftonline.com/{tenantId}</code></td></tr>
+                <tr><td>Scope</td><td><code>https://api.powerplatform.com/.default</code></td></tr>
+                <tr>
+                  <td>Environment API host</td>
+                  <td>Strip dashes from the environment GUID, then split the 32 characters into the first 30 and the last 2.</td>
+                </tr>
+                <tr>
+                  <td>Direct Connect URL</td>
+                  <td><code>https://{host}/copilotstudio/agenticruntime/3p/dataverse-backed/authenticated/bots/{schemaName}?api-version=1</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <pre><code>11111111-2222-3333-4444-555555555555
+  -&gt; 111111112222333344445555555555 . 55 . environment.api.powerplatform.com
+     &lfloor;--------- first 30 ---------&rfloor;   &lfloor;2&rfloor;</code></pre>
+
+          <div class="callout">
+            <strong>Missing keys disable the pane; malformed keys crash the boot.</strong> That split is
+            intentional. An unconfigured pane returns <code>enabled: false</code> so the rest of the app
+            keeps running, but a <em>misconfigured</em> one fails loudly at startup rather than serving a
+            widget that can never reach its agent.
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <section class="section" id="steps">
+          <p class="section-kicker">Part two</p>
+          <h2>Setup steps</h2>
+          <p class="section-lead">
+            Follow in order — steps 4–7 have hard dependencies on the identifiers produced by 1–3.
+            Progress is stored in this browser only.
+          </p>
+
+          <div class="step-list">
+            <article class="step-card">
+              <input class="step-check" type="checkbox" id="s1" />
+              <div>
+                <span class="step-where">Microsoft Entra admin center</span>
+                <h3>1 · Register the single-page application</h3>
+                <p>
+                  Create a new app registration, single tenant. Under <em>Authentication</em>, add a
+                  platform of type <strong>Single-page application</strong> and register the redirect URI
+                  <code>https://&lt;app&gt;.azurewebsites.net/crm-pane</code>. Add
+                  <code>http://localhost:3978</code> only if you develop locally.
+                </p>
+                <p>
+                  Do not create a client secret and do not add a Web platform. Record the
+                  <strong>Application (client) ID</strong> and <strong>Directory (tenant) ID</strong>.
+                </p>
+              </div>
+            </article>
+
+            <article class="step-card">
+              <input class="step-check" type="checkbox" id="s2" />
+              <div>
+                <span class="step-where">Microsoft Entra admin center</span>
+                <h3>2 · Grant the delegated Power Platform permission</h3>
+                <p>
+                  Under <em>API permissions</em>, add <strong>Power Platform API →
+                  Copilot Studio → Delegated → <code>CopilotStudio.Copilots.Invoke</code></strong>, then
+                  grant admin consent for the tenant.
+                </p>
+                <ul>
+                  <li>It must be <strong>delegated</strong>. The <code>/3p</code> endpoint rejects app-only tokens outright.</li>
+                  <li>Leave app roles empty — the agent, not this registration, decides who may talk to it.</li>
+                  <li>If the Power Platform API does not appear, register the service principal in the tenant first.</li>
+                </ul>
+              </div>
+            </article>
+
+            <article class="step-card">
+              <input class="step-check" type="checkbox" id="s3" />
+              <div>
+                <span class="step-where">Copilot Studio</span>
+                <h3>3 · Publish and share the agent, then capture its identifiers</h3>
+                <p>
+                  Set the agent's authentication to <em>Authenticate with Microsoft</em>, publish it,
+                  and share it with every pilot user. Then record the environment ID and the agent
+                  <strong>schema name</strong> — not the display name.
+                </p>
+                <p>
+                  Sharing is the single most common cause of a working sign-in followed by a 403.
+                  Verify it now rather than during end-to-end testing.
+                </p>
+              </div>
+            </article>
+
+            <article class="step-card">
+              <input class="step-check" type="checkbox" id="s4" />
+              <div>
+                <span class="step-where">Azure CLI</span>
+                <h3>4 · Provision the Azure infrastructure</h3>
+                <p>
+                  Deploy the Bicep template to create the plan, web app, Application Insights and Log
+                  Analytics workspace. Keep real parameter values in a git-ignored
+                  <code>main.parameters.local.json</code>.
+                </p>
+                <pre><code>az deployment group create \
+  --resource-group &lt;rg&gt; \
+  --template-file infra/main.bicep \
+  --parameters @infra/main.parameters.local.json</code></pre>
+              </div>
+            </article>
+
+            <article class="step-card">
+              <input class="step-check" type="checkbox" id="s5" />
+              <div>
+                <span class="step-where">Azure CLI</span>
+                <h3>5 · Apply the configuration keys</h3>
+                <p>
+                  Set every required <code>PANE_*</code> setting in one call, before deploying code.
+                  <code>PANE_DYNAMICS_ORIGINS</code> must be the bare origin of your Dynamics
+                  environment.
+                </p>
+                <pre><code>az webapp config appsettings set -g &lt;rg&gt; -n &lt;app&gt; --settings \
+  PANE_TENANT_ID=&lt;tenant-guid&gt; \
+  PANE_CLIENT_ID=&lt;client-guid&gt; \
+  PANE_ENVIRONMENT_ID=&lt;environment-guid&gt; \
+  PANE_SCHEMA_NAME=&lt;agent-schema-name&gt; \
+  PANE_DYNAMICS_ORIGINS=https://&lt;org&gt;.crm.dynamics.com \
+  PANE_AGENT_DISPLAY_NAME="AI assistant"</code></pre>
+                <div class="callout">
+                  <strong>Do this before the deploy, not between deploy and restart.</strong> Changing an
+                  app setting restarts the SCM container; if a deployment is in flight it aborts with
+                  <em>"Deployment has been stopped due to SCM container restart"</em>.
+                </div>
+              </div>
+            </article>
+
+            <article class="step-card">
+              <input class="step-check" type="checkbox" id="s6" />
+              <div>
+                <span class="step-where">Local shell</span>
+                <h3>6 · Package and deploy the relay</h3>
+                <p>
+                  Build the zip with forward-slash entry names and push it to the deployment endpoint.
+                  Then restart the app.
+                </p>
+                <div class="callout">
+                  <strong>Do not use <code>Compress-Archive</code> on Windows.</strong> It writes
+                  backslash path separators into the archive. Oryx will build with zero errors and the
+                  deployment will then fail at the file-sync stage with
+                  <code>failed to stat "/home/site/wwwroot/public\app.js": Invalid argument (22)</code>,
+                  surfacing only as a bare "Deployment Failed". Use
+                  <code>[System.IO.Compression.ZipFile]</code> and replace <code>\</code> with
+                  <code>/</code> in each entry name, then assert the backslash count is zero.
+                </div>
+                <p>
+                  A restart is required whenever you change anything evaluated at module load — the CSP
+                  string is built once when the router is created, so a code-only deploy will serve
+                  static assets from the new build while still emitting the old header.
+                </p>
+              </div>
+            </article>
+
+            <article class="step-card">
+              <input class="step-check" type="checkbox" id="s7" />
+              <div>
+                <span class="step-where">Browser</span>
+                <h3>7 · Smoke-test the hosted widget standalone</h3>
+                <p>
+                  Before touching Dynamics, confirm the widget stands on its own. Open
+                  <code>https://&lt;app&gt;.azurewebsites.net/crm-pane</code> directly and check:
+                </p>
+                <ul>
+                  <li>The header shows your agent display name and the composer is disabled until sign-in.</li>
+                  <li><code>/api/pane/config</code> returns 200 with your client and tenant IDs.</li>
+                  <li><code>/crm-pane.html</code> returns <strong>404</strong> — the shell must never be served by static middleware.</li>
+                  <li>The response carries <code>frame-ancestors</code> for your Dynamics origin and <strong>no</strong> <code>X-Frame-Options</code> header.</li>
+                </ul>
+              </div>
+            </article>
+
+            <article class="step-card">
+              <input class="step-check" type="checkbox" id="s8" />
+              <div>
+                <span class="step-where">Dataverse</span>
+                <h3>8 · Create the publisher and the web resource solution</h3>
+                <p>
+                  Create a publisher with your chosen prefix, then an unmanaged solution containing the
+                  three web resources. Before uploading <code>launcher.html</code>, replace its
+                  <code>WIDGET_ORIGIN</code> placeholder with your deployed origin — the file ships with
+                  a deliberate placeholder and a runtime guard that renders a configuration error if you
+                  forget.
+                </p>
+                <ul>
+                  <li><code>&lt;prefix&gt;_/agent/openPane.js</code> — JavaScript</li>
+                  <li><code>&lt;prefix&gt;_/agent/launcher.html</code> — HTML</li>
+                  <li><code>&lt;prefix&gt;_/agent/agent-icon.svg</code> — SVG</li>
+                </ul>
+                <p>Publish the solution before continuing.</p>
+              </div>
+            </article>
+
+            <article class="step-card">
+              <input class="step-check" type="checkbox" id="s9" />
+              <div>
+                <span class="step-where">Dataverse</span>
+                <h3>9 · Add the command bar button</h3>
+                <p>
+                  Add a <code>RibbonDiffXml</code> customisation to the target table binding a button to
+                  <code>AgentPane.open</code> in <code>openPane.js</code>, passing
+                  <code>PrimaryControl</code> as its only parameter. Import, then run a publish.
+                </p>
+                <ul>
+                  <li>
+                    <code>&lt;Entity&gt;&lt;Name&gt;</code> must be the <strong>Pascal-case schema
+                    name</strong> (<code>Incident</code>, not <code>incident</code>), and must match the
+                    <code>RootComponent</code> entry — otherwise the import fails with
+                    <code>0x80048008</code>.
+                  </li>
+                  <li>
+                    The solution must carry the <strong>full exported entity node</strong>. A minimal
+                    <code>&lt;EntityInfo&gt;&lt;entity Name="…" /&gt;&lt;/EntityInfo&gt;</code> is rejected
+                    with <code>0x80040203</code>. Export a throwaway solution containing the table, graft
+                    your <code>RibbonDiffXml</code> over the empty one, and re-import.
+                  </li>
+                  <li>Confirm the table is a component of the app module you intend to test in.</li>
+                </ul>
+              </div>
+            </article>
+
+            <article class="step-card">
+              <input class="step-check" type="checkbox" id="s10" />
+              <div>
+                <span class="step-where">Model-driven app</span>
+                <h3>10 · Enable and verify end to end</h3>
+                <p>
+                  Open a record of the target table as a <strong>non-admin pilot user</strong>, hard
+                  refresh, and use the button. Work through the verification table below before
+                  declaring the pilot ready.
+                </p>
+                <p>
+                  If the button is missing, check the <code>&#8943;</code> overflow menu first and clear the
+                  ribbon cache with <code>?flags=byPassCache=true</code> — model-driven apps cache ribbon
+                  definitions aggressively.
+                </p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <section class="section" id="verify">
+          <p class="section-kicker">Acceptance gate</p>
+          <h2>Verification</h2>
+          <p class="section-lead">
+            Run every row as a pilot user, in a real browser, in a production-like environment.
+          </p>
+
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr><th>Check</th><th>Expected result</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Button visible on the target form</td><td>Present on the command bar or in the overflow menu.</td></tr>
+                <tr><td>Pane opens at ~420&nbsp;px</td><td>Closable, titled, and reused rather than stacked on repeat clicks.</td></tr>
+                <tr><td>Sign-in</td><td>Silent — no popup — for a user already signed in to Dynamics on a managed browser.</td></tr>
+                <tr><td>Popup fallback</td><td>If third-party cookies are blocked, a clear "Sign in" action appears instead of an error.</td></tr>
+                <tr><td>First turn</td><td>Progressive text renders incrementally, not as one final block.</td></tr>
+                <tr><td>Markdown</td><td>Tables, lists and code render; a table wider than the pane scrolls horizontally without breaking layout.</td></tr>
+                <tr><td>Record context</td><td>The table and record id ride along on the first turn only.</td></tr>
+                <tr><td>Navigation</td><td>Moving between records preserves the conversation.</td></tr>
+                <tr><td>Cross-user isolation</td><td>A conversation id from another user returns 404, not another user's transcript.</td></tr>
+                <tr><td>Rate limit</td><td>Exceeding the per-minute budget degrades gracefully with a readable message.</td></tr>
+                <tr><td>Unshared user</td><td>A user without agent access sees a clear failure, not a blank pane.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <section class="section" id="failures">
+          <p class="section-kicker">Field notes</p>
+          <h2>Known failure modes</h2>
+          <p class="section-lead">
+            Every entry below was hit during the build. The symptom rarely names the cause, which is
+            why they are worth listing.
+          </p>
+
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>"Deployment Failed" with a clean Oryx build</td>
+                  <td>Zip contains backslash path separators.</td>
+                  <td>Rebuild with <code>ZipFile</code> + forward slashes; assert zero backslash entries.</td>
+                </tr>
+                <tr>
+                  <td><code>Deployment has been stopped due to SCM container restart</code></td>
+                  <td>An app setting changed while the deploy was in flight.</td>
+                  <td>Apply settings first, then deploy.</td>
+                </tr>
+                <tr>
+                  <td>New code live, old CSP header</td>
+                  <td>The CSP string is built at module load.</td>
+                  <td>Restart the web app after deploying router changes.</td>
+                </tr>
+                <tr>
+                  <td>Sign-in popup every time, silent SSO never fires</td>
+                  <td>CSP <code>default-src 'self'</code> blocks the hidden Entra iframe.</td>
+                  <td>Add <code>frame-src https://login.microsoftonline.com</code>.</td>
+                </tr>
+                <tr>
+                  <td>Solution import fails <code>0x80048008</code></td>
+                  <td><code>&lt;Entity&gt;&lt;Name&gt;</code> is lower-case, or disagrees with <code>RootComponent</code>.</td>
+                  <td>Use the Pascal-case schema name consistently.</td>
+                </tr>
+                <tr>
+                  <td>Solution import fails <code>0x80040203</code></td>
+                  <td>Minimal <code>EntityInfo</code> node.</td>
+                  <td>Graft the ribbon onto a full exported entity node.</td>
+                </tr>
+                <tr>
+                  <td>Ribbon imports and publishes, button not visible</td>
+                  <td>Client-side ribbon cache, or the button is in the overflow menu.</td>
+                  <td>Hard refresh or <code>?flags=byPassCache=true</code>; check <code>&#8943;</code>.</td>
+                </tr>
+                <tr>
+                  <td>403 from <code>/3p</code> after a clean sign-in</td>
+                  <td>Agent not shared with the user.</td>
+                  <td>Share the agent in Copilot Studio.</td>
+                </tr>
+                <tr>
+                  <td>401 with a valid-looking token</td>
+                  <td>App-only token, or wrong audience.</td>
+                  <td>Use a delegated token for the Power Platform API.</td>
+                </tr>
+                <tr>
+                  <td><code>Xrm.App.sidePanes</code> undefined</td>
+                  <td>Multi-session app host restriction.</td>
+                  <td>Validate in a single-session app first.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <section class="section" id="sources">
+          <p class="section-kicker">References</p>
+          <h2>Where to verify this</h2>
+          <p class="section-lead">
+            Confirm against current documentation before production use — particularly the support
+            status of the <code>/3p</code> route.
+          </p>
+          <ul>
+            <li><a href="https://learn.microsoft.com/microsoft-copilot-studio/">Microsoft Copilot Studio documentation</a></li>
+            <li><a href="https://learn.microsoft.com/power-apps/developer/model-driven-apps/clientapi/reference/xrm-app">Xrm.App side panes client API reference</a></li>
+            <li><a href="https://learn.microsoft.com/power-apps/developer/model-driven-apps/define-ribbon-commands">Define ribbon commands (RibbonDiffXml)</a></li>
+            <li><a href="https://learn.microsoft.com/entra/identity-platform/scenario-spa-app-registration">Register a single-page application in Microsoft Entra ID</a></li>
+            <li><a href="https://learn.microsoft.com/entra/identity-platform/msal-js-initializing-client-applications">MSAL.js — silent SSO and interaction requirements</a></li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    Internal pilot documentation. Substitute your own tenant, client, environment and organisation
+    identifiers — keep real values out of source control.
+  </footer>
+
+  <script>
+    (() => {
+      "use strict";
+      const STORAGE_KEY = "ghcp-bom-setup-progress";
+      const checks = Array.from(document.querySelectorAll(".step-check"));
+      const fill = document.getElementById("progressFill");
+      const text = document.getElementById("progressText");
+
+      const read = () => {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          const parsed = raw ? JSON.parse(raw) : [];
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      };
+
+      const write = (ids) => {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+        } catch {
+          /* progress is a convenience, never a requirement */
+        }
+      };
+
+      const render = () => {
+        const done = checks.filter((c) => c.checked).length;
+        text.textContent = `${done} / ${checks.length}`;
+        fill.style.width = `${(done / checks.length) * 100}%`;
+      };
+
+      const saved = new Set(read());
+      checks.forEach((check) => {
+        check.checked = saved.has(check.id);
+        check.addEventListener("change", () => {
+          write(checks.filter((c) => c.checked).map((c) => c.id));
+          render();
+        });
+      });
+
+      document.getElementById("resetProgress").addEventListener("click", () => {
+        checks.forEach((c) => (c.checked = false));
+        write([]);
+        render();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

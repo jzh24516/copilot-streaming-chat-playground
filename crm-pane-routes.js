@@ -60,6 +60,9 @@ export function createPaneRouter({ config, paneHtmlPath, buildClient, preflight,
     "img-src 'self' data:",
     "font-src 'self'",
     "connect-src 'self' https://login.microsoftonline.com",
+    // MSAL's silent SSO runs Entra in a hidden iframe; without this the
+    // default-src fallback blocks it and every user gets the popup.
+    'frame-src https://login.microsoftonline.com',
     "form-action 'self' https://login.microsoftonline.com",
     "object-src 'none'",
     "base-uri 'none'",

@@ -57,6 +57,27 @@ var AgentPane = (function () {
       });
   }
 
+  /**
+   * The current user's UPN, used by the widget as an Entra SSO hint so the
+   * signed-in Dynamics user does not have to sign in a second time.
+   *
+   * This is a hint, not a credential: it only tells Entra which existing session
+   * to reuse. A failure here costs one extra click, so it never rejects.
+   */
+  function getLoginHint(globalContext) {
+    var userId = cleanGuid(globalContext.userSettings.userId);
+    if (!userId) {
+      return Promise.resolve("");
+    }
+    return Xrm.WebApi.retrieveRecord("systemuser", userId, "?$select=domainname,internalemailaddress")
+      .then(function (user) {
+        return (user && (user.domainname || user.internalemailaddress)) || "";
+      })
+      .catch(function () {
+        return "";
+      });
+  }
+
   function getOrCreatePane() {
     var existing = Xrm.App.sidePanes.getPane(PANE_ID);
     if (existing) {
@@ -80,10 +101,12 @@ var AgentPane = (function () {
    */
   function open(primaryControl) {
     var context = buildContext(primaryControl);
+    var globalContext = Xrm.Utility.getGlobalContext();
 
-    return getAppId(Xrm.Utility.getGlobalContext())
-      .then(function (appId) {
-        context.appId = appId;
+    return Promise.all([getAppId(globalContext), getLoginHint(globalContext)])
+      .then(function (results) {
+        context.appId = results[0];
+        context.loginHint = results[1];
         return getOrCreatePane();
       })
       .then(function (pane) {

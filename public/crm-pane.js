@@ -32,6 +32,7 @@ const state = {
   config: null,
   /** @type {string} */ conversationId: '',
   /** @type {Record<string, string>} */ recordContext: {},
+  /** @type {string} */ loginHint: '',
   contextSent: false,
   busy: false
 };
@@ -61,6 +62,17 @@ function renderRecordContext() {
   el.recordContext.textContent = label;
   el.recordContext.title = `${label}\nThis record context is shared with the assistant.`;
   el.recordContext.hidden = false;
+}
+
+/**
+ * The signed-in Dynamics user, forwarded by the launcher purely as an Entra SSO
+ * hint. Kept out of `CONTEXT_KEYS` on purpose: it must never reach the agent
+ * prompt, and it grants nothing on its own — Entra still has to have a live
+ * session for that user.
+ */
+function readLoginHint() {
+  const value = (new URLSearchParams(window.location.search).get('loginHint') || '').trim();
+  return value.length <= 256 ? value : '';
 }
 
 /**
@@ -425,9 +437,11 @@ async function streamRelay(url, body, onFrame) {
 /**
  * Acquires a delegated Power Platform token.
  *
- * Silent first. A popup is only opened when `interactive` is true, because
- * popups outside a user gesture are blocked — and an Entra page cannot render
- * inside the CRM iframe, which is why redirect is not used here at all.
+ * Order is silent-cache, then silent-SSO against the Entra session the user
+ * already has in Dynamics, then popup. A popup is only opened when
+ * `interactive` is true, because popups outside a user gesture are blocked —
+ * and an Entra page cannot render inside the CRM iframe, which is why redirect
+ * is not used here at all.
  * @param {boolean} interactive
  */
 async function acquireToken(interactive = false) {
@@ -440,14 +454,33 @@ async function acquireToken(interactive = false) {
     } catch (error) {
       if (!interactive) throw error;
     }
+  } else if (state.loginHint) {
+    // No cached account, but Dynamics told us who is signed in. Entra can
+    // usually mint a token from that existing session without any prompt.
+    // Blocked third-party cookies make this fail; the popup then covers it.
+    try {
+      const result = await state.msalInstance.ssoSilent({ ...request, loginHint: state.loginHint });
+      adoptAccount(result.account);
+      return result.accessToken;
+    } catch (error) {
+      if (!interactive) throw error;
+    }
   }
 
   if (!interactive) throw new Error('Interactive sign-in required.');
 
-  const result = await state.msalInstance.acquireTokenPopup(request);
-  state.account = result.account;
-  state.msalInstance.setActiveAccount(result.account);
+  const result = await state.msalInstance.acquireTokenPopup({
+    ...request,
+    ...(state.loginHint ? { loginHint: state.loginHint } : {})
+  });
+  adoptAccount(result.account);
   return result.accessToken;
+}
+
+/** @param {any} account */
+function adoptAccount(account) {
+  state.account = account;
+  state.msalInstance.setActiveAccount(account);
 }
 
 /**
@@ -645,6 +678,7 @@ el.signOutButton.addEventListener('click', async () => {
 
 async function init() {
   state.recordContext = readRecordContext();
+  state.loginHint = readLoginHint();
   renderRecordContext();
 
   try {
@@ -682,9 +716,10 @@ async function init() {
     state.msalInstance.setActiveAccount(state.account);
   }
 
-  if (state.account) {
+  if (state.account || state.loginHint) {
     await connect(false);
-    // A cached account whose token has aged out still needs one click.
+    // A cached account whose token has aged out, or an SSO attempt the browser
+    // refused, still needs one click.
     if (!state.conversationId && el.alert.hidden) promptForSignIn('Sign in to start using the assistant.');
   } else {
     setStatus('Not signed in');

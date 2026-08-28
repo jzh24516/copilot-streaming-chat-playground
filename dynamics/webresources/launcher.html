@@ -6,8 +6,8 @@
   this page runs inside the pane and frames the externally hosted widget.
 
   It carries no credential and no agent identifier — only the record context the
-  command collected. The widget authenticates the user itself and the relay pins
-  the agent server-side.
+  command collected, plus the signed-in user's UPN as an Entra SSO hint. The
+  widget authenticates the user itself and the relay pins the agent server-side.
 
   BEFORE IMPORTING: set WIDGET_ORIGIN to your deployed HTTPS origin.
 -->
@@ -59,7 +59,7 @@
         // ------------------------------------------------------------------
         var WIDGET_ORIGIN = "https://REPLACE-ME.azurewebsites.net";
 
-        var CONTEXT_KEYS = ["entityName", "recordId", "appId", "organizationUrl"];
+        var CONTEXT_KEYS = ["entityName", "recordId", "appId", "organizationUrl", "loginHint"];
 
         function fail(message) {
           var notice = document.createElement("p");
