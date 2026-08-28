@@ -8,6 +8,17 @@ import {
   CopilotStudioClient,
   ConnectionSettings
 } from '@microsoft/agents-copilotstudio-client';
+import {
+  createS2STokenProviderManager,
+  readS2SConfig
+} from './s2s-token.js';
+import {
+  S2S_LOCAL_CONFIG_PATH,
+  normalizeLocalS2SConfig,
+  publicS2SConfig,
+  readLocalS2SConfig,
+  writeLocalS2SConfig
+} from './s2s-local-config.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -138,8 +149,26 @@ const ENTRA_TENANT_ID = process.env.ENTRA_TENANT_ID?.trim() || sdkFileConfig.ten
 const COPILOT_ENVIRONMENT_ID = process.env.COPILOT_ENVIRONMENT_ID?.trim() || sdkFileConfig.environmentId?.trim() || '';
 const COPILOT_SCHEMA_NAME = process.env.COPILOT_SCHEMA_NAME?.trim() || sdkFileConfig.schemaName?.trim() || '';
 const COPILOT_AGENT_CLOUD = process.env.COPILOT_AGENT_CLOUD?.trim() || sdkFileConfig.cloud?.trim() || 'Prod';
+const s2sLocalConfigPath = path.join(__dirname, S2S_LOCAL_CONFIG_PATH);
+const environmentS2SConfig = normalizeLocalS2SConfig({
+  ...readS2SConfig(),
+  environmentId: COPILOT_ENVIRONMENT_ID,
+  schemaName: COPILOT_SCHEMA_NAME
+});
+let activeS2SConfig = environmentS2SConfig;
+let s2sConfigSource = 'environment';
+try {
+  const localConfig = await readLocalS2SConfig(s2sLocalConfigPath);
+  if (localConfig) {
+    activeS2SConfig = localConfig;
+    s2sConfigSource = 'local-file';
+  }
+} catch (error) {
+  console.warn(`[s2s] ${error.message}`);
+}
+const s2sTokenProvider = createS2STokenProviderManager({ config: activeS2SConfig });
 
-app.use(express.json());
+app.use(express.json({ limit: '32kb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 // Also expose public assets under /public so docs pages can reference them with
 // a relative path (../public/...) that also works on static hosts (GitHub Pages).
@@ -176,8 +205,50 @@ app.get('/api/config', (_req, res) => {
       environmentId: COPILOT_ENVIRONMENT_ID,
       schemaName: COPILOT_SCHEMA_NAME,
       cloud: COPILOT_AGENT_CLOUD
-    }
+    },
+    s2s: publicS2SConfig(activeS2SConfig, s2sConfigSource)
   });
+});
+
+function isLoopbackHost(value) {
+  const host = String(value || '').replace(/^\[|\]$/g, '').toLowerCase();
+  return host === 'localhost' || host === '::1' || host.startsWith('127.');
+}
+
+function isLocalConfigurationRequest(req) {
+  const remoteAddress = String(req.socket.remoteAddress || '').replace(/^::ffff:/i, '');
+  if (!isLoopbackHost(remoteAddress)) return false;
+  const origin = req.get('origin');
+  if (!origin) return true;
+  try {
+    return isLoopbackHost(new URL(origin).hostname);
+  } catch {
+    return false;
+  }
+}
+
+app.post('/api/dte/s2s/config', async (req, res) => {
+  if (!isLocalConfigurationRequest(req)) {
+    return res.status(403).json({ ok: false, error: 'S2S configuration can only be saved from localhost.' });
+  }
+
+  const incoming = req.body || {};
+  const nextConfig = normalizeLocalS2SConfig({
+    clientId: incoming.clientId,
+    tenantId: incoming.tenantId,
+    clientSecret: incoming.clientSecret || activeS2SConfig.clientSecret,
+    environmentId: incoming.environmentId,
+    schemaName: incoming.schemaName
+  });
+
+  try {
+    activeS2SConfig = await writeLocalS2SConfig(nextConfig, s2sLocalConfigPath);
+    s2sConfigSource = 'local-file';
+    s2sTokenProvider.update(activeS2SConfig);
+    return res.json({ ok: true, s2s: publicS2SConfig(activeS2SConfig, s2sConfigSource) });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: error.message });
+  }
 });
 
 /**
@@ -268,7 +339,7 @@ app.get('/api/test-connection', async (_req, res) => {
 // conversation id the SDK issues on start.
 // ---------------------------------------------------------------------------
 
-/** @type {Map<string, { client: CopilotStudioClient, lastUsed: number }>} */
+/** @type {Map<string, { client: CopilotStudioClient, lastUsed: number, authMode: 'delegated' | 's2s' }>} */
 const dteSessions = new Map();
 const DTE_SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes idle
 const DTE_SESSION_MAX = 200;
@@ -459,7 +530,7 @@ app.post('/api/dte/start', async (req, res) => {
   }
   await pumpTurn(res, client.startConversationStreaming(true), () => {
     const id = client.conversationId;
-    if (id) dteSessions.set(id, { client, lastUsed: Date.now() });
+    if (id) dteSessions.set(id, { client, lastUsed: Date.now(), authMode: 'delegated' });
     return id;
   });
 });
@@ -477,6 +548,9 @@ app.post('/api/dte/send', async (req, res) => {
   if (!text) return res.status(400).json({ error: 'Missing message text.' });
 
   const session = dteSessions.get(conversationId);
+  if (session && session.authMode !== 'delegated') {
+    return res.status(409).json({ error: 'Conversation authentication type mismatch.' });
+  }
   let client = session?.client;
   if (client) {
     // Refresh the bearer in case the browser re-acquired a newer token.
@@ -487,7 +561,7 @@ app.post('/api/dte/send', async (req, res) => {
     try {
       client = buildDteClient(token, settings);
       client.conversationId = conversationId;
-      dteSessions.set(conversationId, { client, lastUsed: Date.now() });
+      dteSessions.set(conversationId, { client, lastUsed: Date.now(), authMode: 'delegated' });
     } catch (err) {
       return res.status(400).json({ error: `Invalid connection settings: ${err.message}` });
     }
@@ -514,6 +588,96 @@ app.post('/api/dte/preflight', async (req, res) => {
   } catch (err) {
     return res.status(err.httpStatus || 502).json({ ok: false, error: err.message });
   }
+});
+
+app.post('/api/dte/s2s/preflight', async (req, res) => {
+  const { settings } = req.body || {};
+  if (settings?.runtime !== 'ghcp3p-s2s') {
+    return res.status(400).json({ ok: false, error: 'S2S GHCP /3p runtime settings are required.' });
+  }
+  try {
+    const token = await s2sTokenProvider.acquireToken();
+    return res.json({
+      ...(await preflightGhcp3p(token, settings)),
+      authMode: 's2s-app-only'
+    });
+  } catch (err) {
+    return res.status(err.httpStatus || 502).json({ ok: false, error: err.message });
+  }
+});
+
+app.post('/api/dte/s2s/start', async (req, res) => {
+  pruneDteSessions();
+  const { settings } = req.body || {};
+  if (settings?.runtime !== 'ghcp3p-s2s') {
+    return res.status(400).json({ error: 'S2S GHCP /3p runtime settings are required.' });
+  }
+
+  let token;
+  try {
+    token = await s2sTokenProvider.acquireToken();
+    await preflightGhcp3p(token, settings);
+  } catch (err) {
+    return res.status(err.httpStatus || 502).json({ error: err.message });
+  }
+
+  let client;
+  try {
+    client = buildDteClient(token, settings);
+  } catch (err) {
+    return res.status(400).json({ error: `Invalid connection settings: ${err.message}` });
+  }
+
+  await pumpTurn(res, client.startConversationStreaming(true), () => {
+    const id = client.conversationId;
+    if (id) dteSessions.set(id, { client, lastUsed: Date.now(), authMode: 's2s' });
+    return id;
+  });
+});
+
+app.post('/api/dte/s2s/send', async (req, res) => {
+  pruneDteSessions();
+  const { conversationId, text, settings } = req.body || {};
+  if (settings?.runtime !== 'ghcp3p-s2s') {
+    return res.status(400).json({ error: 'S2S GHCP /3p runtime settings are required.' });
+  }
+  if (!conversationId) return res.status(400).json({ error: 'Missing conversationId.' });
+  if (!text) return res.status(400).json({ error: 'Missing message text.' });
+
+  let token;
+  try {
+    token = await s2sTokenProvider.acquireToken();
+  } catch (err) {
+    return res.status(err.httpStatus || 502).json({ error: err.message });
+  }
+
+  const session = dteSessions.get(conversationId);
+  if (session && session.authMode !== 's2s') {
+    return res.status(409).json({ error: 'Conversation authentication type mismatch.' });
+  }
+
+  let client = session?.client;
+  if (client) {
+    client.token = token;
+    session.lastUsed = Date.now();
+  } else {
+    try {
+      client = buildDteClient(token, settings);
+      client.conversationId = conversationId;
+      dteSessions.set(conversationId, { client, lastUsed: Date.now(), authMode: 's2s' });
+    } catch (err) {
+      return res.status(400).json({ error: `Invalid connection settings: ${err.message}` });
+    }
+  }
+
+  await pumpTurn(
+    res,
+    client.executeStreaming(
+      { type: 'message', text, conversation: { id: conversationId } },
+      conversationId
+    ),
+    () => client.conversationId || conversationId
+  );
 });
 
 app.get('/healthz', (_req, res) => res.json({ status: 'ok' }));

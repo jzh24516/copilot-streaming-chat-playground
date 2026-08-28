@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="Prerequisites and support boundaries for authenticated Copilot Studio integrations using the standard and GitHub Copilot harnesses."
+  />
+  <title>Authenticated Copilot Studio Integration Prerequisites</title>
+  <script>
+  (() => {
+    const param = new URLSearchParams(window.location.search).get("scoutTheme");
+    const theme =
+      param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --cp-bg: #f7f4ef;
+      --cp-bg-elevated: #fcfbf8;
+      --cp-surface: #ffffff;
+      --cp-surface-soft: #f5f5f5;
+      --cp-border: #dedede;
+      --cp-border-strong: #919191;
+      --cp-text: #242424;
+      --cp-text-muted: #5c5c5c;
+      --cp-text-soft: #6f6f6f;
+      --cp-accent: #b11f4b;
+      --cp-accent-hover: #9a1a41;
+      --cp-accent-soft: rgba(177, 31, 75, 0.08);
+      --cp-accent-fg: #ffffff;
+      --cp-success: #16a34a;
+      --cp-danger: #dc2626;
+      --cp-warning: #f59e0b;
+      --cp-link: #0078d4;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+      --cp-overlay: rgba(255, 255, 255, 0.8);
+      --cp-panel: rgba(255, 255, 255, 0.86);
+      --cp-panel-strong: rgba(255, 255, 255, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.55);
+      --cp-highlight: rgba(177, 31, 75, 0.12);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --cp-bg: #3d3b3a;
+      --cp-bg-elevated: #343231;
+      --cp-surface: #292929;
+      --cp-surface-soft: #2e2e2e;
+      --cp-border: #474747;
+      --cp-border-strong: #5f5f5f;
+      --cp-text: #dedede;
+      --cp-text-muted: #919191;
+      --cp-text-soft: #b0b0b0;
+      --cp-accent: #fd8ea1;
+      --cp-accent-hover: #fb7b91;
+      --cp-accent-soft: rgba(253, 142, 161, 0.14);
+      --cp-accent-fg: #1a1a1a;
+      --cp-success: #4ade80;
+      --cp-danger: #f87171;
+      --cp-warning: #fbbf24;
+      --cp-link: #4da6ff;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+      --cp-overlay: rgba(41, 41, 41, 0.88);
+      --cp-panel: rgba(41, 41, 41, 0.72);
+      --cp-panel-strong: rgba(41, 41, 41, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.04);
+      --cp-highlight: rgba(253, 142, 161, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background-color: var(--cp-bg);
+      background-image:
+        linear-gradient(var(--cp-border) 1px, var(--cp-bg) 1px),
+        linear-gradient(90deg, var(--cp-border) 1px, var(--cp-bg) 1px);
+      background-size: 32px 32px;
+      color: var(--cp-text);
+      font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+      letter-spacing: 0;
+    }
+
+    button,
+    a {
+      font: inherit;
+    }
+
+    button:focus-visible,
+    a:focus-visible {
+      outline: 3px solid var(--cp-accent);
+      outline-offset: 3px;
+    }
+
+    code,
+    pre,
+    .mono {
+      font-family: Consolas, "Courier New", Courier, monospace;
+    }
+
+    a {
+      color: var(--cp-link);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+    }
+
+    .app-shell {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 24px 64px 64px;
+      position: relative;
+    }
+
+    .deck {
+      width: min(1240px, 92vw, calc((100vh - 112px) * 16 / 9));
+      aspect-ratio: 16 / 9;
+      position: relative;
+      isolation: isolate;
+      background: var(--cp-surface);
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      box-shadow: var(--cp-shadow);
+      overflow: hidden;
+    }
+
+    .deck::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 8px;
+      background: var(--cp-accent);
+      z-index: 3;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 22px;
+      padding: 42px 52px 38px 60px;
+      overflow: hidden;
+      background: var(--cp-surface);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(12px);
+      transition: opacity 220ms ease, transform 220ms ease, visibility 220ms;
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      z-index: 2;
+    }
+
+    .slide-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: start;
+      gap: 24px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--cp-accent);
+      font-size: 12px;
+      font-weight: 750;
+      line-height: 1.2;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      max-width: 860px;
+      margin-bottom: 18px;
+      font-size: clamp(38px, 4.5vw, 66px);
+      line-height: 1.02;
+      font-weight: 760;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin-bottom: 0;
+      font-size: clamp(28px, 3vw, 42px);
+      line-height: 1.08;
+      font-weight: 720;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin-bottom: 8px;
+      font-size: 17px;
+      line-height: 1.2;
+      font-weight: 700;
+    }
+
+    p {
+      margin-bottom: 0;
+      color: var(--cp-text-muted);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .lead {
+      max-width: 850px;
+      color: var(--cp-text);
+      font-size: 20px;
+      line-height: 1.48;
+    }
+
+    .slide-number {
+      min-width: 48px;
+      padding-top: 3px;
+      color: var(--cp-text-soft);
+      font-size: 13px;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+
+    .slide-body {
+      min-height: 0;
+      align-self: stretch;
+    }
+
+    .slide-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      color: var(--cp-text-soft);
+      font-size: 11px;
+      line-height: 1.3;
+    }
+
+    .title-slide {
+      grid-template-rows: 1fr auto;
+      padding: 54px 64px 42px 72px;
+      background:
+        linear-gradient(90deg, var(--cp-accent-soft), var(--cp-surface) 42%),
+        var(--cp-surface);
+    }
+
+    .title-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(260px, 0.55fr);
+      align-items: center;
+      gap: 48px;
+      min-height: 0;
+    }
+
+    .title-copy {
+      align-self: center;
+    }
+
+    .title-copy .lead {
+      max-width: 780px;
+    }
+
+    .title-meta {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+
+    .title-meta span {
+      padding: 7px 11px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-bg-elevated);
+      color: var(--cp-text-muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .harness-mark {
+      display: grid;
+      place-items: center;
+      align-content: center;
+      aspect-ratio: 1;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-bg-elevated);
+      box-shadow: 0 0 2px var(--cp-border), 0 1px 2px var(--cp-border);
+      position: relative;
+    }
+
+    .harness-mark::before,
+    .harness-mark::after {
+      content: "";
+      position: absolute;
+      border: 1px solid var(--cp-border);
+      border-radius: 50%;
+    }
+
+    .harness-mark::before {
+      width: 72%;
+      height: 72%;
+    }
+
+    .harness-mark::after {
+      width: 46%;
+      height: 46%;
+      border-color: var(--cp-accent);
+    }
+
+    .harness-mark strong {
+      z-index: 1;
+      display: block;
+      color: var(--cp-accent);
+      font-size: 40px;
+      line-height: 1;
+      text-align: center;
+    }
+
+    .harness-mark small {
+      z-index: 1;
+      display: block;
+      margin-top: 8px;
+      color: var(--cp-text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      text-align: center;
+    }
+
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+      display: grid;
+      gap: 16px;
+      min-height: 0;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .card {
+      padding: 18px 20px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-bg-elevated);
+      box-shadow: 0 0 2px var(--cp-border), 0 1px 2px var(--cp-border);
+    }
+
+    .card.accent {
+      border-top: 4px solid var(--cp-accent);
+    }
+
+    .card.success {
+      border-top: 4px solid var(--cp-success);
+    }
+
+    .card.warning {
+      border-top: 4px solid var(--cp-warning);
+    }
+
+    .card.danger {
+      border-top: 4px solid var(--cp-danger);
+    }
+
+    .card p,
+    .card li {
+      font-size: 14px;
+      line-height: 1.42;
+    }
+
+    .card-label {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      margin-bottom: 13px;
+      padding: 3px 8px;
+      border-radius: 0.625rem;
+      background: var(--cp-accent-soft);
+      color: var(--cp-accent);
+      font-size: 10px;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .status-line {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .status-line + .status-line {
+      margin-top: 11px;
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      margin-top: 5px;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: var(--cp-accent);
+    }
+
+    .status-dot.success {
+      background: var(--cp-success);
+    }
+
+    .status-dot.warning {
+      background: var(--cp-warning);
+    }
+
+    .status-dot.danger {
+      background: var(--cp-danger);
+    }
+
+    .status-line strong {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 14px;
+      line-height: 1.3;
+    }
+
+    .status-line span {
+      display: block;
+      color: var(--cp-text-muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .clean-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .clean-list li {
+      position: relative;
+      padding-left: 18px;
+      color: var(--cp-text-muted);
+    }
+
+    .clean-list li + li {
+      margin-top: 9px;
+    }
+
+    .clean-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 7px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cp-accent);
+    }
+
+    .check-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px 20px;
+    }
+
+    .check-item {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--cp-border);
+    }
+
+    .check-item .check {
+      display: grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      border: 1px solid var(--cp-success);
+      border-radius: 50%;
+      color: var(--cp-success);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .check-item strong {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 14px;
+    }
+
+    .check-item span {
+      display: block;
+      color: var(--cp-text-muted);
+      font-size: 12px;
+      line-height: 1.38;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .flow-step {
+      position: relative;
+      min-width: 0;
+      padding: 16px 14px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-bg-elevated);
+      text-align: center;
+    }
+
+    .flow-step:not(:last-child)::after {
+      content: ">";
+      position: absolute;
+      top: 50%;
+      right: -16px;
+      width: 12px;
+      transform: translateY(-50%);
+      color: var(--cp-accent);
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .flow-step .ordinal {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      margin: 0 auto 10px;
+      border-radius: 50%;
+      background: var(--cp-accent);
+      color: var(--cp-accent-fg);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .flow-step strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 13px;
+    }
+
+    .flow-step span {
+      display: block;
+      color: var(--cp-text-muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .claim-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .claim {
+      padding: 13px 14px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface-soft);
+      text-align: center;
+    }
+
+    .claim strong {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--cp-accent);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .claim span {
+      display: block;
+      color: var(--cp-text-soft);
+      font-size: 10px;
+    }
+
+    .route {
+      width: 100%;
+      margin-top: 16px;
+      padding: 14px 16px;
+      border: 1px solid var(--cp-border);
+      border-left: 4px solid var(--cp-accent);
+      border-radius: 0.625rem;
+      background: var(--cp-surface-soft);
+      color: var(--cp-text);
+      font-size: 12px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+      white-space: normal;
+    }
+
+    .compare {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      height: 100%;
+    }
+
+    .compare-panel {
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 14px;
+      padding: 22px 24px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-bg-elevated);
+    }
+
+    .compare-panel:first-child {
+      border-top: 5px solid var(--cp-success);
+    }
+
+    .compare-panel:last-child {
+      border-top: 5px solid var(--cp-accent);
+    }
+
+    .compare-panel h3 {
+      font-size: 22px;
+    }
+
+    .compare-panel .descriptor {
+      color: var(--cp-text-muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .compare-panel .decision {
+      padding-top: 12px;
+      border-top: 1px solid var(--cp-border);
+      color: var(--cp-text);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .architecture {
+      display: grid;
+      grid-template-columns: 1fr 34px 1fr 34px 1fr 34px 1fr;
+      align-items: center;
+      gap: 0;
+      min-height: 170px;
+    }
+
+    .architecture-node {
+      min-width: 0;
+      padding: 18px 12px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-bg-elevated);
+      text-align: center;
+    }
+
+    .architecture-node.emphasis {
+      border-color: var(--cp-accent);
+      background: var(--cp-accent-soft);
+    }
+
+    .architecture-node strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .architecture-node span {
+      display: block;
+      color: var(--cp-text-muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .architecture-arrow {
+      color: var(--cp-accent);
+      font-size: 23px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .matrix {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      overflow: hidden;
+      font-size: 13px;
+    }
+
+    .matrix th,
+    .matrix td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--cp-border);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    .matrix th {
+      background: var(--cp-surface-soft);
+      color: var(--cp-text);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .matrix tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .matrix td:first-child {
+      color: var(--cp-text);
+      font-weight: 650;
+    }
+
+    .support {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .support::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--cp-text-soft);
+    }
+
+    .support.yes {
+      color: var(--cp-success);
+    }
+
+    .support.yes::before {
+      background: var(--cp-success);
+    }
+
+    .support.no {
+      color: var(--cp-danger);
+    }
+
+    .support.no::before {
+      background: var(--cp-danger);
+    }
+
+    .support.experimental {
+      color: var(--cp-warning);
+    }
+
+    .support.experimental::before {
+      background: var(--cp-warning);
+    }
+
+    .command {
+      padding: 14px 16px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface-soft);
+      color: var(--cp-text);
+      font-size: 12px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .callout {
+      display: grid;
+      grid-template-columns: 5px 1fr;
+      gap: 14px;
+      align-items: stretch;
+      margin-top: 15px;
+      padding: 14px 16px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-accent-soft);
+    }
+
+    .callout::before {
+      content: "";
+      border-radius: 0.625rem;
+      background: var(--cp-accent);
+    }
+
+    .callout strong {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--cp-text);
+      font-size: 13px;
+    }
+
+    .callout span {
+      display: block;
+      color: var(--cp-text-muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .references {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .reference-link {
+      display: block;
+      min-height: 82px;
+      padding: 14px 15px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-bg-elevated);
+      text-decoration: none;
+    }
+
+    .reference-link strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--cp-text);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .reference-link span {
+      display: block;
+      color: var(--cp-link);
+      font-size: 10px;
+      overflow-wrap: anywhere;
+    }
+
+    .nav-rail {
+      position: fixed;
+      top: 50%;
+      right: 20px;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      transform: translateY(-50%);
+      padding: 10px 8px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-panel-strong);
+      box-shadow: 0 0 2px var(--cp-border), 0 1px 2px var(--cp-border);
+    }
+
+    .nav-dot {
+      width: 10px;
+      height: 10px;
+      padding: 0;
+      border: 1px solid var(--cp-border-strong);
+      border-radius: 50%;
+      background: var(--cp-surface);
+      cursor: pointer;
+    }
+
+    .nav-dot.active {
+      border-color: var(--cp-accent);
+      background: var(--cp-accent);
+      transform: scale(1.2);
+    }
+
+    .controls {
+      position: fixed;
+      left: 50%;
+      bottom: 14px;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transform: translateX(-50%);
+      padding: 7px 9px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-panel-strong);
+      box-shadow: 0 0 2px var(--cp-border), 0 1px 2px var(--cp-border);
+    }
+
+    .icon-button {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      border: 1px solid var(--cp-border);
+      border-radius: 50%;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      font-size: 17px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .icon-button:hover {
+      border-color: var(--cp-accent);
+      color: var(--cp-accent);
+    }
+
+    .counter {
+      min-width: 58px;
+      color: var(--cp-text-muted);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+    }
+
+    .progress-track {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 21;
+      height: 4px;
+      background: var(--cp-border);
+    }
+
+    .progress-bar {
+      width: 0;
+      height: 100%;
+      background: var(--cp-accent);
+      transition: width 180ms ease;
+    }
+
+    .compact .card {
+      padding: 14px 16px;
+    }
+
+    .compact .card p,
+    .compact .card li {
+      font-size: 12px;
+    }
+
+    .compact .grid-3 {
+      gap: 12px;
+    }
+
+    @media (max-width: 900px) {
+      .app-shell {
+        padding: 12px 12px 62px;
+      }
+
+      .deck {
+        width: 100%;
+        height: calc(100vh - 82px);
+        aspect-ratio: auto;
+      }
+
+      .slide,
+      .title-slide {
+        padding: 30px 26px 28px 34px;
+        overflow-y: auto;
+      }
+
+      .title-layout,
+      .grid-2,
+      .grid-3,
+      .grid-4,
+      .compare,
+      .check-grid,
+      .references {
+        grid-template-columns: 1fr;
+      }
+
+      .title-layout {
+        align-content: start;
+      }
+
+      .harness-mark {
+        display: none;
+      }
+
+      .flow {
+        grid-template-columns: 1fr;
+      }
+
+      .flow-step:not(:last-child)::after {
+        content: "v";
+        top: auto;
+        right: 50%;
+        bottom: -20px;
+        transform: translateX(50%);
+      }
+
+      .architecture {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .architecture-arrow {
+        transform: rotate(90deg);
+      }
+
+      .nav-rail {
+        display: none;
+      }
+
+      .slide-footer {
+        margin-top: 8px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      h1 {
+        font-size: 36px;
+      }
+
+      h2 {
+        font-size: 28px;
+      }
+
+      .lead {
+        font-size: 17px;
+      }
+
+      .slide-header {
+        grid-template-columns: 1fr;
+      }
+
+      .slide-number {
+        display: none;
+      }
+
+      .claim-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .matrix {
+        font-size: 11px;
+      }
+
+      .matrix th,
+      .matrix td {
+        padding: 9px 8px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    @media print {
+      @page {
+        size: landscape;
+        margin: 0;
+      }
+
+      body {
+        display: block;
+        overflow: visible;
+        background: var(--cp-surface);
+      }
+
+      .app-shell {
+        display: block;
+        padding: 0;
+      }
+
+      .deck {
+        width: 100%;
+        height: auto;
+        aspect-ratio: auto;
+        border: 0;
+        box-shadow: none;
+        overflow: visible;
+      }
+
+      .slide,
+      .slide.active {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        break-after: page;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+      }
+
+      .controls,
+      .nav-rail,
+      .progress-track {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell" aria-label="Authenticated Copilot Studio integration prerequisites deck">
+    <div class="deck" id="deck">
+      <section class="slide title-slide active" data-label="Title" aria-hidden="false">
+        <div class="title-layout">
+          <div class="title-copy">
+            <p class="eyebrow">Integration readiness briefing</p>
+            <h1>Authenticated Copilot Studio integration</h1>
+            <p class="lead">
+              The prerequisite map for standard-harness and GitHub Copilot-harness agents,
+              including identity, runtime routing, channel support, and local validation.
+            </p>
+            <div class="title-meta">
+              <span>Standard harness</span>
+              <span>GitHub Copilot harness</span>
+              <span>Updated 18 August 2026</span>
+            </div>
+          </div>
+          <div class="harness-mark" aria-hidden="true">
+            <strong>2</strong>
+            <small>runtime paths</small>
+          </div>
+        </div>
+        <footer class="slide-footer">
+          <span>Copilot Studio Streaming Playground</span>
+          <span>Architecture and prerequisite guide</span>
+        </footer>
+      </section>
+
+      <section class="slide" data-label="Decision" aria-hidden="true">
+        <header class="slide-header">
+          <div>
+            <p class="eyebrow">Start with the harness</p>
+            <h2>One identity foundation, two runtime contracts</h2>
+          </div>
+          <span class="slide-number">02</span>
+        </header>
+        <div class="slide-body compare">
+          <article class="compare-panel">
+            <span class="card-label">Documented custom-app path</span>
+            <div>
+              <h3>Standard harness</h3>
+              <p class="descriptor">Predictable conversations and rule-based workflows through the Copilot Studio client.</p>
+            </div>
+            <ul class="clean-list">
+              <li>Microsoft 365 Agents SDK / Copilot Studio client</li>
+              <li>Direct Connect URL or environment + schema metadata</li>
+              <li>Delegated Entra user authentication</li>
+              <li>Published-bot Direct-to-Engine runtime</li>
+            </ul>
+            <div class="decision">Use for the supported authenticated web or native integration.</div>
+          </article>
+          <article class="compare-panel">
+            <span class="card-label">New agent experience</span>
+            <div>
+              <h3>GitHub Copilot harness</h3>
+              <p class="descriptor">Reasoning-heavy, multistep work through the CLI-style agentic loop.</p>
+            </div>
+            <ul class="clean-list">
+              <li>Official: Microsoft 365, Teams, demo site, web iframe</li>
+              <li>Local research path: authenticated Agentic Runtime /3p</li>
+              <li>Distinct recognizer and endpoint family</li>
+              <li>Copilot Credits usage-based billing</li>
+            </ul>
+            <div class="decision">Do not send this agent to the standard published-bot endpoint.</div>
+          </article>
+        </div>
+        <footer class="slide-footer">
+          <span>Routing is determined by the harness, not by UI preference.</span>
+          <span>Decision 1 of 3</span>
+        </footer>
+      </section>
+
+      <section class="slide" data-label="Shared foundation" aria-hidden="true">
+        <header class="slide-header">
+          <div>
+            <p class="eyebrow">Shared foundation</p>
+            <h2>Six gates before the first API call</h2>
+          </div>
+          <span class="slide-number">03</span>
+        </header>
+        <div class="slide-body check-grid">
+          <div class="check-item">
+            <span class="check">1</span>
+            <div><strong>Published agent</strong><span>Republish after authentication, tool, topic, or orchestration changes.</span></div>
+          </div>
+          <div class="check-item">
+            <span class="check">2</span>
+            <div><strong>Exact metadata</strong><span>Use the correct environment GUID and case-sensitive schema name.</span></div>
+          </div>
+          <div class="check-item">
+            <span class="check">3</span>
+            <div><strong>Single-tenant app</strong><span>Register the invoking web application in Microsoft Entra ID.</span></div>
+          </div>
+          <div class="check-item">
+            <span class="check">4</span>
+            <div><strong>Delegated invoke permission</strong><span>Add Power Platform API permission CopilotStudio.Copilots.Invoke.</span></div>
+          </div>
+          <div class="check-item">
+            <span class="check">5</span>
+            <div><strong>User access</strong><span>The signed-in user needs agent chat access, environment access, and licensing.</span></div>
+          </div>
+          <div class="check-item">
+            <span class="check">6</span>
+            <div><strong>Resource authorization</strong><span>Connectors, MCP servers, and knowledge sources need their own valid identity path.</span></div>
+          </div>
+        </div>
+        <div class="callout">
+          <div>
+            <strong>Invocation permission is not downstream data permission.</strong>
+            <span>A valid Copilot Studio token can start a conversation while a connector or tool still fails for lack of consent or connection access.</span>
+          </div>
+        </div>
+        <footer class="slide-footer">
+          <span>Common prerequisites apply to both harnesses.</span>
+          <span>Identity + access + publication</span>
+        </footer>
+      </section>
+
+      <section class="slide" data-label="Entra identity" aria-hidden="true">
+        <header class="slide-header">
+          <div>
+            <p class="eyebrow">Delegated identity</p>
+            <h2>Configure the Entra application once</h2>
+          </div>
+          <span class="slide-number">04</span>
+        </header>
+        <div class="slide-body">
+          <div class="flow" aria-label="Entra application registration flow">
+            <div class="flow-step"><span class="ordinal">1</span><strong>Register</strong><span>Single-tenant application</span></div>
+            <div class="flow-step"><span class="ordinal">2</span><strong>Redirect</strong><span>SPA URI at localhost:3978</span></div>
+            <div class="flow-step"><span class="ordinal">3</span><strong>Permission</strong><span>Power Platform delegated invoke</span></div>
+            <div class="flow-step"><span class="ordinal">4</span><strong>Consent</strong><span>Admin approval when required</span></div>
+            <div class="flow-step"><span class="ordinal">5</span><strong>Sign in</strong><span>Acquire a user access token</span></div>
+          </div>
+          <div class="claim-strip">
+            <div class="claim"><strong>https://api.powerplatform.com/.default</strong><span>Requested scope</span></div>
+            <div class="claim"><strong>Power Platform API</strong><span>Expected token audience</span></div>
+            <div class="claim"><strong>CopilotStudio.Copilots.Invoke</strong><span>Expected delegated scope</span></div>
+          </div>
+          <div class="callout">
+            <div>
+              <strong>Local redirect contract</strong>
+              <span>The SPA redirect URI must exactly match the browser origin used by the harness: http://localhost:3978.</span>
+            </div>
+          </div>
+        </div>
+        <footer class="slide-footer">
+          <span>Both local modes use the same delegated token foundation.</span>
+          <span>No client secret in the browser</span>
+        </footer>
+      </section>
+
+      <section class="slide compact" data-label="Standard prerequisites" aria-hidden="true">
+        <header class="slide-header">
+          <div>
+            <p class="eyebrow">Standard harness</p>
+            <h2>Agent and channel prerequisites</h2>
+          </div>
+          <span class="slide-number">05</span>
+        </header>
+        <div class="slide-body grid-3">
+          <article class="card success">
+            <span class="card-label">Agent</span>
+            <h3>Published and compatible</h3>
+            <ul class="clean-list">
+              <li>Powered by the standard harness</li>
+              <li>Authentication set to Microsoft or manual</li>
+              <li>Published after configuration changes</li>
+              <li>Tools and orchestration available in the published version</li>
+            </ul>
+          </article>
+          <article class="card accent">
+            <span class="card-label">Connection</span>
+            <h3>Choose one source</h3>
+            <ul class="clean-list">
+              <li>Copy the Agents SDK connection string from Web app or Native app</li>
+              <li>Or use Environment ID + Schema name from Advanced metadata</li>
+              <li>Keep the schema name case-sensitive</li>
+              <li>Set agent type to Published</li>
+            </ul>
+          </article>
+          <article class="card warning">
+            <span class="card-label">Boundary</span>
+            <h3>Know the support caveat</h3>
+            <ul class="clean-list">
+              <li>The integration guide is standard-harness scoped</li>
+              <li>Authenticated agents show a connection string, not anonymous embed code</li>
+              <li>The client-library page still limits official support to classic authoring</li>
+              <li>Validate new-experience behavior before production use</li>
+            </ul>
+          </article>
+        </div>
+        <footer class="slide-footer">
+          <span>Preferred integration: Copilot Studio client in Microsoft 365 Agents SDK.</span>
+          <span>Standard path</span>
+        </footer>
+      </section>
+
+      <section class="slide" data-label="Standard architecture" aria-hidden="true">
+        <header class="slide-header">
+          <div>
+            <p class="eyebrow">Standard runtime</p>
+            <h2>Published-bot Direct-to-Engine flow</h2>
+          </div>
+          <span class="slide-number">06</span>
+        </header>
+        <div class="slide-body">
+          <div class="architecture" aria-label="Standard harness architecture">
+            <div class="architecture-node"><strong>Browser UI</strong><span>Web Chat-compatible presentation</span></div>
+            <div class="architecture-arrow">&gt;</div>
+            <div class="architecture-node"><strong>MSAL</strong><span>Delegated user sign-in</span></div>
+            <div class="architecture-arrow">&gt;</div>
+            <div class="architecture-node emphasis"><strong>Copilot Studio client</strong><span>Microsoft 365 Agents SDK</span></div>
+            <div class="architecture-arrow">&gt;</div>
+            <div class="architecture-node"><strong>Published agent</strong><span>Standard harness DTE runtime</span></div>
+          </div>
+          <pre class="route">https://{environment-host}/copilotstudio/dataverse-backed/authenticated/bots/{schema}/conversations</pre>
+          <div class="grid-2" style="margin-top: 16px;">
+            <div class="status-line"><span class="status-dot success"></span><div><strong>Direct Connect URL</strong><span>Use the exact connection string copied from the channel when available.</span></div></div>
+            <div class="status-line"><span class="status-dot success"></span><div><strong>Traditional metadata</strong><span>Environment ID and schema name are the alternate documented configuration.</span></div></div>
+          </div>
+        </div>
+        <footer class="slide-footer">
+          <span>Do not substitute the GHCP /3p URL into this standard path.</span>
+          <span>Transport: SSE</span>
+        </footer>
+      </section>
+
+      <section class="slide compact" data-label="GHCP prerequisites" aria-hidden="true">
+        <header class="slide-header">
+          <div>
+            <p class="eyebrow">GitHub Copilot harness</p>
+            <h2>Verify the agent fingerprint first</h2>
+          </div>
+          <span class="slide-number">07</span>
+        </header>
+        <div class="slide-body grid-3">
+          <article class="card accent">
+            <span class="card-label">Recognizer</span>
+            <h3>CLI agentic loop</h3>
+            <p class="mono">configuration.recognizer.kind</p>
+            <div class="route">CLICopilotRecognizer<br />or legacy CLIAgentRecognizer</div>
+          </article>
+          <article class="card success">
+            <span class="card-label">Authentication</span>
+            <h3>Integrated identity</h3>
+            <p class="mono">authenticationMode</p>
+            <div class="route">Integrated</div>
+            <p style="margin-top: 10px;">Copilot Studio authentication should be Authenticate with Microsoft.</p>
+          </article>
+          <article class="card warning">
+            <span class="card-label">Publication</span>
+            <h3>Share and meter</h3>
+            <ul class="clean-list">
+              <li>Publish to Teams + Microsoft 365</li>
+              <li>Enable availability in Microsoft 365 Copilot</li>
+              <li>Share with the signed-in user or security group</li>
+              <li>Confirm Copilot Credits and user licensing</li>
+            </ul>
+          </article>
+        </div>
+        <div class="callout">
+          <div>
+            <strong>Integrated authentication alone does not identify the harness.</strong>
+            <span>The recognizer kind is the decisive routing signal for the GHCP / CLI harness.</span>
+          </div>
+        </div>
+        <footer class="slide-footer">
+          <span>Wrong recognizer, wrong endpoint, or stale publication can all look like an auth failure.</span>
+          <span>GHCP fingerprint</span>
+        </footer>
+      </section>
+
+      <section class="slide" data-label="GHCP architecture" aria-hidden="true">
+        <header class="slide-header">
+          <div>
+            <p class="eyebrow">Developer test path</p>
+            <h2>Authenticated Agentic Runtime /3p</h2>
+          </div>
+          <span class="slide-number">08</span>
+        </header>
+        <div class="slide-body">
+          <div class="architecture" aria-label="GitHub Copilot harness experimental architecture">
+            <div class="architecture-node"><strong>Browser UI</strong><span>Delegated user session</span></div>
+            <div class="architecture-arrow">&gt;</div>
+            <div class="architecture-node"><strong>MSAL</strong><span>Power Platform bearer</span></div>
+            <div class="architecture-arrow">&gt;</div>
+            <div class="architecture-node emphasis"><strong>Node sidecar</strong><span>Guarded /3p relay and preflight</span></div>
+            <div class="architecture-arrow">&gt;</div>
+            <div class="architecture-node"><strong>GHCP agent</strong><span>Agentic loop over SSE</span></div>
+          </div>
+          <pre class="route">https://{environment-host}/copilotstudio/agenticruntime/3p/dataverse-backed/authenticated/bots/{schema}?api-version=1</pre>
+          <div class="grid-3" style="margin-top: 16px;">
+            <div class="status-line"><span class="status-dot success"></span><div><strong>Verified locally</strong><span>Delegated auth and progressive SSE responses have been observed.</span></div></div>
+            <div class="status-line"><span class="status-dot warning"></span><div><strong>Commercial Prod</strong><span>This harness currently generates only the commercial production host shape.</span></div></div>
+            <div class="status-line"><span class="status-dot danger"></span><div><strong>Not a production contract</strong><span>The /3p route is experimental and absent from the public integration contract.</span></div></div>
+          </div>
+        </div>
+        <footer class="slide-footer">
+          <span>The sidecar validates the target before attaching the bearer token.</span>
+          <span>Transport: SSE</span>
+        </footer>
+      </section>
+
+      <section class="slide" data-label="Channel matrix" aria-hidden="true">
+        <header class="slide-header">
+          <div>
+            <p class="eyebrow">Current support boundary</p>
+            <h2>Choose a production channel deliberately</h2>
+          </div>
+          <span class="slide-number">09</span>
+        </header>
+        <div class="slide-body">
+          <table class="matrix" aria-label="Harness integration support matrix">
+            <thead>
+              <tr><th>Channel or integration</th><th>Standard harness</th><th>GitHub Copilot harness</th><th>Recommended use</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Microsoft 365 Copilot</td><td><span class="support yes">Supported</span></td><td><span class="support yes">Supported</span></td><td>Internal productivity</td></tr>
+              <tr><td>Microsoft Teams</td><td><span class="support yes">Supported</span></td><td><span class="support yes">Supported</span></td><td>Enterprise chat</td></tr>
+              <tr><td>Web app</td><td><span class="support yes">Agents SDK</span></td><td><span class="support yes">Iframe</span></td><td>Embedded web experience</td></tr>
+              <tr><td>Native app / Direct Line</td><td><span class="support yes">Available</span></td><td><span class="support no">Not available</span></td><td>Do not use for GHCP</td></tr>
+              <tr><td>MCP client</td><td><span class="support experimental">Scenario-specific</span></td><td><span class="support no">Not available</span></td><td>Use MCP as an agent tool instead</td></tr>
+              <tr><td>Agentic Runtime /3p</td><td><span class="support no">Not applicable</span></td><td><span class="support experimental">Developer test</span></td><td>Research and validation only</td></tr>
+            </tbody>
+          </table>
+          <div class="callout">
+            <div>
+              <strong>Production default for GHCP</strong>
+              <span>Use Microsoft 365 Copilot, Teams, or the documented Web app iframe unless Microsoft explicitly supports your /3p scenario.</span>
+            </div>
+          </div>
+        </div>
+        <footer class="slide-footer">
+          <span>Channel availability reflects Microsoft Learn guidance current on 18 August 2026.</span>
+          <span>Support before transport</span>
+        </footer>
+      </section>
+
+      <section class="slide compact" data-label="Local setup" aria-hidden="true">
+        <header class="slide-header">
+          <div>
+            <p class="eyebrow">Local harness</p>
+            <h2>Run and configure the playground</h2>
+          </div>
+          <span class="slide-number">10</span>
+        </header>
+        <div class="slide-body grid-3">
+          <article class="card success">
+            <span class="card-label">Common</span>
+            <h3>Node application</h3>
+            <pre class="command">npm install
+npm start
+
+http://localhost:3978</pre>
+            <p style="margin-top: 10px;">Requires Node.js 18 or later.</p>
+          </article>
+          <article class="card accent">
+            <span class="card-label">Standard</span>
+            <h3>Direct-to-Engine mode</h3>
+            <ul class="clean-list">
+              <li>Client ID</li>
+              <li>Tenant ID</li>
+              <li>Environment ID</li>
+              <li>Schema name or Direct Connect URL</li>
+            </ul>
+          </article>
+          <article class="card warning">
+            <span class="card-label">GHCP options</span>
+            <h3>/3p sidecar modes</h3>
+            <ul class="clean-list">
+              <li>Node /3p mode uses the existing server</li>
+              <li>Optional Agent Framework POC requires .NET 8</li>
+            </ul>
+            <pre class="command" style="margin-top: 10px;">npm run agent-framework:poc
+
+http://127.0.0.1:3980</pre>
+          </article>
+        </div>
+        <footer class="slide-footer">
+          <span>The client secret is never required for delegated browser sign-in.</span>
+          <span>Local ports: 3978 + optional 3980</span>
+        </footer>
+      </section>
+
+      <section class="slide compact" data-label="Diagnostics" aria-hidden="true">
+        <header class="slide-header">
+          <div>
+            <p class="eyebrow">Fast diagnosis</p>
+            <h2>Read failures by layer</h2>
+          </div>
+          <span class="slide-number">11</span>
+        </header>
+        <div class="slide-body grid-4">
+          <article class="card danger">
+            <span class="card-label">401</span>
+            <h3>Identity</h3>
+            <p>Check token audience, delegated scope, tenant, expiry, and sign-in state.</p>
+          </article>
+          <article class="card warning">
+            <span class="card-label">403</span>
+            <h3>Authorization</h3>
+            <p>Check agent sharing, environment access, consent, licensing, and policy.</p>
+          </article>
+          <article class="card accent">
+            <span class="card-label">404</span>
+            <h3>Routing</h3>
+            <p>Check publication, environment, schema case, harness, endpoint family, and API version.</p>
+          </article>
+          <article class="card success">
+            <span class="card-label">200 + wrong result</span>
+            <h3>Runtime</h3>
+            <p>Confirm the published version, orchestration, tool connections, and correct harness path.</p>
+          </article>
+        </div>
+        <div class="grid-2" style="margin-top: 14px;">
+          <div class="status-line"><span class="status-dot warning"></span><div><strong>Final-only response</strong><span>A complete answer without progressive chunks is not automatically a connection failure.</span></div></div>
+          <div class="status-line"><span class="status-dot danger"></span><div><strong>Access denied after connect</strong><span>Transport success does not prove the conversation identity is authorized for the agent.</span></div></div>
+        </div>
+        <footer class="slide-footer">
+          <span>Separate identity, authorization, routing, and runtime behavior.</span>
+          <span>Diagnose from the status code inward</span>
+        </footer>
+      </section>
+
+      <section class="slide" data-label="Go-live checklist" aria-hidden="true">
+        <header class="slide-header">
+          <div>
+            <p class="eyebrow">Go / no-go</p>
+            <h2>Integration readiness checklist</h2>
+          </div>
+          <span class="slide-number">12</span>
+        </header>
+        <div class="slide-body">
+          <div class="check-grid">
+            <div class="check-item"><span class="check">1</span><div><strong>Harness classified</strong><span>Standard and GHCP agents are routed to different endpoint families.</span></div></div>
+            <div class="check-item"><span class="check">2</span><div><strong>Agent published</strong><span>The published version contains the expected auth, orchestration, and tools.</span></div></div>
+            <div class="check-item"><span class="check">3</span><div><strong>Identity validated</strong><span>The delegated token has the Power Platform audience and invoke scope.</span></div></div>
+            <div class="check-item"><span class="check">4</span><div><strong>Access validated</strong><span>The signed-in user can chat and use every required downstream resource.</span></div></div>
+            <div class="check-item"><span class="check">5</span><div><strong>Channel supported</strong><span>The production channel is explicitly available for the selected harness.</span></div></div>
+            <div class="check-item"><span class="check">6</span><div><strong>Smoke test passed</strong><span>Connection, one normal turn, and one tool-backed turn succeed end to end.</span></div></div>
+          </div>
+          <div class="references">
+            <a class="reference-link" href="https://learn.microsoft.com/microsoft-copilot-studio/publication-integrate-web-or-native-app-m365-agents-sdk" target="_blank" rel="noreferrer">
+              <strong>Standard harness web/native integration</strong>
+              <span>learn.microsoft.com</span>
+            </a>
+            <a class="reference-link" href="https://learn.microsoft.com/microsoft-copilot-studio/agents-experience/publication-channels-overview" target="_blank" rel="noreferrer">
+              <strong>GHCP harness channel availability</strong>
+              <span>learn.microsoft.com</span>
+            </a>
+            <a class="reference-link" href="https://learn.microsoft.com/microsoft-copilot-studio/agents-experience/authoring-share-agent" target="_blank" rel="noreferrer">
+              <strong>GHCP agent sharing and access</strong>
+              <span>learn.microsoft.com</span>
+            </a>
+          </div>
+        </div>
+        <footer class="slide-footer">
+          <span>Proceed only when all six gates are green.</span>
+          <span>End of briefing</span>
+        </footer>
+      </section>
+    </div>
+
+    <nav class="nav-rail" id="navRail" aria-label="Slide navigation"></nav>
+
+    <div class="controls" aria-label="Presentation controls">
+      <button class="icon-button" id="prevButton" type="button" aria-label="Previous slide" title="Previous slide">&larr;</button>
+      <span class="counter" id="counter" aria-live="polite">1 / 12</span>
+      <button class="icon-button" id="nextButton" type="button" aria-label="Next slide" title="Next slide">&rarr;</button>
+      <button class="icon-button" id="themeButton" type="button" aria-label="Toggle color theme" title="Toggle color theme">&#9680;</button>
+      <button class="icon-button" id="fullscreenButton" type="button" aria-label="Toggle fullscreen" title="Toggle fullscreen">&#9974;</button>
+    </div>
+
+    <div class="progress-track" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div>
+  </main>
+
+  <script>
+    (() => {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const navRail = document.getElementById("navRail");
+      const counter = document.getElementById("counter");
+      const progressBar = document.getElementById("progressBar");
+      const prevButton = document.getElementById("prevButton");
+      const nextButton = document.getElementById("nextButton");
+      const themeButton = document.getElementById("themeButton");
+      const fullscreenButton = document.getElementById("fullscreenButton");
+      const deck = document.getElementById("deck");
+      let index = 0;
+      let touchStartX = null;
+
+      const hashMatch = window.location.hash.match(/^#slide-(\d+)$/);
+      if (hashMatch) {
+        index = Math.min(slides.length - 1, Math.max(0, Number(hashMatch[1]) - 1));
+      }
+
+      const dots = slides.map((slide, slideIndex) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "nav-dot";
+        button.setAttribute("aria-label", `Go to slide ${slideIndex + 1}: ${slide.dataset.label}`);
+        button.title = slide.dataset.label;
+        button.addEventListener("click", () => show(slideIndex));
+        navRail.appendChild(button);
+        return button;
+      });
+
+      function show(nextIndex) {
+        index = Math.min(slides.length - 1, Math.max(0, nextIndex));
+        slides.forEach((slide, slideIndex) => {
+          const isActive = slideIndex === index;
+          slide.classList.toggle("active", isActive);
+          slide.setAttribute("aria-hidden", String(!isActive));
+        });
+        dots.forEach((dot, dotIndex) => {
+          const isActive = dotIndex === index;
+          dot.classList.toggle("active", isActive);
+          dot.setAttribute("aria-current", isActive ? "step" : "false");
+        });
+        counter.textContent = `${index + 1} / ${slides.length}`;
+        progressBar.style.width = `${((index + 1) / slides.length) * 100}%`;
+        history.replaceState(null, "", `#slide-${index + 1}`);
+      }
+
+      prevButton.addEventListener("click", () => show(index - 1));
+      nextButton.addEventListener("click", () => show(index + 1));
+
+      themeButton.addEventListener("click", () => {
+        const current = document.documentElement.getAttribute("data-theme");
+        document.documentElement.setAttribute("data-theme", current === "dark" ? "light" : "dark");
+      });
+
+      fullscreenButton.addEventListener("click", async () => {
+        if (document.fullscreenElement) {
+          await document.exitFullscreen();
+        } else {
+          await document.documentElement.requestFullscreen();
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") {
+          event.preventDefault();
+          show(index + 1);
+        } else if (event.key === "ArrowLeft" || event.key === "PageUp") {
+          event.preventDefault();
+          show(index - 1);
+        } else if (event.key === "Home") {
+          event.preventDefault();
+          show(0);
+        } else if (event.key === "End") {
+          event.preventDefault();
+          show(slides.length - 1);
+        }
+      });
+
+      deck.addEventListener("touchstart", (event) => {
+        touchStartX = event.changedTouches[0].clientX;
+      }, { passive: true });
+
+      deck.addEventListener("touchend", (event) => {
+        if (touchStartX === null) return;
+        const delta = event.changedTouches[0].clientX - touchStartX;
+        touchStartX = null;
+        if (Math.abs(delta) < 48) return;
+        show(index + (delta < 0 ? 1 : -1));
+      }, { passive: true });
+
+      show(index);
+    })();
+  </script>
+</body>
+</html>

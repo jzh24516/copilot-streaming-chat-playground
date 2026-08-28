@@ -127,6 +127,61 @@ body {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
 }
 
+.guide-link {
+  color: var(--text);
+  background: var(--panel-2);
+  border-color: var(--border);
+  box-shadow: none;
+}
+
+.guide-link:hover {
+  border-color: var(--accent-2);
+}
+
+@media (max-width: 700px) {
+  .app-header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  .brand {
+    min-width: 0;
+  }
+
+  .header-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .language-switcher {
+    min-width: 0;
+  }
+
+  .language-switcher select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .deck-link {
+    padding-inline: 12px;
+    white-space: nowrap;
+  }
+
+  .guide-link {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .status {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
+
 .status-dot {
   width: 10px;
   height: 10px;
@@ -437,6 +492,10 @@ select:focus {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.s2s-save-actions {
+  margin: 2px 0 14px;
 }
 
 button {

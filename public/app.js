@@ -43,6 +43,15 @@ const ghcp3pTenantId = el('ghcp3pTenantId');
 const ghcp3pEnvironmentId = el('ghcp3pEnvironmentId');
 const ghcp3pSchemaName = el('ghcp3pSchemaName');
 const ghcp3pUrl = el('ghcp3pUrl');
+const ghcpS2SField = el('ghcpS2SField');
+const ghcpS2SClientId = el('ghcpS2SClientId');
+const ghcpS2STenantId = el('ghcpS2STenantId');
+const ghcpS2SClientSecret = el('ghcpS2SClientSecret');
+const ghcpS2SEnvironmentId = el('ghcpS2SEnvironmentId');
+const ghcpS2SSchemaName = el('ghcpS2SSchemaName');
+const ghcpS2SUrl = el('ghcpS2SUrl');
+const ghcpS2SStatus = el('ghcpS2SStatus');
+const ghcpS2SSaveBtn = el('ghcpS2SSaveBtn');
 const ghcpAgentFrameworkField = el('ghcpAgentFrameworkField');
 const afGhcpClientId = el('afGhcpClientId');
 const afGhcpTenantId = el('afGhcpTenantId');
@@ -79,6 +88,8 @@ const i18n = window.StreamingI18n;
 let currentLang = i18n ? i18n.getInitialLang() : 'en';
 let lastHint = { message: '', kind: '', vars: null };
 let connectionPanelCollapsed = false;
+let s2sServerConfigured = false;
+let s2sHasClientSecret = false;
 const CONNECTION_PANEL_WIDTH_KEY = 'connectionPanelWidth';
 const CONNECTION_PANEL_DEFAULT_WIDTH = 320;
 const CONNECTION_PANEL_MIN_WIDTH = 260;
@@ -310,17 +321,24 @@ function refreshModeUI() {
   if (newAgentDLField) newAgentDLField.hidden = mode !== 'newAgentDL';
   if (newAgentDTEField) newAgentDTEField.hidden = mode !== 'newAgentDTE';
   if (ghcp3pField) ghcp3pField.hidden = mode !== 'ghcp3p';
+  if (ghcpS2SField) ghcpS2SField.hidden = mode !== 'ghcpS2S';
   if (ghcpAgentFrameworkField) ghcpAgentFrameworkField.hidden = mode !== 'ghcpAgentFramework';
   // Web Socket transport only applies to Direct Line modes (and is mandatory
   // for the live-streaming adapter, so it is forced/locked there).
   forceWebSocket.disabled =
-    mode === 'sdk' || mode === 'newAgent' || mode === 'dlStream' || mode === 'newAgentDL' || mode === 'newAgentDTE' || mode === 'ghcp3p' || mode === 'ghcpAgentFramework';
+    mode === 'sdk' || mode === 'newAgent' || mode === 'dlStream' || mode === 'newAgentDL' || mode === 'newAgentDTE' || mode === 'ghcp3p' || mode === 'ghcpS2S' || mode === 'ghcpAgentFramework';
   if (mode === 'dlStream' || mode === 'newAgentDL') forceWebSocket.checked = true;
 }
 modeSel.addEventListener('change', () => {
   refreshModeUI();
   if (modeSel.value === 'ghcpAgentFramework') {
     setHint('Start the .NET sidecar with npm run agent-framework:poc, then click Test connection or Connect.');
+  } else if (modeSel.value === 'ghcpS2S') {
+    setHint(
+      s2sServerConfigured
+        ? 'Saved S2S settings are active. Test the connection or connect to the no-auth GHCP agent.'
+        : 'Enter the S2S app credentials and no-auth GHCP agent details, then save them locally.'
+    );
   }
 });
 
@@ -361,10 +379,37 @@ async function loadServerConfig() {
     if (sdk.environmentId && ghcp3pEnvironmentId && !ghcp3pEnvironmentId.value) {
       ghcp3pEnvironmentId.value = sdk.environmentId;
     }
+    const s2s = cfg.s2s || {};
+    if (s2s.clientId && ghcpS2SClientId && !ghcpS2SClientId.value) ghcpS2SClientId.value = s2s.clientId;
+    if (s2s.tenantId && ghcpS2STenantId && !ghcpS2STenantId.value) ghcpS2STenantId.value = s2s.tenantId;
+    if (s2s.environmentId && ghcpS2SEnvironmentId && !ghcpS2SEnvironmentId.value) {
+      ghcpS2SEnvironmentId.value = s2s.environmentId;
+    } else if (sdk.environmentId && ghcpS2SEnvironmentId && !ghcpS2SEnvironmentId.value) {
+      ghcpS2SEnvironmentId.value = sdk.environmentId;
+    }
+    if (s2s.schemaName && ghcpS2SSchemaName && !ghcpS2SSchemaName.value) {
+      ghcpS2SSchemaName.value = s2s.schemaName;
+    }
     if (sdk.clientId && afGhcpClientId && !afGhcpClientId.value) afGhcpClientId.value = sdk.clientId;
     if (sdk.tenantId && afGhcpTenantId && !afGhcpTenantId.value) afGhcpTenantId.value = sdk.tenantId;
     if (sdk.environmentId && afGhcpEnvironmentId && !afGhcpEnvironmentId.value) {
       afGhcpEnvironmentId.value = sdk.environmentId;
+    }
+
+    s2sServerConfigured = Boolean(s2s.configured);
+    s2sHasClientSecret = Boolean(s2s.hasClientSecret);
+    if (ghcpS2SClientSecret) {
+      ghcpS2SClientSecret.value = '';
+      ghcpS2SClientSecret.placeholder = s2sHasClientSecret
+        ? 'Saved secret is set — leave blank to keep it'
+        : 'Enter a secret to save locally';
+    }
+    if (ghcpS2SStatus) {
+      ghcpS2SStatus.textContent = s2sServerConfigured
+        ? t('S2S settings saved locally and active. The secret is not returned to the browser.')
+        : t('S2S is not configured: {message}', {
+            message: s2s.configurationError || 'missing server credentials'
+          });
     }
 
     // Pre-fill the client-side "Direct Line secret / token" input from .env
@@ -630,6 +675,125 @@ function restoreGhcp3pConfig() {
     input.addEventListener('change', saveGhcp3pConfig);
     input.addEventListener('input', syncGhcp3pUrl);
   });
+
+const GHCP_S2S_FIELDS_KEY = 'ghcpS2SFields';
+
+function readGhcpS2SConfigRaw() {
+  const environmentId = (ghcpS2SEnvironmentId && ghcpS2SEnvironmentId.value.trim()) || '';
+  const schemaName = (ghcpS2SSchemaName && ghcpS2SSchemaName.value.trim()) || '';
+  return {
+    environmentId,
+    schemaName,
+    directConnectUrl: buildGhcp3pDirectConnectUrl(environmentId, schemaName),
+    cloud: 'Prod',
+    copilotAgentType: 'Published',
+    useExperimentalEndpoint: false,
+    runtime: 'ghcp3p-s2s'
+  };
+}
+
+function syncGhcpS2SUrl() {
+  if (!ghcpS2SUrl) return;
+  try {
+    ghcpS2SUrl.value = readGhcpS2SConfigRaw().directConnectUrl;
+  } catch {
+    ghcpS2SUrl.value = '';
+  }
+}
+
+function readGhcpS2SConfig() {
+  const cfg = readGhcpS2SConfigRaw();
+  if (!s2sServerConfigured) {
+    throw new Error('Enter and save the S2S settings locally before testing or connecting.');
+  }
+  if (!cfg.environmentId) throw new Error('Enter the Copilot Studio Environment ID.');
+  if (!cfg.schemaName) throw new Error('Enter the no-auth GHCP agent schema name.');
+  return cfg;
+}
+
+async function saveGhcpS2SServerConfig() {
+  const clientId = (ghcpS2SClientId && ghcpS2SClientId.value.trim()) || '';
+  const tenantId = (ghcpS2STenantId && ghcpS2STenantId.value.trim()) || '';
+  const clientSecret = (ghcpS2SClientSecret && ghcpS2SClientSecret.value) || '';
+  const target = readGhcpS2SConfigRaw();
+  if (!clientId) throw new Error('Enter the S2S application (client) ID.');
+  if (!tenantId) throw new Error('Enter the S2S directory (tenant) ID.');
+  if (!clientSecret && !s2sHasClientSecret) throw new Error('Enter the S2S client secret.');
+  if (!target.environmentId) throw new Error('Enter the Copilot Studio Environment ID.');
+  if (!target.schemaName) throw new Error('Enter the no-auth GHCP agent schema name.');
+
+  const response = await fetch('/api/dte/s2s/config', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      clientId,
+      tenantId,
+      clientSecret,
+      environmentId: target.environmentId,
+      schemaName: target.schemaName
+    })
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok || !body.ok) throw new Error(body.error || `HTTP ${response.status}`);
+
+  const saved = body.s2s || {};
+  s2sServerConfigured = Boolean(saved.configured);
+  s2sHasClientSecret = Boolean(saved.hasClientSecret);
+  if (ghcpS2SClientSecret) {
+    ghcpS2SClientSecret.value = '';
+    ghcpS2SClientSecret.placeholder = 'Saved secret is set — leave blank to keep it';
+  }
+  if (ghcpS2SStatus) {
+    ghcpS2SStatus.textContent = t('S2S settings saved locally and active. The secret is not returned to the browser.');
+  }
+  saveGhcpS2SConfig();
+}
+
+function saveGhcpS2SConfig() {
+  try {
+    const cfg = readGhcpS2SConfigRaw();
+    sessionStorage.setItem(GHCP_S2S_FIELDS_KEY, JSON.stringify({
+      environmentId: cfg.environmentId,
+      schemaName: cfg.schemaName
+    }));
+  } catch { /* storage unavailable */ }
+  syncGhcpS2SUrl();
+}
+
+function restoreGhcpS2SConfig() {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(GHCP_S2S_FIELDS_KEY) || '{}');
+    if (saved.environmentId && ghcpS2SEnvironmentId && !ghcpS2SEnvironmentId.value) {
+      ghcpS2SEnvironmentId.value = saved.environmentId;
+    }
+    if (saved.schemaName && ghcpS2SSchemaName && !ghcpS2SSchemaName.value) {
+      ghcpS2SSchemaName.value = saved.schemaName;
+    }
+  } catch { /* ignore */ }
+  syncGhcpS2SUrl();
+}
+
+[ghcpS2SEnvironmentId, ghcpS2SSchemaName]
+  .filter(Boolean)
+  .forEach((input) => {
+    input.addEventListener('change', saveGhcpS2SConfig);
+    input.addEventListener('input', syncGhcpS2SUrl);
+  });
+
+if (ghcpS2SSaveBtn) {
+  ghcpS2SSaveBtn.addEventListener('click', async () => {
+    ghcpS2SSaveBtn.disabled = true;
+    setHint('Saving S2S settings to the git-ignored local configuration…');
+    try {
+      await saveGhcpS2SServerConfig();
+      setHint('✓ S2S settings saved locally and activated. They will not be included in Git pushes.', 'ok');
+    } catch (error) {
+      setHint('✗ {message}', 'err', { message: error.message });
+    } finally {
+      ghcpS2SSaveBtn.disabled = false;
+    }
+  });
+}
 
 const GHCP_AGENT_FRAMEWORK_FIELDS_KEY = 'ghcpAgentFrameworkFields';
 
@@ -2000,6 +2164,7 @@ function createSidecarConnection({
   startUrl = '/api/dte/start',
   sendUrl = '/api/dte/send',
   endUrl = '',
+  serverManagedAuth = false,
   synthesizeAgentFrameworkFinal = false,
   serializeActivityDelivery = false
 }) {
@@ -2298,7 +2463,10 @@ function createSidecarConnection({
   (async () => {
     setStatusValue(1); // Connecting
     try {
-      await streamTurn(startUrl, { token, settings });
+      await streamTurn(startUrl, {
+        ...(serverManagedAuth ? {} : { token }),
+        settings
+      });
       if (!ended) {
         setStatusValue(2); // Online
         activityDeliveryReady = true;
@@ -2346,7 +2514,7 @@ function createSidecarConnection({
         }, 0);
         echoTimers.add(echoTimer);
         streamTurn(sendUrl, {
-          token,
+          ...(serverManagedAuth ? {} : { token }),
           conversationId,
           text: activity.text || '',
           settings
@@ -2420,7 +2588,17 @@ async function connect() {
     // error #321 ("Invalid hook call").
     let webChatLib = WebChat;
 
-    if (mode === 'sdk' || mode === 'newAgent' || mode === 'newAgentDTE' || mode === 'ghcp3p' || mode === 'ghcpAgentFramework') {
+    if (mode === 'ghcpS2S') {
+      const cfg = readGhcpS2SConfig();
+      setStatus('connecting', 'Acquiring S2S app token…');
+      setHint('Connecting to the no-auth GHCP /3p runtime with a server-managed app identity…');
+      directLine = createSidecarConnection({
+        settings: cfg,
+        startUrl: '/api/dte/s2s/start',
+        sendUrl: '/api/dte/s2s/send',
+        serverManagedAuth: true
+      });
+    } else if (mode === 'sdk' || mode === 'newAgent' || mode === 'newAgentDTE' || mode === 'ghcp3p' || mode === 'ghcpAgentFramework') {
       // Direct-to-Engine: MSAL sign-in, then a Web Chat-compatible connection.
       const cfg =
         mode === 'newAgent'    ? readNewAgentConfig()    :
@@ -2526,6 +2704,8 @@ async function connect() {
           meta.state,
           status === 2 && mode === 'newAgentDL'
             ? 'Online · Direct Line connected'
+            : status === 2 && mode === 'ghcpS2S'
+              ? 'Online · S2S app identity connected'
             : status === 2 && mode === 'ghcpAgentFramework'
               ? 'Online · .NET Agent Framework connected'
               : meta.label
@@ -2534,6 +2714,8 @@ async function connect() {
           setHint(
             mode === 'ghcpAgentFramework'
               ? 'Connected through .NET Agent Framework. Send a prompt to observe real RunStreamingAsync updates.'
+              : mode === 'ghcpS2S'
+              ? 'Connected with a server-managed S2S app identity. Send a prompt to inspect the runtime stream.'
               : mode === 'newAgentDL'
               ? 'Connected to no-auth Agentic Direct Line. The runtime may return final-only.'
               : 'Connected. Send a message to see streaming chunks arrive.',
@@ -2763,6 +2945,25 @@ async function testConnection() {
     } catch (err) {
       setHint('✗ {message}', 'err', { message: err.message });
     }
+  } else if (modeSel.value === 'ghcpS2S') {
+    setHint('Testing server-managed S2S app-token connectivity to GHCP /3p…');
+    try {
+      const cfg = readGhcpS2SConfig();
+      const response = await fetch('/api/dte/s2s/preflight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ settings: cfg })
+      });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok || !body.ok) throw new Error(body.error || `HTTP ${response.status}`);
+      setHint(
+        '✓ S2S app identity reached GHCP /3p · HTTP {status} · {elapsedMs}ms. Click Connect to chat.',
+        'ok',
+        { status: body.status, elapsedMs: body.elapsedMs }
+      );
+    } catch (err) {
+      setHint('✗ {message}', 'err', { message: err.message });
+    }
   } else if (modeSel.value === 'sdk' || modeSel.value === 'newAgent' || modeSel.value === 'newAgentDTE' || modeSel.value === 'ghcp3p' || modeSel.value === 'ghcpAgentFramework') {
     setHint('Checking existing Entra session…');
     try {
@@ -2845,6 +3046,7 @@ async function start() {
   restoreNewAgentDLConfig();
   restoreNewAgentDTEConfig();
   restoreGhcp3pConfig();
+  restoreGhcpS2SConfig();
   restoreGhcpAgentFrameworkConfig();
   await whenSdkReady();
   // Complete a returning Entra redirect (if any) and auto-resume Connect.

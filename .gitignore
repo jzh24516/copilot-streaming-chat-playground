@@ -2,5 +2,7 @@ node_modules/
 **/bin/
 **/obj/
 .env
+config/s2s.local.json
+config/s2s.local.json.*.tmp
 *.log
 .DS_Store

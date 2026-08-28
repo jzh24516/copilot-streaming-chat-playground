@@ -16,9 +16,10 @@ end-to-end on either transport.
 
 ## 📊 Tech-note deck
 
-An 18-slide walkthrough of what works, what doesn't, and the gotchas we hit — across
-both Direct Line and the Direct-to-Engine SDK. Available in **English, 简体中文, 繁體中文,
-日本語, and 한국어** (HTML view + PowerPoint export):
+A 21-slide walkthrough of what works, what doesn't, and the gotchas we hit — across
+Direct Line, delegated Direct-to-Engine, Agent Framework, and the app-only S2S private
+preview diagnostic. Available in **English, 简体中文, 繁體中文, 日本語, and 한국어**
+(HTML view + PowerPoint export):
 
 - Run locally: <http://localhost:3978/docs/streaming-tech-note.html>
 - On GitHub: [docs/streaming-tech-note.html](docs/streaming-tech-note.html)
@@ -26,6 +27,18 @@ both Direct Line and the Direct-to-Engine SDK. Available in **English, 简体中
 
 Use the language switcher in the deck (or `?lang=zh-CN|zh-TW|ja|ko`) and **Export to
 PowerPoint** to download a fully localized `.pptx`.
+
+## Dynamics 365 side pane deployment guide
+
+The interactive runbook for packaging the streamed GHCP `/3p` widget into a
+Dynamics 365 model-driven app side pane is available at:
+
+- Run locally: <http://localhost:3978/docs/dynamics-sidepane-deployment.html>
+- In the repository: [docs/dynamics-sidepane-deployment.html](docs/dynamics-sidepane-deployment.html)
+
+It covers the production support gate, delegated Entra/OBO architecture, Azure
+App Service relay hardening, model-driven app web resources and command bar,
+copyable `Xrm.App.sidePanes` code, and the release validation matrix.
 
 ## How livestreaming works (in short)
 
@@ -77,6 +90,7 @@ The UI includes dedicated modes for the supported transports and runtime experim
 | **Direct Line · live streaming** *(experimental)* | Direct Line (WebSocket) | Diagnose progressive Web Chat livestream activities | Secret/token/URL in browser (test only) |
 | **No-auth agent · Agentic Direct Line** *(diagnostic)* | Direct Line (WebSocket) | Probe a no-auth agenticruntime token endpoint; responses may still be final-only | Short-lived Direct Line token in browser |
 | **GHCP harness · Agentic Runtime /3p** *(experimental)* | Direct-to-Engine (SSE) | Test a published Dracarys/GitHub Copilot harness agent with delegated Entra authentication | No secret; signed-in user's delegated token is relayed through the local sidecar |
+| **No-auth GHCP harness · S2S app identity /3p** *(private preview diagnostic)* | Direct-to-Engine (SSE) | Test whether an app-only identity can reach a published no-auth GHCP harness through `/3p` | Client secret and app token stay on the Node server |
 | **Copilot Studio GHCP harness · .NET Agent Framework /3p POC** | Agent Framework over Copilot Studio SSE | Compare the same `/3p` agent through `CopilotStudioAgent.RunStreamingAsync` | No secret; browser sends the delegated token to loopback, which forwards it only to the allowlisted Power Platform `/3p` host |
 
 ### GHCP harness · Agentic Runtime /3p
@@ -126,6 +140,55 @@ change the support boundary below.
 > production support contract. Use the documented Teams, Microsoft 365, or Web
 > app iframe channel for production unless Microsoft confirms support for your
 > scenario.
+
+### No-auth GHCP harness · S2S app identity `/3p`
+
+This isolated mode tests the private-preview Copilot Studio Server-to-Server
+(S2S) authentication model against the same guarded GHCP `/3p` route. It is a
+connectivity experiment, not evidence of official client-library support for
+GitHub Copilot harness agents.
+
+Prerequisites:
+
+1. Ask Microsoft to enable S2S D2E for the nonproduction tenant/environment.
+2. Publish a GHCP harness agent configured with **No Authentication**.
+3. Create a same-tenant confidential app registration.
+4. Add the Power Platform API **application** permission
+   `CopilotStudio.Copilots.Invoke` and grant tenant admin consent.
+5. Share the agent with the app identity as a viewer.
+6. Start the app and select **No-auth GHCP harness · S2S app identity /3p**.
+7. Enter the client ID, tenant ID, client secret, environment ID, and agent
+  schema name, then select **Save S2S settings locally**.
+
+The server writes these values to `config/s2s.local.json`. That file and its
+temporary write files are explicitly listed in `.gitignore`, so they aren't
+included by `git add`, commits, or GitHub pushes. The secret is submitted once
+to the local server over the current page, cleared from the password field after
+save, and never returned by `/api/config`. A blank secret on later saves keeps
+the existing saved secret. The local diagnostic file is plaintext and requests
+owner-only file permissions where the OS supports them, so use a short-lived
+test secret and protect access to the workstation.
+
+Environment variables remain available as an optional fallback when no local
+file exists: `S2S_CLIENT_ID`, `S2S_TENANT_ID`, and `S2S_CLIENT_SECRET`.
+
+After saving, click **Test connection**. You don't need to restart the server;
+the new app identity becomes active immediately.
+The Node server requests an app-only token for
+`https://api.powerplatform.com/.default`. Chat and preflight requests contain
+only environment, schema, and generated `/3p` routing settings. Expected
+failures are useful:
+
+- `401`: token audience, app credential, or private-preview enablement problem.
+- `403`: application permission/admin consent, agent sharing, policy, or S2S ACL.
+- `404`: wrong environment/schema, unpublished agent, or `/3p` not enabled for
+  this harness/runtime.
+- `S2SDirectEngineRequiresNoAuthentication`: the target agent is authenticated
+  and cannot use true app-only S2S.
+
+The mode uses a client secret only for local diagnosis. For a hosted service,
+prefer a certificate or workload/managed identity after Microsoft confirms that
+credential type and GHCP runtime support for the intended environment.
 
 ### .NET Agent Framework `/3p` proof of concept
 
@@ -330,7 +393,9 @@ transport alone is not proof of progressive answer streaming.
 
 ## Files
 
-- `server.js` — Express server: serves the UI, relays Direct Line tokens, and runs the authenticated Direct-to-Engine sidecar with guarded GHCP `/3p` preflight.
+- `server.js` — Express server: serves the UI, relays Direct Line tokens, and runs delegated or S2S Direct-to-Engine sidecars with guarded GHCP `/3p` preflight.
+- `s2s-token.js` — server-only confidential-client token acquisition and cache for the private-preview S2S diagnostic.
+- `test/s2s-token.test.js` — focused fail-closed and token-cache tests for S2S authentication.
 - `public/index.html` / `styles.css` / `app.js` — the playground canvas + streaming inspector (SDK tap, Direct Line streaming coalescer, metadata detection).
 - `public/i18n.js` — shared 5-language dictionary + DOM and PowerPoint-export localization helpers.
 - `docs/streaming-tech-note.html` — the multilingual tech-note deck (HTML view + PptxGenJS export).
@@ -343,4 +408,7 @@ transport alone is not proof of progressive answer streaming.
 - `GET /api/test-connection` — validates the connection end-to-end.
 - `POST /api/dte/preflight` — validates and probes a GHCP `/3p` runtime before the streaming client starts.
 - `POST /api/dte/start` / `POST /api/dte/send` — streams sidecar activities to the browser as NDJSON.
+- `POST /api/dte/s2s/config` — localhost-only save to the git-ignored S2S configuration file; returns redacted metadata.
+- `POST /api/dte/s2s/preflight` — acquires an app-only token on the server and probes a no-auth GHCP `/3p` target.
+- `POST /api/dte/s2s/start` / `POST /api/dte/s2s/send` — streams an app-identity conversation without accepting browser authentication material.
 - `GET /healthz` — health check.

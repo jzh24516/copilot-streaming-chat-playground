@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("scoutTheme");
+      const theme =
+        param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <title>Dynamics 365 Side Pane Deployment Guide</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --cp-bg: #f7f4ef;
+      --cp-bg-elevated: #fcfbf8;
+      --cp-surface: #ffffff;
+      --cp-surface-soft: #f5f5f5;
+      --cp-border: #dedede;
+      --cp-border-strong: #919191;
+      --cp-text: #242424;
+      --cp-text-muted: #5c5c5c;
+      --cp-text-soft: #6f6f6f;
+      --cp-accent: #b11f4b;
+      --cp-accent-hover: #9a1a41;
+      --cp-accent-soft: rgba(177, 31, 75, 0.08);
+      --cp-accent-fg: #ffffff;
+      --cp-success: #16a34a;
+      --cp-danger: #dc2626;
+      --cp-warning: #f59e0b;
+      --cp-link: #0078d4;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+      --cp-overlay: rgba(255, 255, 255, 0.8);
+      --cp-panel: rgba(255, 255, 255, 0.86);
+      --cp-panel-strong: rgba(255, 255, 255, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.55);
+      --cp-highlight: rgba(177, 31, 75, 0.12);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --cp-bg: #3d3b3a;
+      --cp-bg-elevated: #343231;
+      --cp-surface: #292929;
+      --cp-surface-soft: #2e2e2e;
+      --cp-border: #474747;
+      --cp-border-strong: #5f5f5f;
+      --cp-text: #dedede;
+      --cp-text-muted: #919191;
+      --cp-text-soft: #b0b0b0;
+      --cp-accent: #fd8ea1;
+      --cp-accent-hover: #fb7b91;
+      --cp-accent-soft: rgba(253, 142, 161, 0.14);
+      --cp-accent-fg: #1a1a1a;
+      --cp-success: #4ade80;
+      --cp-danger: #f87171;
+      --cp-warning: #fbbf24;
+      --cp-link: #4da6ff;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+      --cp-overlay: rgba(41, 41, 41, 0.88);
+      --cp-panel: rgba(41, 41, 41, 0.72);
+      --cp-panel-strong: rgba(41, 41, 41, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.04);
+      --cp-highlight: rgba(253, 142, 161, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(135deg, var(--cp-bg), var(--cp-bg-elevated));
+      color: var(--cp-text);
+      font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+      letter-spacing: 0;
+    }
+    a { color: var(--cp-link); }
+    button, input { font: inherit; }
+    code, pre { font-family: Consolas, "Courier New", Courier, monospace; }
+    code {
+      overflow-wrap: anywhere;
+      color: var(--cp-accent);
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 60px;
+      padding: 10px clamp(16px, 4vw, 56px);
+      border-bottom: 1px solid var(--cp-border);
+      background: var(--cp-panel-strong);
+      backdrop-filter: blur(12px);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .brand-mark {
+      display: grid;
+      flex: 0 0 34px;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--cp-accent);
+      color: var(--cp-accent-fg);
+      font-weight: 800;
+    }
+    .brand strong { display: block; font-size: 14px; }
+    .brand div > span { display: block; color: var(--cp-text-muted); font-size: 12px; }
+    .top-actions { display: flex; align-items: center; gap: 8px; }
+    .top-link,
+    .reset-button,
+    .copy-button {
+      min-height: 36px;
+      border: 1px solid var(--cp-border);
+      border-radius: 8px;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .top-link,
+    .reset-button { padding: 8px 12px; }
+    .top-link:hover,
+    .reset-button:hover,
+    .copy-button:hover { border-color: var(--cp-accent); color: var(--cp-accent); }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(300px, .7fr);
+      gap: clamp(24px, 5vw, 72px);
+      align-items: end;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: clamp(44px, 8vw, 96px) clamp(16px, 4vw, 56px) 36px;
+    }
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--cp-accent);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    h1 {
+      max-width: 820px;
+      margin: 0;
+      font-size: 64px;
+      line-height: 1.02;
+      font-weight: 760;
+      letter-spacing: 0;
+    }
+    .hero-copy {
+      max-width: 760px;
+      margin: 24px 0 0;
+      color: var(--cp-text-soft);
+      font-size: 18px;
+      line-height: 1.6;
+    }
+    .scope-box {
+      border-left: 4px solid var(--cp-accent);
+      padding: 8px 0 8px 20px;
+    }
+    .scope-box strong { display: block; margin-bottom: 8px; }
+    .scope-box p { margin: 0; color: var(--cp-text-muted); line-height: 1.55; }
+
+    .warning-band {
+      border-block: 1px solid var(--cp-border);
+      background: var(--cp-accent-soft);
+    }
+    .warning-inner {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 14px;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 18px clamp(16px, 4vw, 56px);
+    }
+    .warning-icon { color: var(--cp-warning); font-size: 24px; line-height: 1; }
+    .warning-inner strong { display: block; margin-bottom: 4px; }
+    .warning-inner p { margin: 0; color: var(--cp-text-soft); line-height: 1.5; }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr);
+      gap: clamp(24px, 4vw, 56px);
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 40px clamp(16px, 4vw, 56px) 96px;
+    }
+    .rail { position: relative; }
+    .rail-inner {
+      position: sticky;
+      top: 84px;
+      display: grid;
+      gap: 20px;
+    }
+    .progress-panel {
+      padding: 16px;
+      border: 1px solid var(--cp-border);
+      border-radius: 8px;
+      background: var(--cp-surface);
+    }
+    .progress-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .progress-track {
+      height: 8px;
+      overflow: hidden;
+      border-radius: 8px;
+      background: var(--cp-surface-soft);
+    }
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      background: var(--cp-accent);
+      transition: width .25s ease;
+    }
+    nav { display: grid; gap: 4px; }
+    nav a {
+      padding: 8px 10px;
+      border-left: 2px solid var(--cp-border);
+      color: var(--cp-text-muted);
+      font-size: 13px;
+      text-decoration: none;
+    }
+    nav a:hover { border-left-color: var(--cp-accent); color: var(--cp-accent); }
+
+    .content { min-width: 0; }
+    .section {
+      scroll-margin-top: 84px;
+      padding: 0 0 52px;
+    }
+    .section + .section {
+      padding-top: 48px;
+      border-top: 1px solid var(--cp-border);
+    }
+    .section-kicker {
+      margin: 0 0 8px;
+      color: var(--cp-accent);
+      font-size: 12px;
+      font-weight: 750;
+      text-transform: uppercase;
+    }
+    h2 { margin: 0 0 14px; font-size: 28px; line-height: 1.2; }
+    h3 { margin: 0 0 8px; font-size: 18px; }
+    .section-lead {
+      max-width: 820px;
+      margin: 0 0 24px;
+      color: var(--cp-text-soft);
+      font-size: 16px;
+      line-height: 1.65;
+    }
+
+    .architecture {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(130px, 1fr));
+      gap: 20px;
+      align-items: stretch;
+      margin: 28px 0;
+    }
+    .arch-node {
+      position: relative;
+      min-height: 138px;
+      padding: 16px;
+      border: 1px solid var(--cp-border);
+      border-radius: 8px;
+      background: var(--cp-surface);
+    }
+    .arch-node:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      top: 50%;
+      right: -17px;
+      color: var(--cp-accent);
+      font-size: 22px;
+      transform: translateY(-50%);
+    }
+    .arch-number {
+      display: block;
+      margin-bottom: 20px;
+      color: var(--cp-accent);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .arch-node strong { display: block; margin-bottom: 6px; }
+    .arch-node small { color: var(--cp-text-muted); line-height: 1.45; }
+    .identity-line {
+      padding: 14px 16px;
+      border: 1px solid var(--cp-border);
+      border-radius: 8px;
+      color: var(--cp-text-soft);
+      background: var(--cp-surface-soft);
+      line-height: 1.55;
+    }
+
+    .decision-grid,
+    .control-grid,
+    .validation-grid,
+    .source-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .decision,
+    .control,
+    .validation,
+    .source {
+      padding: 18px;
+      border: 1px solid var(--cp-border);
+      border-radius: 8px;
+      background: var(--cp-surface);
+    }
+    .decision p,
+    .control p,
+    .validation p,
+    .source p { margin: 6px 0 0; color: var(--cp-text-muted); line-height: 1.55; }
+    .good { border-top: 3px solid var(--cp-success); }
+    .caution { border-top: 3px solid var(--cp-warning); }
+    .stop { border-top: 3px solid var(--cp-danger); }
+
+    .step-list { display: grid; gap: 16px; }
+    .step-card {
+      display: grid;
+      grid-template-columns: 40px minmax(0, 1fr);
+      gap: 14px;
+      padding: 20px;
+      border: 1px solid var(--cp-border);
+      border-radius: 8px;
+      background: var(--cp-surface);
+    }
+    .step-check {
+      width: 22px;
+      height: 22px;
+      margin: 2px 0 0;
+      accent-color: var(--cp-accent);
+      cursor: pointer;
+    }
+    .step-card:has(.step-check:checked) { border-color: var(--cp-success); }
+    .step-card:has(.step-check:checked) h3 { color: var(--cp-success); }
+    .step-card ul,
+    .step-card ol {
+      margin: 12px 0 0;
+      padding-left: 22px;
+      color: var(--cp-text-soft);
+      line-height: 1.6;
+    }
+    .step-card li + li { margin-top: 6px; }
+    .deliverable {
+      margin-top: 14px;
+      padding: 10px 12px;
+      border-left: 3px solid var(--cp-accent);
+      background: var(--cp-accent-soft);
+      color: var(--cp-text-soft);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .code-block {
+      position: relative;
+      margin: 18px 0;
+      border: 1px solid var(--cp-border);
+      border-radius: 8px;
+      background: var(--cp-bg-elevated);
+    }
+    .code-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 42px;
+      padding: 6px 8px 6px 14px;
+      border-bottom: 1px solid var(--cp-border);
+      color: var(--cp-text-muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .copy-button { min-width: 60px; padding: 6px 10px; font-size: 12px; }
+    pre {
+      max-height: 520px;
+      margin: 0;
+      overflow: auto;
+      padding: 18px;
+      color: var(--cp-text);
+      font-size: 12px;
+      line-height: 1.55;
+      white-space: pre;
+    }
+
+    .callout {
+      margin: 20px 0;
+      padding: 16px 18px;
+      border: 1px solid var(--cp-border);
+      border-left: 4px solid var(--cp-warning);
+      border-radius: 8px;
+      background: var(--cp-surface);
+      line-height: 1.55;
+    }
+    .callout strong { display: block; margin-bottom: 6px; }
+    .callout p { margin: 0; color: var(--cp-text-soft); }
+
+    .check-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--cp-border);
+      background: var(--cp-surface);
+      font-size: 13px;
+    }
+    .check-table th,
+    .check-table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--cp-border);
+      text-align: left;
+      vertical-align: top;
+      line-height: 1.5;
+    }
+    .check-table th { background: var(--cp-surface-soft); }
+    .check-table tr:last-child td { border-bottom: 0; }
+    .pass { color: var(--cp-success); font-weight: 700; }
+
+    .source a { font-weight: 700; }
+    .footer {
+      padding: 28px clamp(16px, 4vw, 56px);
+      border-top: 1px solid var(--cp-border);
+      color: var(--cp-text-muted);
+      text-align: center;
+      font-size: 12px;
+    }
+
+    @media (max-width: 1060px) {
+      .architecture { grid-template-columns: 1fr; }
+      .arch-node { min-height: 0; }
+      .arch-node:not(:last-child)::after {
+        content: "↓";
+        top: auto;
+        right: 50%;
+        bottom: -23px;
+        transform: translateX(50%);
+      }
+    }
+    @media (max-width: 820px) {
+      .hero { grid-template-columns: 1fr; align-items: start; }
+      .workspace { grid-template-columns: 1fr; }
+      h1 { font-size: 48px; }
+      .rail-inner { position: static; }
+      nav { display: none; }
+      .decision-grid,
+      .control-grid,
+      .validation-grid,
+      .source-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 620px) {
+      .topbar { align-items: flex-start; }
+      .brand div > span { display: none; }
+      .top-actions { flex-direction: column; align-items: stretch; }
+      .top-link, .reset-button { min-height: 32px; padding: 6px 9px; font-size: 12px; }
+      .hero { padding-top: 36px; }
+      h1 { font-size: 38px; }
+      .hero-copy { font-size: 16px; }
+      .step-card { grid-template-columns: 30px minmax(0, 1fr); padding: 16px; }
+      .check-table { display: block; overflow-x: auto; white-space: nowrap; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .progress-fill { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">D3</span>
+      <div>
+        <strong>Streaming Chat Playground</strong>
+        <span>Dynamics 365 deployment runbook</span>
+      </div>
+    </div>
+    <div class="top-actions">
+      <a class="top-link" href="/">Open playground</a>
+      <button class="reset-button" id="resetProgress" type="button">Reset progress</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Implementation guide · 28 August 2026</p>
+        <h1>Put the streamed agent beside the CRM record.</h1>
+        <p class="hero-copy">
+          A guided deployment path for the GHCP-harness Copilot Studio agent already proven through
+          the experimental Agentic Runtime <code>/3p</code> SSE route. Dynamics 365 owns the pane and
+          record context; the hosted widget owns the conversation; a hardened relay owns authentication
+          and the remote transport.
+        </p>
+      </div>
+      <div class="scope-box">
+        <strong>Target outcome</strong>
+        <p>
+          A closable 420 px model-driven app side pane, opened from a command bar, preserving one
+          conversation while users move between CRM records and rendering real progressive response
+          activities rather than a cosmetic typewriter.
+        </p>
+      </div>
+    </section>
+
+    <section class="warning-band" aria-label="Experimental support warning">
+      <div class="warning-inner">
+        <span class="warning-icon" aria-hidden="true">△</span>
+        <div>
+          <strong>Production gate: the <code>/3p</code> route is experimental.</strong>
+          <p>
+            Microsoft Learn currently documents Copilot Studio Client support for standard-harness
+            agents and says GHCP-harness agents are not yet officially supported. Treat this design as
+            an internal pilot until Microsoft confirms the `/3p` support contract, SLA, and production use
+            for your tenant. Keep a supported Teams, Microsoft 365, or Web app fallback.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <div class="workspace">
+      <aside class="rail" aria-label="Guide navigation">
+        <div class="rail-inner">
+          <div class="progress-panel">
+            <div class="progress-row">
+              <span>Deployment progress</span>
+              <span id="progressText">0 / 9</span>
+            </div>
+            <div class="progress-track" aria-hidden="true">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+          <nav>
+            <a href="#architecture">Architecture</a>
+            <a href="#decisions">Decisions</a>
+            <a href="#steps">Guided steps</a>
+            <a href="#pane-code">Pane code</a>
+            <a href="#launcher-code">Launcher code</a>
+            <a href="#security">Security controls</a>
+            <a href="#validation">Validation</a>
+            <a href="#sources">Microsoft sources</a>
+          </nav>
+        </div>
+      </aside>
+
+      <div class="content">
+        <section class="section" id="architecture">
+          <p class="section-kicker">Reference architecture</p>
+          <h2>Five ownership boundaries</h2>
+          <p class="section-lead">
+            Keep Dynamics customization thin. Do not copy the SDK, `/3p` URL, or tokens into a Dataverse
+            web resource. The web resource only creates the side pane, supplies non-secret record context,
+            and embeds the independently deployed widget.
+          </p>
+          <div class="architecture" role="img" aria-label="Dynamics 365 to Copilot Studio streamed agent architecture">
+            <div class="arch-node">
+              <span class="arch-number">01</span>
+              <strong>Dynamics 365</strong>
+              <small>Command bar, active record, pane lifecycle</small>
+            </div>
+            <div class="arch-node">
+              <span class="arch-number">02</span>
+              <strong>HTML launcher</strong>
+              <small>Solution web resource; embeds one trusted HTTPS origin</small>
+            </div>
+            <div class="arch-node">
+              <span class="arch-number">03</span>
+              <strong>Chat widget</strong>
+              <small>Responsive Web Chat UI, MSAL popup, stream coalescing</small>
+            </div>
+            <div class="arch-node">
+              <span class="arch-number">04</span>
+              <strong>Node relay</strong>
+              <small>Inbound token validation, OBO, session routing, diagnostics</small>
+            </div>
+            <div class="arch-node">
+              <span class="arch-number">05</span>
+              <strong>Copilot Studio</strong>
+              <small>Allowlisted GHCP agent over authenticated `/3p` SSE</small>
+            </div>
+          </div>
+          <div class="identity-line">
+            <strong>Identity path:</strong> signed-in CRM user → widget API access token → relay validates
+            user and client → relay obtains Power Platform token through OBO → `/3p` enforces the target
+            Agent and user access. The browser never receives an app secret.
+          </div>
+        </section>
+
+        <section class="section" id="decisions">
+          <p class="section-kicker">Before implementation</p>
+          <h2>Make these decisions explicit</h2>
+          <div class="decision-grid">
+            <article class="decision good">
+              <h3>Recommended pilot</h3>
+              <p>
+                Deploy this Node/Express app as one HTTPS origin on Azure App Service. Load that public
+                shell in the pane, require Entra before chat, and protect every relay API call.
+              </p>
+            </article>
+            <article class="decision caution">
+              <h3>Supported fallback</h3>
+              <p>
+                Keep a Teams, Microsoft 365, or documented Web app launch available if `/3p` changes or
+                Microsoft doesn't approve the experimental route for production.
+              </p>
+            </article>
+            <article class="decision stop">
+              <h3>Do not ship the playground as-is</h3>
+              <p>
+                The current page exposes diagnostic routing controls, stores user tokens in browser
+                local storage, uses in-memory sessions, and enables full raw response capture by default.
+              </p>
+            </article>
+            <article class="decision good">
+              <h3>Agent targeting</h3>
+              <p>
+                Pin one environment ID, schema name, cloud, and exact `/3p` path on the server. Never
+                accept a browser-supplied host or Direct Connect URL in the production widget.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section" id="steps">
+          <p class="section-kicker">Runbook</p>
+          <h2>Guided deployment steps</h2>
+          <p class="section-lead">
+            Check each phase as evidence is collected. Progress is stored only in this browser.
+          </p>
+          <div class="step-list">
+            <article class="step-card">
+              <input class="step-check" type="checkbox" id="step1" />
+              <div>
+                <h3><label for="step1">1. Obtain the platform support decision</label></h3>
+                <ol>
+                  <li>Give Microsoft the tenant, environment, GHCP harness type, `/3p` route, and Dynamics side-pane scenario.</li>
+                  <li>Ask whether delegated `/3p` is approved for production, including support, SLA, throttling, and data-boundary behavior.</li>
+                  <li>Record the fallback channel and the feature flag that can disable the pane without a solution rollback.</li>
+                </ol>
+                <div class="deliverable"><strong>Exit evidence:</strong> written approval for production, or an internal-pilot-only decision with named owner and expiry date.</div>
+              </div>
+            </article>
+
+            <article class="step-card">
+              <input class="step-check" type="checkbox" id="step2" />
+              <div>
+                <h3><label for="step2">2. Freeze the working runtime contract</label></h3>
+                <ol>
+                  <li>Record the target environment ID and case-sensitive agent schema name.</li>
+                  <li>Pin the base path: <code>/copilotstudio/agenticruntime/3p/dataverse-backed/authenticated/bots/{schema}?api-version=1</code>.</li>
+                  <li>Capture a known-good SSE turn with informative, ordered streaming deltas, final message, and <code>turn.complete</code>.</li>
+                  <li>Confirm the Agent is published and shared only to the intended pilot security group.</li>
+                </ol>
+                <div class="deliverable"><strong>Exit evidence:</strong> a redacted baseline trace and a server-side configuration record for exactly one Agent.</div>
+              </div>
+            </article>
+
+            <article class="step-card">
+              <input class="step-check" type="checkbox" id="step3" />
+              <div>
+                <h3><label for="step3">3. Separate the widget from the diagnostic playground</label></h3>
+                <ol>
+                  <li>Create a pane route that contains only chat, connection state, retry, sign-out, and an accessible error surface.</li>
+                  <li>Remove mode selectors, arbitrary environment/schema fields, raw activity dumps, secret inputs, and experimental toggles.</li>
+                  <li>Keep the current stream adapter behavior for delta and replace chunks, final deduplication, and <code>turn.complete</code>.</li>
+                  <li>Make the layout stable from 300 px to 600 px; target 420 px initially.</li>
+                </ol>
+                <div class="deliverable"><strong>Exit evidence:</strong> a dedicated <code>/crm-pane</code> route with no operator-only controls.</div>
+              </div>
+            </article>
+
+            <article class="step-card">
+              <input class="step-check" type="checkbox" id="step4" />
+              <div>
+                <h3><label for="step4">4. Configure two Entra registrations</label></h3>
+                <ol>
+                  <li><strong>Widget SPA:</strong> single tenant; redirect URI on the deployed widget origin; request only the relay's delegated <code>access_as_user</code> scope.</li>
+                  <li><strong>Relay API:</strong> expose <code>access_as_user</code>; add delegated Power Platform <code>CopilotStudio.Copilots.Invoke</code>; grant required admin consent.</li>
+                  <li>Use an OBO confidential credential only on the server. Prefer a certificate or federated credential; store secrets in Key Vault if one is unavoidable.</li>
+                  <li>Apply Conditional Access and restrict the Enterprise Application to the pilot group where policy permits.</li>
+                </ol>
+                <div class="deliverable"><strong>Exit evidence:</strong> consent record, redirect URI list, exposed relay scope, and no credential present in browser assets or Dataverse.</div>
+              </div>
+            </article>
+
+            <article class="step-card">
+              <input class="step-check" type="checkbox" id="step5" />
+              <div>
+                <h3><label for="step5">5. Harden the relay</label></h3>
+                <ol>
+                  <li>Validate inbound issuer, audience, tenant, signature, expiry, delegated scope, and authorized client application.</li>
+                  <li>Exchange the inbound token for <code>https://api.powerplatform.com/.default</code> using OBO.</li>
+                  <li>Generate the `/3p` URL from immutable server settings and retain the existing exact host/path guard.</li>
+                  <li>Set <code>DTE_RAW_CAPTURE=0</code>; never log prompts, responses, bearer tokens, or CRM record data.</li>
+                  <li>Use a distributed conversation/session store or enforce single-instance affinity for the pilot. Add per-user rate limits and bounded payload sizes.</li>
+                </ol>
+                <div class="deliverable"><strong>Exit evidence:</strong> negative tests for wrong audience, tenant, client, Agent path, expired token, and conversation owner.</div>
+              </div>
+            </article>
+
+            <article class="step-card">
+              <input class="step-check" type="checkbox" id="step6" />
+              <div>
+                <h3><label for="step6">6. Deploy the widget and relay</label></h3>
+                <ol>
+                  <li>Deploy to Azure App Service with HTTPS-only, a custom domain if required, health check, Application Insights, and deployment slots.</li>
+                  <li>Return a CSP that allows framing only by the exact Dynamics organization origin using <code>frame-ancestors</code>.</li>
+                  <li>Do not emit <code>X-Frame-Options: DENY</code> or <code>SAMEORIGIN</code> for the pane route.</li>
+                  <li>Use same-origin relative API calls from the widget so no broad CORS policy is required.</li>
+                  <li>Verify streaming through every proxy: disable response buffering and confirm chunks arrive before the final activity.</li>
+                </ol>
+                <div class="deliverable"><strong>Exit evidence:</strong> production-like HTTPS URL, healthy slot, constrained CSP, and a timestamped progressive-stream trace.</div>
+              </div>
+            </article>
+
+            <article class="step-card">
+              <input class="step-check" type="checkbox" id="step7" />
+              <div>
+                <h3><label for="step7">7. Create Dynamics solution assets</label></h3>
+                <ol>
+                  <li>Create an unmanaged solution with your publisher prefix.</li>
+                  <li>Add <code>{prefix}_/agent/openPane.js</code>, <code>{prefix}_/agent/launcher.html</code>, and a small pane icon web resource.</li>
+                  <li>Set the launcher to embed only the trusted widget URL and pass only table name, record ID, app ID, and organization URL.</li>
+                  <li>Use exact-origin <code>postMessage</code> checks if the widget and launcher exchange record context after load.</li>
+                </ol>
+                <div class="deliverable"><strong>Exit evidence:</strong> three solution-aware web resources with no token, secret, tenant-wide URL selector, or Agent identifier exposed as editable input.</div>
+              </div>
+            </article>
+
+            <article class="step-card">
+              <input class="step-check" type="checkbox" id="step8" />
+              <div>
+                <h3><label for="step8">8. Add the command and publish</label></h3>
+                <ol>
+                  <li>Open the model-driven app's modern command designer for the main form command bar.</li>
+                  <li>Add an “AI assistant” command that runs <code>openPane.js</code> and passes <code>PrimaryControl</code>.</li>
+                  <li>Limit visibility to the intended app, tables, security roles, and pilot environment.</li>
+                  <li>Save and publish the solution and app; test with a non-admin pilot user.</li>
+                </ol>
+                <div class="deliverable"><strong>Exit evidence:</strong> command opens one reusable pane and reflects the current record without duplicating tabs.</div>
+              </div>
+            </article>
+
+            <article class="step-card">
+              <input class="step-check" type="checkbox" id="step9" />
+              <div>
+                <h3><label for="step9">9. Validate, observe, and release gradually</label></h3>
+                <ol>
+                  <li>Run the functional, security, responsive, accessibility, failure, and streaming checks below.</li>
+                  <li>Correlate client request ID, relay trace ID, D2E conversation ID, and App Insights operation ID without recording conversation content.</li>
+                  <li>Start with a security group, monitor 401/403/429/5xx and time-to-first-chunk, then expand access deliberately.</li>
+                  <li>Document rollback: hide the command, disable the relay feature flag, and direct users to the supported channel.</li>
+                </ol>
+                <div class="deliverable"><strong>Exit evidence:</strong> signed validation matrix, operational dashboard, support owner, and tested rollback.</div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section" id="pane-code">
+          <p class="section-kicker">Solution web resource</p>
+          <h2>Command-bar pane controller</h2>
+          <p class="section-lead">
+            Add this as <code>{prefix}_/agent/openPane.js</code>. It reuses one pane, passes only non-secret
+            record context, and uses the documented <code>Xrm.App.sidePanes</code> API. Configure the modern
+            command to pass <code>PrimaryControl</code> into <code>AgentPane.open</code>.
+          </p>
+          <div class="code-block">
+            <div class="code-head"><span>openPane.js</span><button class="copy-button" type="button" data-copy="paneSnippet">Copy</button></div>
+            <pre id="paneSnippet"><code>var AgentPane = (function () {
+  "use strict";
+
+  var paneId = "contoso_streamed_agent";
+  var webResourceName = "contoso_/agent/launcher.html";
+
+  function cleanGuid(value) {
+    return (value || "").replace(/[{}]/g, "");
+  }
+
+  async function open(primaryControl) {
+    var formContext = primaryControl;
+    var entity = formContext &amp;&amp; formContext.data &amp;&amp; formContext.data.entity;
+    var globalContext = Xrm.Utility.getGlobalContext();
+    var context = {
+      entityName: entity ? entity.getEntityName() : "",
+      recordId: entity ? cleanGuid(entity.getId()) : "",
+      appId: globalContext.getCurrentAppProperties
+        ? (await globalContext.getCurrentAppProperties()).appId
+        : "",
+      organizationUrl: globalContext.getClientUrl()
+    };
+
+    var pane = Xrm.App.sidePanes.getPane(paneId);
+    if (!pane) {
+      pane = await Xrm.App.sidePanes.createPane({
+        title: "AI assistant",
+        paneId: paneId,
+        canClose: true,
+        width: 420,
+        alwaysRender: true
+      });
+    }
+
+    await pane.navigate({
+      pageType: "webresource",
+      webresourceName: webResourceName,
+      data: encodeURIComponent(JSON.stringify(context))
+    });
+    pane.select();
+  }
+
+  return { open: open };
+})();</code></pre>
+          </div>
+          <div class="callout">
+            <strong>Record changes</strong>
+            <p>
+              Re-run the same command when a user wants the new record applied. If you later add automatic
+              record synchronization, use a documented form event and exact-origin <code>postMessage</code>;
+              don't reach into the external frame's DOM.
+            </p>
+          </div>
+        </section>
+
+        <section class="section" id="launcher-code">
+          <p class="section-kicker">Solution web resource</p>
+          <h2>Minimal iframe launcher</h2>
+          <p class="section-lead">
+            Add this as <code>{prefix}_/agent/launcher.html</code>. Replace the widget origin with the deployed
+            HTTPS origin. The embedded route must be publicly loadable as a shell; authentication happens
+            through the widget's user-initiated MSAL popup and protected API calls.
+          </p>
+          <div class="code-block">
+            <div class="code-head"><span>launcher.html</span><button class="copy-button" type="button" data-copy="launcherSnippet">Copy</button></div>
+            <pre id="launcherSnippet"><code>&lt;!doctype html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="utf-8" /&gt;
+  &lt;meta name="viewport" content="width=device-width,initial-scale=1" /&gt;
+  &lt;title&gt;AI assistant&lt;/title&gt;
+  &lt;style&gt;
+    html, body, iframe { width: 100%; height: 100%; margin: 0; border: 0; }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;iframe id="agentFrame" title="AI assistant"&gt;&lt;/iframe&gt;
+  &lt;script&gt;
+    (function () {
+      var trustedWidgetOrigin = "https://agent-widget.contoso.com";
+      var params = new URLSearchParams(window.location.search);
+      var raw = params.get("data") || "";
+      var context = {};
+
+      try {
+        context = JSON.parse(decodeURIComponent(raw));
+      } catch (error) {
+        console.error("Invalid pane context", error);
+      }
+
+      var widgetUrl = new URL("/crm-pane", trustedWidgetOrigin);
+      ["entityName", "recordId", "appId", "organizationUrl"].forEach(function (key) {
+        if (context[key]) widgetUrl.searchParams.set(key, context[key]);
+      });
+
+      document.getElementById("agentFrame").src = widgetUrl.toString();
+    })();
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+          </div>
+          <div class="callout">
+            <strong>Authentication change required</strong>
+            <p>
+              This repository currently uses full-page <code>acquireTokenRedirect</code>. Replace that on the
+              pane route with <code>acquireTokenSilent</code> followed by a user-clicked
+              <code>acquireTokenPopup</code>. Entra sign-in pages cannot be rendered inside the CRM iframe.
+              Use <code>sessionStorage</code> rather than <code>localStorage</code> for the widget token cache.
+            </p>
+          </div>
+        </section>
+
+        <section class="section" id="security">
+          <p class="section-kicker">Release controls</p>
+          <h2>Security requirements</h2>
+          <div class="control-grid">
+            <article class="control">
+              <h3>Identity</h3>
+              <p>Single tenant, delegated user access, OBO at the relay, exact issuer/audience/client validation, Conditional Access, and no browser secret.</p>
+            </article>
+            <article class="control">
+              <h3>Agent authorization</h3>
+              <p>Share the Agent to a pilot security group. Keep environment/schema/path server-side and reject every other target before network I/O.</p>
+            </article>
+            <article class="control">
+              <h3>Browser boundary</h3>
+              <p>Allow only the exact CRM origin in <code>frame-ancestors</code>. Validate <code>postMessage</code> origin, source, and payload. Never use <code>*</code>.</p>
+            </article>
+            <article class="control">
+              <h3>Data handling</h3>
+              <p>Disable raw capture, redact telemetry, minimize record context, define transcript retention, and classify prompts as customer data.</p>
+            </article>
+            <article class="control">
+              <h3>Runtime</h3>
+              <p>Bound request size and duration, rate-limit by user, map conversations to owners, use distributed state for scale-out, and expire idle sessions.</p>
+            </article>
+            <article class="control">
+              <h3>Operations</h3>
+              <p>Health checks, deployment slots, App Insights without content, alerts on auth and upstream failures, feature flag, and tested fallback.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section" id="validation">
+          <p class="section-kicker">Acceptance gate</p>
+          <h2>Validation matrix</h2>
+          <p class="section-lead">Run these checks as a non-admin pilot user in a production-like environment.</p>
+          <table class="check-table">
+            <thead>
+              <tr><th>Area</th><th>Test</th><th>Pass condition</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Pane</td><td>Open from account and contact forms</td><td>One 420 px pane is reused; no duplicate tab</td></tr>
+              <tr><td>Context</td><td>Change records and reopen command</td><td>Only the current table and clean GUID reach the widget</td></tr>
+              <tr><td>Authentication</td><td>New browser session</td><td>Popup sign-in succeeds; Entra page never loads inside iframe</td></tr>
+              <tr><td>Authorization</td><td>User outside Agent pilot group</td><td><span class="pass">403/denied</span>; no conversation starts</td></tr>
+              <tr><td>Target guard</td><td>Alter schema, host, or Direct Connect URL in browser</td><td><span class="pass">Rejected</span> before an upstream request</td></tr>
+              <tr><td>Streaming</td><td>Long generative answer</td><td>At least two ordered, changing updates arrive before final</td></tr>
+              <tr><td>Lifecycle</td><td>Informative → delta/replace → final → turn.complete</td><td>One growing bubble, no duplicate final, no stale chunk</td></tr>
+              <tr><td>Scale</td><td>Two relay instances during one conversation</td><td>Conversation remains valid through distributed state or affinity</td></tr>
+              <tr><td>Failure</td><td>Upstream 401, 403, 429, 5xx, timeout</td><td>Actionable UI, bounded retry, correlation ID, no sensitive text in logs</td></tr>
+              <tr><td>Framing</td><td>Load from trusted and untrusted origins</td><td>CRM origin renders; untrusted origin is blocked by CSP</td></tr>
+              <tr><td>Responsive</td><td>300, 420, and 600 px widths</td><td>No overlap, horizontal page scroll, clipped controls, or layout shift</td></tr>
+              <tr><td>Accessibility</td><td>Keyboard and screen-reader pass</td><td>Logical focus, named controls, visible focus, announced stream status</td></tr>
+              <tr><td>Rollback</td><td>Disable feature flag and hide command</td><td>No new sessions; users receive supported-channel route</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="section" id="sources">
+          <p class="section-kicker">Authoritative references</p>
+          <h2>Microsoft documentation</h2>
+          <div class="source-grid">
+            <article class="source">
+              <a href="https://learn.microsoft.com/power-apps/developer/model-driven-apps/clientapi/create-app-side-panes" target="_blank" rel="noopener">Create app side panes</a>
+              <p>Pane lifecycle, 300 px minimum, browser-only support, and web-resource examples.</p>
+            </article>
+            <article class="source">
+              <a href="https://learn.microsoft.com/power-apps/developer/model-driven-apps/clientapi/reference/xrm-app/xrm-app-sidepanes/createpane" target="_blank" rel="noopener">createPane reference</a>
+              <p>Supported title, pane ID, close, width, selection, header, and rendering properties.</p>
+            </article>
+            <article class="source">
+              <a href="https://learn.microsoft.com/power-apps/developer/model-driven-apps/use-iframe-and-web-resource-controls-on-a-form#communicate-with-a-cross-origin-iframe" target="_blank" rel="noopener">Cross-origin iframe guidance</a>
+              <p><code>postMessage</code>, exact-origin validation, CSP <code>frame-ancestors</code>, and X-Frame-Options.</p>
+            </article>
+            <article class="source">
+              <a href="https://learn.microsoft.com/power-apps/maker/model-driven-apps/use-command-designer#use-javascript-for-actions" target="_blank" rel="noopener">Command designer JavaScript</a>
+              <p>Add the command, JavaScript library, and form context to the model-driven app.</p>
+            </article>
+            <article class="source">
+              <a href="https://learn.microsoft.com/microsoft-365/agents-sdk/integrate-with-mcs" target="_blank" rel="noopener">Agents SDK and Copilot Studio</a>
+              <p>Current support statement: standard harness supported; GHCP harness not yet officially supported.</p>
+            </article>
+            <article class="source">
+              <a href="https://learn.microsoft.com/entra/identity-platform/v2-oauth2-on-behalf-of-flow" target="_blank" rel="noopener">Microsoft identity platform OBO flow</a>
+              <p>Exchange a middle-tier user token for a downstream API token without exposing server credentials.</p>
+            </article>
+            <article class="source">
+              <a href="https://learn.microsoft.com/azure/app-service/quickstart-nodejs" target="_blank" rel="noopener">Node.js on Azure App Service</a>
+              <p>Baseline hosting path for the combined widget and relay origin.</p>
+            </article>
+            <article class="source">
+              <a href="https://learn.microsoft.com/power-apps/developer/code-apps/how-to/embed-iframe" target="_blank" rel="noopener">Code app iframe alternative</a>
+              <p>If the frontend is later repackaged as a Power Apps Code App, use its play URL and environment CSP controls.</p>
+            </article>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    This runbook separates verified behavior in this repository from Microsoft-supported product boundaries.
+  </footer>
+
+  <script>
+    const storageKey = "dynamics-sidepane-guide-progress-v1";
+    const checks = [...document.querySelectorAll(".step-check")];
+    const progressText = document.getElementById("progressText");
+    const progressFill = document.getElementById("progressFill");
+
+    function updateProgress() {
+      const done = checks.filter((check) => check.checked).length;
+      progressText.textContent = `${done} / ${checks.length}`;
+      progressFill.style.width = `${checks.length ? (done / checks.length) * 100 : 0}%`;
+      localStorage.setItem(storageKey, JSON.stringify(checks.map((check) => check.checked)));
+    }
+
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || "[]");
+      checks.forEach((check, index) => { check.checked = Boolean(saved[index]); });
+    } catch {
+      localStorage.removeItem(storageKey);
+    }
+    checks.forEach((check) => check.addEventListener("change", updateProgress));
+    updateProgress();
+
+    document.getElementById("resetProgress").addEventListener("click", () => {
+      checks.forEach((check) => { check.checked = false; });
+      updateProgress();
+    });
+
+    document.querySelectorAll("[data-copy]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const target = document.getElementById(button.dataset.copy);
+        if (!target) return;
+        try {
+          await navigator.clipboard.writeText(target.innerText);
+          const original = button.textContent;
+          button.textContent = "Copied";
+          window.setTimeout(() => { button.textContent = original; }, 1400);
+        } catch {
+          button.textContent = "Select code";
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -47,6 +47,9 @@
         <a class="deck-link" href="/docs/streaming-tech-note.html" target="_blank" rel="noopener" title="Open the streaming tech note deck">
           <span aria-hidden="true">▤</span> Tech Note Deck
         </a>
+        <a class="deck-link guide-link" href="/docs/dynamics-sidepane-deployment.html" target="_blank" rel="noopener" title="Open the Dynamics 365 side pane deployment guide">
+          <span aria-hidden="true">▥</span> Dynamics Guide
+        </a>
         <div class="status" id="status">
           <span class="status-dot" data-state="idle"></span>
           <span class="status-label" id="statusLabel">Not connected</span>
@@ -78,6 +81,7 @@
             <option value="newAgentDL">No-auth agent · Agentic Direct Line (WebSocket diagnostic · may be final-only)</option>
             <option value="newAgentDTE">Published-bot DTE · island sidecar diagnostic (Entra · non-GHCP)</option>
             <option value="ghcp3p">GHCP harness · Agentic Runtime /3p (Entra auth · experimental)</option>
+            <option value="ghcpS2S">No-auth GHCP harness · S2S app identity /3p (private preview diagnostic)</option>
             <option value="ghcpAgentFramework">Copilot Studio GHCP harness · .NET Agent Framework /3p POC</option>
           </select>
         </label>
@@ -352,6 +356,89 @@
             is proven by Microsoft's experimental Copilot Studio plugin but is not yet an
             officially supported production integration for new-experience agents.
             Generated hosts currently support commercial <strong>Prod</strong> environments only.
+          </small>
+        </div>
+
+        <div class="field-group" id="ghcpS2SField" hidden>
+          <small class="field-note">
+            Private-preview connectivity diagnostic for a published <strong>GitHub Copilot
+            harness</strong> agent configured with <strong>No Authentication</strong>. The Node
+            server uses an Entra service principal and client-credentials flow. The secret is
+            submitted once to localhost when saved and is never returned; the Power Platform
+            bearer token remains server-side.
+          </small>
+          <label class="field">
+            <span>S2S application (client) ID</span>
+            <input
+              type="text"
+              id="ghcpS2SClientId"
+              placeholder="00000000-0000-0000-0000-000000000000"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>S2S directory (tenant) ID</span>
+            <input
+              type="text"
+              id="ghcpS2STenantId"
+              placeholder="00000000-0000-0000-0000-000000000000"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>S2S client secret</span>
+            <input
+              type="password"
+              id="ghcpS2SClientSecret"
+              placeholder="Enter a secret to save locally"
+              autocomplete="new-password"
+              spellcheck="false"
+            />
+            <small>The saved secret is never returned to the browser. Leave blank to keep it when updating other fields.</small>
+          </label>
+          <label class="field">
+            <span>Environment ID</span>
+            <input
+              type="text"
+              id="ghcpS2SEnvironmentId"
+              placeholder="Copilot Studio environment GUID"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Agent schema name</span>
+            <input
+              type="text"
+              id="ghcpS2SSchemaName"
+              placeholder="e.g. cr123_myNoAuthHarnessAgent_AbCdEf"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Generated /3p Direct Connect URL</span>
+            <input
+              type="text"
+              id="ghcpS2SUrl"
+              placeholder="Enter environment ID and schema name"
+              readonly
+              spellcheck="false"
+            />
+          </label>
+          <div class="actions s2s-save-actions">
+            <button type="button" id="ghcpS2SSaveBtn" class="primary">Save S2S settings locally</button>
+          </div>
+          <small class="field-note" id="ghcpS2SStatus">
+            Checking server-side S2S configuration…
+          </small>
+          <small class="field-note">
+            Requires application <code>CopilotStudio.Copilots.Invoke</code>, tenant admin
+            consent, agent sharing with the service principal, same-tenant access, and Microsoft
+            private-preview enablement. A successful test proves connectivity only; public GHCP
+            client-library support is not yet documented.
           </small>
         </div>
 

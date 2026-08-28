@@ -7,12 +7,14 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
+    "test": "node --test",
     "agent-framework:poc": "dotnet run --project sidecars/AgentFrameworkGhcp/AgentFrameworkGhcp.csproj --urls http://127.0.0.1:3980"
   },
   "engines": {
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "@azure/msal-node": "^5.5.0",
     "@microsoft/agents-copilotstudio-client": "^1.6.1",
     "dotenv": "^16.4.5",
     "express": "^4.19.2"

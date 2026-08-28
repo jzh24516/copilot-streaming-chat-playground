@@ -263,6 +263,23 @@
   .agent-architecture-stream { margin-top: 9px; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--cp-border); border-radius: 7px; background: var(--cp-surface-soft); padding: 7px; font: 700 10px/1.2 "Cascadia Code", Consolas, monospace; color: var(--cp-text); }
   .agent-architecture-stream span { padding: 3px 6px; border-radius: 4px; background: var(--cp-surface); }
   .agent-architecture-stream i { color: var(--cp-success); font-style: normal; }
+  .s2s-slide h2 { margin-bottom: 12px; }
+  .s2s-slide .lead { font-size: 15px; line-height: 1.38; margin-bottom: 10px !important; }
+  .s2s-slide .flow .step { padding: 11px 13px; min-width: 130px; }
+  .s2s-slide .flow .step .desc { font-size: 12px; line-height: 1.3; }
+  .s2s-slide .flow .step .mono { font-size: 10px; }
+  .s2s-slide .grid2 { gap: 14px; margin-top: 12px; }
+  .s2s-slide .card { padding: 14px 17px; }
+  .s2s-slide .card h3 { font-size: 15px; margin-bottom: 7px; }
+  .s2s-slide .card p, .s2s-slide .card li { font-size: 12.5px; line-height: 1.34; }
+  .s2s-slide .takeaway { padding: 10px 14px; font-size: 12.8px; line-height: 1.3; }
+  .s2s-claims { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+  .s2s-claim { border: 1px solid var(--cp-border); border-radius: 8px; background: var(--cp-surface-soft); padding: 10px 12px; text-align: center; }
+  .s2s-claim b { display: block; color: var(--cp-success); font-size: 15px; margin-bottom: 3px; overflow-wrap: anywhere; }
+  .s2s-claim span { color: var(--cp-text-soft); font-size: 10.5px; }
+  .s2s-gate { margin-top: 12px; border: 1px solid var(--cp-border); border-left: 5px solid var(--cp-danger); border-radius: 8px; background: var(--cp-surface-soft); padding: 12px 15px; }
+  .s2s-gate strong { display: block; color: var(--cp-danger); font-size: 13px; margin-bottom: 5px; }
+  .s2s-gate code { display: block; color: var(--cp-text); font-size: 11px; overflow-wrap: anywhere; }
 
   /* ---- Title slide ---- */
   .title-slide { justify-content: center; }
@@ -816,23 +833,116 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
     </div>
   </section>
 
-  <!-- 17. Summary -->
+  <!-- 17. App-only S2S architecture -->
+  <section class="slide s2s-slide">
+    <div class="kicker">S2S Private Preview · Integration Pattern</div>
+    <h2>App-only S2S adds a new identity branch to the guarded /3p route</h2>
+    <p class="lead">The browser configures a confidential Entra application, but the Node sidecar owns the client secret, app-token cache, `/3p` preflight, conversation session, and SSE stream.</p>
+    <div class="flow">
+      <div class="step"><span class="tag">1 · configure</span><div class="desc">Enter client ID, tenant ID, secret, environment, and schema in the S2S mode.</div><span class="mono">Save locally</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="tag">2 · acquire</span><div class="desc">MSAL Node uses client credentials to mint an app-only Power Platform token.</div><span class="mono">idtyp: app</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="tag">3 · guard</span><div class="desc">Loopback endpoints validate the exact commercial environment host and `/3p` path.</div><span class="mono">api-version=1</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="tag">4 · stream</span><div class="desc">CopilotStudioClient keeps the app-identity conversation and relays SSE as NDJSON.</div><span class="mono">authMode: s2s</span></div>
+    </div>
+    <div class="grid2">
+      <div class="card good">
+        <h3>Credential boundary</h3>
+        <p><span class="mono">config/s2s.local.json</span> is atomically written, explicitly git-ignored, and requests owner-only permissions. The secret is submitted once to localhost, cleared from the form, never returned, and never stored in browser storage.</p>
+      </div>
+      <div class="card">
+        <h3>Identity consistency</h3>
+        <p>Preflight/start/send acquire the app token server-side. Sessions are tagged <span class="mono">s2s</span>, so delegated and app-only identities cannot continue each other's conversations. A blank secret update preserves the saved secret.</p>
+      </div>
+    </div>
+    <div class="takeaway">PATTERN — Treat app-only S2S as a separate authentication branch. Reuse the proven `/3p` URL guard and stream adapter, but never reuse delegated conversation state.</div>
+  </section>
+
+  <!-- 18. S2S live diagnostic evidence -->
+  <section class="slide s2s-slide">
+    <div class="kicker">S2S Private Preview · Live Diagnostic</div>
+    <h2>Authentication passed; the platform feature gate stopped the call</h2>
+    <p class="lead">Live-probed August 13, 2026 against the published no-auth agent <span class="mono">mjsrc_mjnewagent4customer_Kvhq-e</span>. A fresh client-credentials token reached the Agentic Runtime gateway.</p>
+    <div class="s2s-claims">
+      <div class="s2s-claim"><b>api.powerplatform.com</b><span>token audience</span></div>
+      <div class="s2s-claim"><b>idtyp: app</b><span>application context</span></div>
+      <div class="s2s-claim"><b>CopilotStudio.Copilots.Invoke</b><span>application role present</span></div>
+    </div>
+    <div class="flow" style="margin-top:12px;">
+      <div class="step"><span class="tag">passed</span><div class="desc">Client ID + secret authenticated in the same tenant.</div><span class="mono">MSAL client credentials</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="tag">passed</span><div class="desc">Power Platform application permission was present in the JWT roles claim.</div><span class="mono">no delegated scp</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="tag">reached</span><div class="desc">Gateway routed the request to ThirdPartyAuthenticatedPublishedBotController.</div><span class="mono">/agenticruntime/3p</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="tag">blocked</span><div class="desc">Controller refused the request before agent ACL evaluation.</div><span class="mono">HTTP 405</span></div>
+    </div>
+    <div class="s2s-gate">
+      <strong>Decisive service response</strong>
+      <code>Feature ThirdPartyAuthenticatedPublishedBotController.EnableS2SAuthFeature (Feature) not enabled.</code>
+    </div>
+    <div class="grid2">
+      <div class="card"><h3>What this rules out</h3><p>Not a bad secret, wrong audience, wrong tenant, missing application role, malformed environment host, or missing `/3p` controller route.</p></div>
+      <div class="card bad"><h3>What remains blocked</h3><p>Microsoft must enable S2S D2E for the tenant/environment and confirm that the feature applies to GHCP harness `/3p`, not only standard/classic agents.</p></div>
+    </div>
+    <div class="takeaway">FINDING — A correctly formed app-only token is necessary but not sufficient. The server-side feature flag is evaluated before the agent-share ACL.</div>
+  </section>
+
+  <!-- 19. S2S sharing and support mismatch -->
+  <section class="slide s2s-slide">
+    <div class="kicker">S2S Private Preview · Sharing Boundary</div>
+    <h2>Why a no-auth GHCP agent may have no usable Share button</h2>
+    <p class="lead">The public GHCP sharing experience and the private-preview S2S ACL describe different identity models. Their prerequisites currently conflict in the new agent experience.</p>
+    <div class="grid2">
+      <div class="card">
+        <h3>Public GHCP sharing</h3>
+        <ul style="gap:7px;">
+          <li><span class="ic">•</span><span>Requires <b>Authenticate with Microsoft</b>.</span></li>
+          <li><span class="ic">•</span><span>Shares with users, security groups, or the organization.</span></li>
+          <li><span class="ic">•</span><span>No documented application-identity picker for a no-auth GHCP agent.</span></li>
+          <li><span class="ic">•</span><span>Public channel matrix still marks Native app / Direct Line unavailable.</span></li>
+        </ul>
+      </div>
+      <div class="card bad">
+        <h3>Private-preview S2S ACL</h3>
+        <ul style="gap:7px;">
+          <li><span class="ic">•</span><span>True app-only S2S requires <b>No Authentication</b>.</span></li>
+          <li><span class="ic">•</span><span>Generic guide says share the agent with the app identity as Viewer.</span></li>
+          <li><span class="ic">•</span><span>The guide does not document GHCP/new-experience `/3p` coverage.</span></li>
+          <li><span class="ic">•</span><span>No client-side workaround exists for feature-gate or app-share ACL rejection.</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="flow" style="margin-top:12px;">
+      <div class="step"><span class="tag">now</span><div class="desc">Request Microsoft enablement for the environment.</div><span class="mono">EnableS2SAuthFeature</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="tag">then</span><div class="desc">Retest and inspect the next authorization response.</div><span class="mono">D2EAccessDenied?</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="tag">if denied</span><div class="desc">Ask Microsoft for the GHCP app-identity Share API or ACL provisioning path.</div><span class="mono">viewer app identity</span></div>
+    </div>
+    <div class="takeaway">SUPPORT BOUNDARY — Do not switch the agent to Microsoft authentication just to reveal Share; that invalidates true app-only S2S. Enablement and app ACL must come from the preview service.</div>
+  </section>
+
+  <!-- 20. Summary -->
   <section class="slide title-slide">
     <span class="badge">TAKEAWAYS</span>
-    <h2 style="font-size:34px;">If you remember four things</h2>
-    <ul style="gap:16px; margin-top:6px;">
-      <li><span class="pill">1</span><span style="font-size:18px;">Both <b>Direct Line</b> and <b>Direct-to-Engine</b> stream — DtE is native; DL needs <span class="mono">deliveryMode:"stream"</span>.</span></li>
-      <li><span class="pill">2</span><span style="font-size:18px;">Web Chat groups bubbles by activity <b>id</b>; force <span class="mono">id = streamId</span> for one growing bubble.</span></li>
-      <li><span class="pill">3</span><span style="font-size:18px;">Do all reconciliation in a <b>normalization tap</b> — single subscription, no library forks.</span></li>
-      <li><span class="pill">4</span><span style="font-size:18px;">Integrated GHCP (experimental): test with authenticated /3p DTE; avoid legacy DTE and Direct Line.</span></li>
+    <h2 style="font-size:34px;">If you remember five things</h2>
+    <ul style="gap:12px; margin-top:4px;">
+      <li><span class="pill">1</span><span style="font-size:17px;">Both <b>Direct Line</b> and <b>Direct-to-Engine</b> stream — DtE is native; DL needs <span class="mono">deliveryMode:"stream"</span>.</span></li>
+      <li><span class="pill">2</span><span style="font-size:17px;">Web Chat groups bubbles by activity <b>id</b>; force <span class="mono">id = streamId</span> for one growing bubble.</span></li>
+      <li><span class="pill">3</span><span style="font-size:17px;">Do all reconciliation in a <b>normalization tap</b> — single subscription, no library forks.</span></li>
+      <li><span class="pill">4</span><span style="font-size:17px;">Integrated GHCP (experimental): test with authenticated /3p DTE; avoid legacy DTE and Direct Line.</span></li>
+      <li><span class="pill">5</span><span style="font-size:17px;">App-only S2S is private preview: correct tokens still require <span class="mono">EnableS2SAuthFeature</span> and an app-identity ACL.</span></li>
     </ul>
-    <div class="meta" style="margin-top:36px;">
+    <div class="meta" style="margin-top:24px;">
       <div><b>Repo</b>github.com/jzh24516/copilot-streaming-chat-playground</div>
       <div><b>Questions?</b>Reach out — happy to walk through the inspector live.</div>
     </div>
   </section>
 
-  <!-- 18. Community sharing -->
+  <!-- 21. Community sharing -->
   <section class="slide">
     <div class="kicker" data-i18nTextSource="Community Share">Community Share</div>
     <h2 data-i18nTextSource="Discover more and test with your own agent">Discover more and test with your own agent</h2>
@@ -864,7 +974,7 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
 
 <div class="chrome">
   <button class="nav-btn" id="prev" aria-label="Previous slide">‹</button>
-  <span class="count" id="count">1 / 18</span>
+  <span class="count" id="count">1 / 21</span>
   <button class="nav-btn" id="next" aria-label="Next slide">›</button>
   <label class="deck-language" aria-label="Language">
     <span>Language</span>
@@ -996,7 +1106,7 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
     s.addText("2026 \u00B7 Internal \u2014 Streaming Chat Playground", { x: 0.6, y: 7.05, w: 8, h: 0.34, color: SOFT, fontSize: 10 });
     s.addText([
       { text: "Copilot Studio Streaming", options: { color: ACCENT, bold: true } },
-      { text: "    " + n + " / 18", options: { color: SOFT } }
+      { text: "    " + n + " / 21", options: { color: SOFT } }
     ], { x: 7.7, y: 7.05, w: 5.03, h: 0.34, fontSize: 10, align: "right" });
   }
 
@@ -1011,7 +1121,7 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
       { text: "both", options: { color: MUTED, bold: true } },
       { text: " Direct Line and the Direct-to-Engine SDK.", options: { color: MUTED } }
     ], { x: 0.6, y: 2.95, w: 10.8, h: 1, fontSize: 18 });
-    pills(s, 0.6, 4.05, ["Copilot Studio", "Web Chat", "Direct Line", "Direct-to-Engine SDK", "MSAL"]);
+    pills(s, 0.6, 4.05, ["Copilot Studio", "Web Chat", "Direct Line", "Direct-to-Engine SDK", "MSAL", "S2S Private Preview"]);
     s.addText([
       { text: "Surface", options: { bold: true, color: INK } }, { text: ":  ", options: { color: MUTED } }, { text: "Copilot Studio agent + Bot Framework Web Chat", options: { color: MUTED, breakLine: true } },
       { text: "Transports", options: { bold: true, color: INK } }, { text: ":  ", options: { color: MUTED } }, { text: "Direct Line (WebSocket) · Direct-to-Engine SDK", options: { color: MUTED, breakLine: true } },
@@ -1527,21 +1637,159 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
     s.addText("browser adapter updates  →  streamId merge  →  one Web Chat activity", { x: zoomX + 0.18, y: 6.16, w: zoomW - 0.36, h: 0.5, color: GREEN, bold: true, fontFace: "Consolas", fontSize: 10.5, align: "center", valign: "middle", margin: 0 });
     footer(s, 16);
 
-    // 17 — Takeaways
+    // 17 — App-only S2S architecture
     s = pptx.addSlide();
-    header(s, "16 \u00B7 TAKEAWAYS", "If you remember four things");
+    header(s, "16 · S2S ARCHITECTURE", "App-only S2S adds a new identity branch to the guarded /3p route");
+    s.addText("The browser configures a confidential Entra application, but the Node sidecar owns the client secret, app-token cache, /3p preflight, conversation session, and SSE stream.", { x: 0.6, y: 1.55, w: 12.13, h: 0.48, color: MUTED, fontSize: 12.8, margin: 0 });
+    const s2sSteps = [
+      { tag: "1 · configure", desc: "Client ID, tenant, secret, environment, and schema.", mono: "Save locally" },
+      { tag: "2 · acquire", desc: "MSAL Node mints an app-only Power Platform token.", mono: "idtyp: app" },
+      { tag: "3 · guard", desc: "Loopback validates the commercial host and exact /3p path.", mono: "api-version=1" },
+      { tag: "4 · stream", desc: "The sidecar owns the conversation and relays SSE as NDJSON.", mono: "authMode: s2s" }
+    ];
+    s2sSteps.forEach((stp, i) => {
+      const x = 0.6 + i * 3.06;
+      s.addShape(ST.roundRect, { x, y: 2.22, w: 2.86, h: 1.32, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.08 });
+      s.addText([
+        { text: stp.tag, options: { bold: true, color: ACCENT, fontSize: 10.5, breakLine: true } },
+        { text: stp.desc, options: { color: MUTED, fontSize: 9.7, breakLine: true } },
+        { text: stp.mono, options: { color: SOFT, fontSize: 8.8, fontFace: "Consolas" } }
+      ], { x: x + 0.15, y: 2.32, w: 2.56, h: 1.08, valign: "top", margin: 0 });
+      if (i < 3) s.addText("→", { x: x + 2.86, y: 2.22, w: 0.2, h: 1.32, color: SOFT, fontSize: 18, bold: true, align: "center", valign: "middle" });
+    });
+    const s2sArchitectureCards = [
+      {
+        x: 0.6,
+        color: GREEN,
+        title: "Credential boundary",
+        body: "config/s2s.local.json is atomically written, explicitly git-ignored, and requests owner-only permissions. The secret is submitted once to localhost, cleared from the form, never returned, and never stored in browser storage."
+      },
+      {
+        x: 6.78,
+        color: ACCENT2,
+        title: "Identity consistency",
+        body: "Preflight/start/send acquire the app token server-side. Sessions are tagged s2s, so delegated and app-only identities cannot continue each other's conversations. Blank-secret updates preserve the saved secret."
+      }
+    ];
+    s2sArchitectureCards.forEach((card) => {
+      s.addShape(ST.roundRect, { x: card.x, y: 3.86, w: 5.95, h: 2.08, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.08 });
+      s.addShape(ST.rect, { x: card.x, y: 3.86, w: 0.09, h: 2.08, fill: { color: card.color }, line: { type: "none" } });
+      s.addText(card.title, { x: card.x + 0.27, y: 4.06, w: 5.48, h: 0.3, color: INK, bold: true, fontSize: 14, margin: 0 });
+      s.addText(card.body, { x: card.x + 0.27, y: 4.48, w: 5.42, h: 1.18, color: MUTED, fontSize: 11.2, breakLine: false, valign: "top", margin: 0 });
+    });
+    takeaway(s, "PATTERN — Treat app-only S2S as a separate authentication branch. Reuse the proven /3p URL guard and stream adapter, but never reuse delegated conversation state.");
+    footer(s, 17);
+
+    // 18 — S2S live diagnostic evidence
+    s = pptx.addSlide();
+    header(s, "17 · S2S LIVE DIAGNOSTIC", "Authentication passed; the platform feature gate stopped the call");
+    s.addText("Live-probed August 13, 2026 against the published no-auth agent mjsrc_mjnewagent4customer_Kvhq-e. A fresh client-credentials token reached the Agentic Runtime gateway.", { x: 0.6, y: 1.55, w: 12.13, h: 0.48, color: MUTED, fontSize: 12.5, margin: 0 });
+    const s2sClaims = [
+      { value: "api.powerplatform.com", label: "token audience" },
+      { value: "idtyp: app", label: "application context" },
+      { value: "CopilotStudio.Copilots.Invoke", label: "application role present" }
+    ];
+    s2sClaims.forEach((claim, i) => {
+      const x = 0.6 + i * 4.12;
+      s.addShape(ST.roundRect, { x, y: 2.18, w: 3.88, h: 0.78, fill: { color: "EAF7EE" }, line: { color: "B7DFC3", width: 1 }, rectRadius: 0.06 });
+      s.addText(claim.value, { x: x + 0.12, y: 2.3, w: 3.64, h: 0.24, color: GREEN, bold: true, fontSize: i === 2 ? 11 : 13, align: "center", margin: 0 });
+      s.addText(claim.label, { x: x + 0.12, y: 2.59, w: 3.64, h: 0.18, color: MUTED, fontSize: 9.5, align: "center", margin: 0 });
+    });
+    const s2sDiagnosticSteps = [
+      { tag: "passed", desc: "App credentials authenticated in the same tenant.", mono: "client credentials", color: GREEN },
+      { tag: "passed", desc: "JWT roles contains the required application permission.", mono: "no delegated scp", color: GREEN },
+      { tag: "reached", desc: "Gateway selected the third-party /3p controller.", mono: "agenticruntime/3p", color: ACCENT2 },
+      { tag: "blocked", desc: "Feature gate stopped the call before agent ACL evaluation.", mono: "HTTP 405", color: RED }
+    ];
+    s2sDiagnosticSteps.forEach((stp, i) => {
+      const x = 0.6 + i * 3.06;
+      s.addShape(ST.roundRect, { x, y: 3.2, w: 2.86, h: 1.06, fill: { color: PANEL }, line: { color: stp.color, width: 1.2 }, rectRadius: 0.07 });
+      s.addText([
+        { text: stp.tag, options: { bold: true, color: stp.color, fontSize: 10.3, breakLine: true } },
+        { text: stp.desc, options: { color: MUTED, fontSize: 9.5, breakLine: true } },
+        { text: stp.mono, options: { color: SOFT, fontSize: 8.5, fontFace: "Consolas" } }
+      ], { x: x + 0.14, y: 3.29, w: 2.58, h: 0.86, margin: 0, valign: "top" });
+      if (i < 3) s.addText("→", { x: x + 2.86, y: 3.2, w: 0.2, h: 1.06, color: SOFT, fontSize: 17, bold: true, align: "center", valign: "middle" });
+    });
+    s.addShape(ST.roundRect, { x: 0.6, y: 4.54, w: 12.13, h: 0.86, fill: { color: "FDECEC" }, line: { color: "F5C2C2", width: 1.2 }, rectRadius: 0.06 });
+    s.addShape(ST.rect, { x: 0.6, y: 4.54, w: 0.09, h: 0.86, fill: { color: RED }, line: { type: "none" } });
+    s.addText("Decisive service response", { x: 0.86, y: 4.66, w: 2.35, h: 0.2, color: RED, bold: true, fontSize: 11.5, margin: 0 });
+    s.addText("Feature ThirdPartyAuthenticatedPublishedBotController.EnableS2SAuthFeature (Feature) not enabled.", { x: 3.18, y: 4.63, w: 9.25, h: 0.38, color: INK, fontFace: "Consolas", fontSize: 10.2, margin: 0 });
+    const s2sEvidenceCards = [
+      { x: 0.6, color: GREEN, title: "What this rules out", body: "Secret, audience, tenant, app role, host shape, and /3p routing are all valid." },
+      { x: 6.78, color: RED, title: "What remains blocked", body: "Microsoft must enable S2S D2E and confirm GHCP /3p coverage." }
+    ];
+    s2sEvidenceCards.forEach((card) => {
+      s.addShape(ST.roundRect, { x: card.x, y: 5.56, w: 5.95, h: 0.62, fill: { color: PANEL }, line: { color: card.color, width: 1 }, rectRadius: 0.05 });
+      s.addText([{ text: card.title + ": ", options: { bold: true, color: card.color } }, { text: card.body, options: { color: INK } }], { x: card.x + 0.16, y: 5.56, w: 5.63, h: 0.62, fontSize: 9.8, margin: 0, valign: "middle" });
+    });
+    takeaway(s, "FINDING — A correctly formed app-only token is necessary but not sufficient. The server-side feature flag is evaluated before the agent-share ACL.");
+    footer(s, 18);
+
+    // 19 — S2S sharing and support mismatch
+    s = pptx.addSlide();
+    header(s, "18 · S2S SHARING BOUNDARY", "Why a no-auth GHCP agent may have no usable Share button");
+    s.addText("The public GHCP sharing experience and the private-preview S2S ACL describe different identity models. Their prerequisites currently conflict in the new agent experience.", { x: 0.6, y: 1.55, w: 12.13, h: 0.48, color: MUTED, fontSize: 12.5, margin: 0 });
+    const s2sShareCards = [
+      {
+        x: 0.6,
+        color: ACCENT2,
+        title: "Public GHCP sharing",
+        items: [
+          "Microsoft authentication is required.",
+          "Targets users, security groups, or everyone.",
+          "No app-identity picker is documented for no-auth GHCP.",
+          "Native app / Direct Line remain unavailable."
+        ]
+      },
+      {
+        x: 6.78,
+        color: RED,
+        title: "Private-preview S2S ACL",
+        items: [
+          "No Authentication is required.",
+          "Generic S2S guide expects app-identity Viewer access.",
+          "GHCP /3p support is not documented.",
+          "Feature and ACL failures cannot be bypassed by the client."
+        ]
+      }
+    ];
+    s2sShareCards.forEach((card) => {
+      s.addShape(ST.roundRect, { x: card.x, y: 2.2, w: 5.95, h: 2.85, fill: { color: PANEL }, line: { color: card.color, width: 1.3 }, rectRadius: 0.08 });
+      s.addShape(ST.rect, { x: card.x, y: 2.2, w: 0.09, h: 2.85, fill: { color: card.color }, line: { type: "none" } });
+      s.addText(card.title, { x: card.x + 0.28, y: 2.42, w: 5.42, h: 0.3, color: INK, bold: true, fontSize: 14, margin: 0 });
+      s.addText(bullets(card.items), { x: card.x + 0.27, y: 2.88, w: 5.38, h: 1.95, valign: "top", breakLine: false, margin: 0, fontSize: 14.5 });
+    });
+    const s2sDecisionSteps = [
+      { tag: "now", desc: "Request environment enablement.", mono: "EnableS2SAuthFeature" },
+      { tag: "then", desc: "Retest the next authorization stage.", mono: "D2EAccessDenied?" },
+      { tag: "if denied", desc: "Request the app-share API or ACL path.", mono: "viewer app identity" }
+    ];
+    s2sDecisionSteps.forEach((stp, i) => {
+      const x = 0.6 + i * 4.12;
+      s.addShape(ST.roundRect, { x, y: 5.26, w: 3.88, h: 0.82, fill: { color: "FFFFFF" }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.05 });
+      s.addText([{ text: stp.tag + " · ", options: { bold: true, color: ACCENT } }, { text: stp.desc, options: { color: INK, breakLine: true } }, { text: stp.mono, options: { color: SOFT, fontFace: "Consolas" } }], { x: x + 0.14, y: 5.35, w: 3.6, h: 0.62, fontSize: 10, margin: 0, valign: "top" });
+      if (i < 2) s.addText("→", { x: x + 3.88, y: 5.26, w: 0.24, h: 0.82, color: SOFT, fontSize: 17, bold: true, align: "center", valign: "middle" });
+    });
+    takeaway(s, "SUPPORT BOUNDARY — Do not switch to Microsoft authentication just to expose Share; it breaks true app-only S2S. Preview enablement and the app ACL must be provisioned server-side.");
+    footer(s, 19);
+
+    // 20 — Takeaways
+    s = pptx.addSlide();
+    header(s, "19 \u00B7 TAKEAWAYS", "If you remember five things");
     const tk = [
       [{ text: "Both " }, { text: "Direct Line", bold: true }, { text: " and " }, { text: "Direct-to-Engine", bold: true }, { text: " stream \u2014 DtE is native; DL needs " }, { text: "deliveryMode:\"stream\"", mono: true }, { text: "." }],
       [{ text: "Web Chat groups bubbles by activity " }, { text: "id", bold: true }, { text: "; force " }, { text: "id = streamId", mono: true }, { text: " for one growing bubble." }],
       [{ text: "Do all reconciliation in a " }, { text: "normalization tap", bold: true }, { text: " \u2014 single subscription, no library forks." }],
-      [{ text: "Integrated GHCP (experimental): test with authenticated " }, { text: "/3p", mono: true }, { text: " DTE; avoid legacy DTE and Direct Line." }]
+      [{ text: "Integrated GHCP (experimental): test with authenticated " }, { text: "/3p", mono: true }, { text: " DTE; avoid legacy DTE and Direct Line." }],
+      [{ text: "App-only S2S is private preview: correct tokens still require " }, { text: "EnableS2SAuthFeature", mono: true }, { text: " and an app-identity ACL." }]
     ];
     tk.forEach((runs, i) => {
-      const y = 1.75 + i * 1.08;
-      s.addShape(ST.roundRect, { x: 0.6, y, w: 12.13, h: 0.9, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.06 });
-      s.addShape(ST.roundRect, { x: 0.8, y: y + 0.15, w: 0.58, h: 0.58, fill: { color: ACCENT }, line: { type: "none" }, rectRadius: 0.29 });
-      s.addText(String(i + 1), { x: 0.8, y: y + 0.13, w: 0.58, h: 0.58, color: "FFFFFF", bold: true, fontSize: 20, align: "center", valign: "middle" });
-      s.addText(runs.map((r) => ({ text: r.text, options: { color: INK, fontSize: 14.5, ...(r.mono ? { fontFace: "Consolas" } : {}), ...(r.bold ? { bold: true } : {}) } })), { x: 1.65, y, w: 10.75, h: 0.9, valign: "middle" });
+      const y = 1.56 + i * 0.88;
+      s.addShape(ST.roundRect, { x: 0.6, y, w: 12.13, h: 0.72, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.06 });
+      s.addShape(ST.roundRect, { x: 0.8, y: y + 0.1, w: 0.5, h: 0.5, fill: { color: ACCENT }, line: { type: "none" }, rectRadius: 0.25 });
+      s.addText(String(i + 1), { x: 0.8, y: y + 0.08, w: 0.5, h: 0.5, color: "FFFFFF", bold: true, fontSize: 17, align: "center", valign: "middle" });
+      s.addText(runs.map((r) => ({ text: r.text, options: { color: INK, fontSize: 13.2, ...(r.mono ? { fontFace: "Consolas" } : {}), ...(r.bold ? { bold: true } : {}) } })), { x: 1.55, y, w: 10.85, h: 0.72, valign: "middle" });
     });
     s.addText([
       { text: "Repo", options: { bold: true, color: INK } },
@@ -1551,11 +1799,11 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
       { text: "Questions?", options: { bold: true, color: INK } },
       { text: " Reach out \u2014 happy to walk through the inspector live.", options: { color: SOFT } }
     ], { x: 0.6, y: 6.22, w: 12, h: 0.3, fontSize: 13, margin: 0 });
-    footer(s, 17);
+    footer(s, 20);
 
-    // 18 — Community share
+    // 21 — Community share
     s = pptx.addSlide();
-    header(s, "17 \u00B7 COMMUNITY SHARE", "Discover more and test with your own agent");
+    header(s, "20 \u00B7 COMMUNITY SHARE", "Discover more and test with your own agent");
     s.addText("We shared this streaming reference publicly so teams can reproduce progressive-response UX, then validate the actual wire behavior with the same inspector patterns.", { x: 0.6, y: 1.8, w: 12.13, h: 0.9, color: MUTED, fontSize: 14 });
     s.addShape(ST.roundRect, { x: 0.6, y: 2.7, w: 7.2, h: 3.2, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.08 });
     s.addText("Repository snapshot", { x: 0.85, y: 2.9, w: 6.7, h: 0.4, color: INK, bold: true, fontSize: 15 });
@@ -1578,7 +1826,7 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
     });
     s.addText(shareText, { x: 8.23, y: 2.92, w: 4.28, h: 2.5, valign: "top" });
     takeaway(s, "Start from the repo, run locally, and use this deck + inspector to shorten streaming rollout time for your own Copilot Studio projects.");
-    footer(s, 18);
+    footer(s, 21);
   }
 
   const exportBtn = document.getElementById("exportPptx");
