@@ -92,6 +92,7 @@ The UI includes dedicated modes for the supported transports and runtime experim
 | **GHCP harness · Agentic Runtime /3p** *(experimental)* | Direct-to-Engine (SSE) | Test a published Dracarys/GitHub Copilot harness agent with delegated Entra authentication | No secret; signed-in user's delegated token is relayed through the local sidecar |
 | **No-auth GHCP harness · S2S app identity /3p** *(private preview diagnostic)* | Direct-to-Engine (SSE) | Test whether an app-only identity can reach a published no-auth GHCP harness through `/3p` | Client secret and app token stay on the Node server |
 | **Copilot Studio GHCP harness · .NET Agent Framework /3p POC** | Agent Framework over Copilot Studio SSE | Compare the same `/3p` agent through `CopilotStudioAgent.RunStreamingAsync` | No secret; browser sends the delegated token to loopback, which forwards it only to the allowlisted Power Platform `/3p` host |
+| **GHCP harness · latest .NET Agent Framework** *(experimental)* | Latest Agent Framework over guarded Copilot Studio `/3p` SSE | Compatibility-test a Microsoft-authenticated GHCP agent against the latest validated provider without replacing the proven POC | No secret; delegated user token is sent only to the loopback sidecar and allowlisted Power Platform host |
 
 ### GHCP harness · Agentic Runtime /3p
 
@@ -269,6 +270,35 @@ undocumented Copilot Studio `/3p` route into a production-supported contract.
 That provider currently restores `Microsoft.Agents.CopilotStudio.Client`
 `1.3.171-beta`; the POC's outbound request guard pins every request back to the
 validated host/path and `api-version=1` before the delegated bearer is attached.
+
+#### Latest Agent Framework compatibility mode
+
+The separate **GHCP harness · latest .NET Agent Framework** mode uses
+`Microsoft.Agents.AI.CopilotStudio` `1.19.0-preview.260822.1` on port `3981`.
+It links the same guarded implementation and guard tests as the port-3980 POC,
+so package behavior can be compared without changing the known-working project.
+Start it beside the playground:
+
+```powershell
+npm start
+npm run agent-framework:latest
+```
+
+Use the same SPA client ID, tenant ID, environment ID, and case-sensitive agent
+schema name as the working delegated `/3p` mode. The agent must be published,
+configured with **Authenticate with Microsoft**, and shared with the signed-in
+user. **Test connection** reports the resolved Agent Framework and Copilot
+Studio provider assembly versions before **Connect** starts the streamed turn.
+
+The browser now derives the Power Platform scope through the documented
+`ScopeHelper.getScopeFromSettings` API, with a compatibility fallback for older
+bundles. As of August 30, 2026, the latest top-level provider still resolves
+`Microsoft.Agents.CopilotStudio.Client` `1.3.171-beta`. Microsoft also still
+states that the Copilot Studio client library officially supports only the
+standard harness. This mode therefore measures compatibility; it does not make
+the authenticated GHCP `/3p` route a supported production contract. See the
+[Microsoft 365 Agents SDK quickstart](https://learn.microsoft.com/microsoft-365/agents-sdk/quickstart)
+and [Copilot Studio integration support note](https://learn.microsoft.com/microsoft-365/agents-sdk/integrate-with-mcs).
 
 ### Copilot Studio SDK · Direct-to-Engine
 

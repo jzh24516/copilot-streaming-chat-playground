@@ -83,6 +83,7 @@
             <option value="ghcp3p">GHCP harness · Agentic Runtime /3p (Entra auth · experimental)</option>
             <option value="ghcpS2S">No-auth GHCP harness · S2S app identity /3p (private preview diagnostic)</option>
             <option value="ghcpAgentFramework">Copilot Studio GHCP harness · .NET Agent Framework /3p POC</option>
+            <option value="ghcpAgentFrameworkLatest">GHCP harness · latest .NET Agent Framework (Microsoft auth · experimental)</option>
           </select>
         </label>
 
@@ -516,6 +517,84 @@
             exposes its real <code>RunStreamingAsync</code> updates. This remains an
             experimental <code>/3p</code> integration; Agent Framework does not change that
             support boundary.
+          </small>
+        </div>
+
+        <div class="field-group" id="ghcpAgentFrameworkLatestField" hidden>
+          <small class="field-note">
+            Isolated compatibility mode for a published <strong>Copilot Studio
+            GHCP-harness agent</strong> configured with <strong>Authenticate with
+            Microsoft</strong>. It uses the latest validated
+            <code>Microsoft.Agents.AI.CopilotStudio</code> preview package while retaining
+            the allowlisted authenticated <code>/3p</code> route. Microsoft still documents
+            official client-library support for standard-harness agents only.
+          </small>
+          <label class="field">
+            <span>Entra application (client) ID</span>
+            <input
+              type="text"
+              id="latestAfGhcpClientId"
+              placeholder="00000000-0000-0000-0000-000000000000"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <small>SPA registration with the delegated <code>CopilotStudio.Copilots.Invoke</code> permission.</small>
+          </label>
+          <label class="field">
+            <span>Directory (tenant) ID</span>
+            <input
+              type="text"
+              id="latestAfGhcpTenantId"
+              placeholder="00000000-0000-0000-0000-000000000000"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Environment ID</span>
+            <input
+              type="text"
+              id="latestAfGhcpEnvironmentId"
+              placeholder="Copilot Studio environment GUID"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Agent schema name</span>
+            <input
+              type="text"
+              id="latestAfGhcpSchemaName"
+              placeholder="e.g. cr123_myAgent_AbCdEf"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Generated authenticated /3p Direct Connect URL</span>
+            <input
+              type="text"
+              id="latestAfGhcpUrl"
+              placeholder="Enter environment ID and schema name"
+              readonly
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>Latest .NET Agent Framework sidecar URL</span>
+            <input
+              type="url"
+              id="latestAfGhcpSidecarUrl"
+              value="http://127.0.0.1:3981"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <small class="field-note">
+            Start this isolated host with <code>npm run agent-framework:latest</code>.
+            Version and active-session details are available from its
+            <code>/healthz</code> endpoint. This mode does not alter the proven port-3980
+            POC or make the GHCP <code>/3p</code> support contract official.
           </small>
         </div>
 

@@ -5,7 +5,7 @@ using Xunit;
 public sealed class Ghcp3pRequestGuardHandlerTests
 {
     private const string BaseUrl =
-        "https://d37505ad37dfeccfb17239255da7a5.12.environment.api.powerplatform.com/" +
+        "https://111111112222333344445555555555.55.environment.api.powerplatform.com/" +
         "copilotstudio/agenticruntime/3p/dataverse-backed/authenticated/bots/test?api-version=1";
 
     [Fact]

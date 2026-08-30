@@ -8,13 +8,15 @@
 import {
   CopilotStudioClient,
   CopilotStudioWebChat,
-  ConnectionSettings
+  ConnectionSettings,
+  ScopeHelper
 } from '@microsoft/agents-copilotstudio-client';
 
 window.CopilotStudioSDK = {
   CopilotStudioClient,
   CopilotStudioWebChat,
   ConnectionSettings,
+  ScopeHelper,
   ready: true
 };
 

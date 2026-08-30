@@ -9,7 +9,11 @@ using Microsoft.Agents.CopilotStudio.Client.Discovery;
 using Microsoft.Agents.Core.Models;
 using Microsoft.Extensions.AI;
 
+#if LATEST_COPILOTSTUDIO
+const string ProviderName = "Microsoft Agent Framework · Copilot Studio GHCP /3p latest SDK";
+#else
 const string ProviderName = "Microsoft Agent Framework · Copilot Studio GHCP /3p POC";
+#endif
 const string HttpClientName = "AgentFrameworkGhcp";
 const int SessionLimit = 100;
 var sessionTtl = TimeSpan.FromMinutes(30);
@@ -63,6 +67,9 @@ app.MapPost("/api/agent-framework/preflight", async (
         {
             ok = true,
             provider = ProviderName,
+            frameworkVersion = typeof(AIAgent).Assembly.GetName().Version?.ToString(),
+            copilotStudioProviderVersion = typeof(CopilotStudioAgent).Assembly.GetName().Version?.ToString(),
+            copilotStudioClientVersion = typeof(CopilotClient).Assembly.GetName().Version?.ToString(),
             conversationId = remoteConversationId,
             endpoint = request.Settings.DirectConnectUrl
         });

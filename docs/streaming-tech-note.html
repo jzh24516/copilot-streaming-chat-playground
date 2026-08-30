@@ -244,6 +244,22 @@
   .agent-framework-slide .proof-stat b { display: block; color: var(--cp-accent); font-size: 18px; }
   .agent-framework-slide pre { margin-top: 10px !important; padding: 10px 12px; font-size: 10.5px !important; line-height: 1.28 !important; }
   .agent-framework-slide .takeaway { padding: 9px 13px; font-size: 12.8px; line-height: 1.3; }
+  .latest-sdk-slide h2 { margin-bottom: 10px; }
+  .latest-sdk-slide .lead { font-size: 14px; line-height: 1.36; margin-bottom: 9px; }
+  .latest-sdk-slide .version-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .latest-sdk-slide .version-card { border: 1px solid var(--cp-border); border-radius: 8px; background: var(--cp-bg-elevated); padding: 10px 12px; }
+  .latest-sdk-slide .version-card span { display: block; color: var(--cp-text-soft); font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+  .latest-sdk-slide .version-card b { display: block; margin-top: 4px; color: var(--cp-text); font-size: 13px; overflow-wrap: anywhere; }
+  .latest-sdk-slide .version-card.good b { color: var(--cp-success); }
+  .latest-sdk-slide .flow { margin-top: 10px; }
+  .latest-sdk-slide .flow .step { min-width: 120px; padding: 9px 11px; }
+  .latest-sdk-slide .flow .step .desc { font-size: 11.5px; line-height: 1.28; }
+  .latest-sdk-slide .flow .step .mono { margin-top: 5px; font-size: 9.5px; }
+  .latest-sdk-slide .doc-links { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; margin-top: 10px; }
+  .latest-sdk-slide .doc-link { display: block; border: 1px solid var(--cp-border); border-radius: 7px; background: var(--cp-surface-soft); padding: 7px 10px; color: var(--cp-link); font-size: 10.5px; font-weight: 700; line-height: 1.25; text-decoration: none; }
+  .latest-sdk-slide .doc-link:hover { border-color: var(--cp-accent); color: var(--cp-accent); }
+  .latest-sdk-slide .doc-link small { display: block; margin-top: 2px; color: var(--cp-text-soft); font-size: 9px; font-weight: 500; }
+  .latest-sdk-slide .takeaway { padding: 8px 12px; font-size: 11.8px; line-height: 1.3; }
   .agent-architecture-slide h2 { margin-bottom: 6px; }
   .agent-architecture-slide .lead { font-size: 14px; line-height: 1.32; margin-bottom: 7px !important; }
   .agent-architecture-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; min-height: 0; flex: 1; }
@@ -392,6 +408,30 @@
   }
   .hint { position: fixed; bottom: 22px; right: 24px; font-size: 12px; color: var(--cp-text-soft); z-index: 20; }
 
+  @media (max-width: 700px) {
+    body { align-items: flex-start; padding: 8px 0 100px; }
+    .deck { width: calc(100vw - 16px); height: calc(100vh - 108px); }
+    .slide { padding: 28px 22px; border-radius: 10px; }
+    .chrome {
+      bottom: 6px;
+      width: calc(100vw - 12px);
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 6px;
+      border-radius: 10px;
+    }
+    .chrome .count { min-width: 50px; }
+    .deck-language { gap: 0; }
+    .deck-language > span, .hint { display: none; }
+    .deck-language select, .theme-toggle { padding: 6px 9px; }
+    .nav-export-btn { padding: 0 9px; }
+    .chrome-status:not(:empty) { flex: 0 0 100%; max-width: 100%; text-align: center; }
+    .latest-sdk-slide .version-grid, .latest-sdk-slide .doc-links { grid-template-columns: 1fr; }
+    .latest-sdk-slide .flow { display: grid; grid-template-columns: 1fr; gap: 5px; }
+    .latest-sdk-slide .flow .arrow { justify-content: center; height: 16px; padding: 0; transform: rotate(90deg); }
+  }
+
   .export-btn {
     align-self: flex-start;
     display: inline-flex;
@@ -427,7 +467,7 @@
     <div class="meta">
       <div><b>Surface</b>Copilot Studio agent + Bot Framework Web Chat</div>
       <div><b>Transports</b>Direct Line (WebSocket) · Direct-to-Engine SDK</div>
-      <div><b>Date</b>Updated August 2026</div>
+      <div><b>Date</b>Updated August 30, 2026</div>
     </div>
     <div style="display: flex; align-items: center; gap: 16px; margin-top: auto; padding-top: 20px; border-top: 1px solid var(--cp-border);">
       <img src="maker-avatar.jpg" alt="Michael Jiang" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover; flex-shrink: 0;" />
@@ -810,7 +850,35 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
     <div class="takeaway">RESULT: Agent Framework provides a structured .NET host around the same experimental Copilot Studio /3p route. The progressive Web Chat bubble is adapter reconstruction over preview updates, not a new support contract.</div>
   </section>
 
-  <!-- 16. Agent Framework provider architecture -->
+  <!-- 16. Latest Agent Framework API compatibility -->
+  <section class="slide latest-sdk-slide">
+    <div class="kicker">Latest API · Compatibility Mode</div>
+    <h2>Latest provider, isolated path, same authenticated GHCP boundary</h2>
+    <p class="lead">Added August 30, 2026 as a separate port-3981 mode. It validates the newest available Agent Framework Copilot Studio provider against the proven guarded <span class="mono">/3p</span> route without replacing the port-3980 baseline.</p>
+    <div class="version-grid">
+      <div class="version-card good"><span>Top-level provider</span><b>1.19.0-preview.260822.1</b></div>
+      <div class="version-card"><span>Transitive client</span><b>1.3.171-beta · unchanged</b></div>
+      <div class="version-card good"><span>Released scope API</span><b>ScopeHelper.getScopeFromSettings</b></div>
+    </div>
+    <div class="flow">
+      <div class="step"><span class="tag">1 · identity</span><div class="desc">MSAL gets the signed-in user's delegated Power Platform token.</div><span class="mono">Microsoft auth</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="tag">2 · guard</span><div class="desc">The sidecar pins host, authenticated bot path, default port, and API version.</div><span class="mono">no redirects · no cookies</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="tag">3 · prove</span><div class="desc">Health and preflight report actual provider versions and remote conversation.</div><span class="mono">:3981/healthz</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><span class="tag">4 · stream</span><div class="desc">RunStreamingAsync remains isolated and flows through the existing Web Chat adapter.</div><span class="mono">NDJSON → streamId</span></div>
+    </div>
+    <div class="doc-links" aria-label="Microsoft Learn references">
+      <a class="doc-link" href="https://learn.microsoft.com/microsoft-365/agents-sdk/quickstart" target="_blank" rel="noreferrer">Microsoft 365 Agents SDK quickstart<small>Creates a custom engine agent at /api/messages; a different inbound hosting role.</small></a>
+      <a class="doc-link" href="https://learn.microsoft.com/microsoft-365/agents-sdk/integrate-with-mcs" target="_blank" rel="noreferrer">Integrate Agents SDK with Copilot Studio<small>Current support note: the client library officially supports standard harness only.</small></a>
+      <a class="doc-link" href="https://learn.microsoft.com/agent-framework/agents/providers/copilot-studio" target="_blank" rel="noreferrer">Agent Framework Copilot Studio provider<small>Remote agent invocation, sessions, streaming, and portal-owned tools.</small></a>
+      <a class="doc-link" href="https://learn.microsoft.com/javascript/api/@microsoft/agents-copilotstudio-client/connectionsettings" target="_blank" rel="noreferrer">ConnectionSettings API reference<small>Documents directConnectUrl and direct engine connection settings.</small></a>
+    </div>
+    <div class="takeaway">VERDICT — This mode proves package compatibility and preserves delegated Microsoft identity. It does not prove a new GHCP transport or change Microsoft's current “not yet officially supported” client-library boundary.</div>
+  </section>
+
+  <!-- 17. Agent Framework provider architecture -->
   <section class="slide agent-architecture-slide">
     <div class="kicker">Agent Framework · Provider Architecture</div>
     <h2>Agent Framework provider map — reuse the published GHCP agent</h2>
@@ -833,7 +901,7 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
     </div>
   </section>
 
-  <!-- 17. App-only S2S architecture -->
+  <!-- 18. App-only S2S architecture -->
   <section class="slide s2s-slide">
     <div class="kicker">S2S Private Preview · Integration Pattern</div>
     <h2>App-only S2S adds a new identity branch to the guarded /3p route</h2>
@@ -860,7 +928,7 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
     <div class="takeaway">PATTERN — Treat app-only S2S as a separate authentication branch. Reuse the proven `/3p` URL guard and stream adapter, but never reuse delegated conversation state.</div>
   </section>
 
-  <!-- 18. S2S live diagnostic evidence -->
+  <!-- 19. S2S live diagnostic evidence -->
   <section class="slide s2s-slide">
     <div class="kicker">S2S Private Preview · Live Diagnostic</div>
     <h2>Authentication passed; the platform feature gate stopped the call</h2>
@@ -890,7 +958,7 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
     <div class="takeaway">FINDING — A correctly formed app-only token is necessary but not sufficient. The server-side feature flag is evaluated before the agent-share ACL.</div>
   </section>
 
-  <!-- 19. S2S sharing and support mismatch -->
+  <!-- 20. S2S sharing and support mismatch -->
   <section class="slide s2s-slide">
     <div class="kicker">S2S Private Preview · Sharing Boundary</div>
     <h2>Why a no-auth GHCP agent may have no usable Share button</h2>
@@ -925,7 +993,7 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
     <div class="takeaway">SUPPORT BOUNDARY — Do not switch the agent to Microsoft authentication just to reveal Share; that invalidates true app-only S2S. Enablement and app ACL must come from the preview service.</div>
   </section>
 
-  <!-- 20. Summary -->
+  <!-- 21. Summary -->
   <section class="slide title-slide">
     <span class="badge">TAKEAWAYS</span>
     <h2 style="font-size:34px;">If you remember five things</h2>
@@ -942,7 +1010,7 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
     </div>
   </section>
 
-  <!-- 21. Community sharing -->
+  <!-- 22. Community sharing -->
   <section class="slide">
     <div class="kicker" data-i18nTextSource="Community Share">Community Share</div>
     <h2 data-i18nTextSource="Discover more and test with your own agent">Discover more and test with your own agent</h2>
@@ -974,7 +1042,7 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
 
 <div class="chrome">
   <button class="nav-btn" id="prev" aria-label="Previous slide">‹</button>
-  <span class="count" id="count">1 / 21</span>
+  <span class="count" id="count">1 / 22</span>
   <button class="nav-btn" id="next" aria-label="Next slide">›</button>
   <label class="deck-language" aria-label="Language">
     <span>Language</span>
@@ -1604,9 +1672,58 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
     ], { x: 0.85, y: 6.08, w: 11.62, h: 0.62, fontSize: 11.8, valign: "middle", margin: 0 });
     footer(s, 15);
 
-    // 16 — Agent Framework provider architecture
+    // 16 — Latest Agent Framework API compatibility
     s = pptx.addSlide();
-    header(s, "15 \u00B7 PROVIDER ARCHITECTURE", "Agent Framework provider map — reuse the published GHCP agent");
+    header(s, "15 · LATEST API COMPATIBILITY", "Latest provider, isolated path, same authenticated GHCP boundary");
+    s.addText("Added August 30, 2026 as a separate port-3981 mode. It validates the newest available Agent Framework Copilot Studio provider against the guarded /3p route without replacing the port-3980 baseline.", { x: 0.6, y: 1.52, w: 12.13, h: 0.48, color: MUTED, fontSize: 12.2, margin: 0 });
+    const latestVersionCards = [
+      { label: "Top-level provider", value: "1.19.0-preview.260822.1", color: GREEN },
+      { label: "Transitive client", value: "1.3.171-beta · unchanged", color: ACCENT2 },
+      { label: "Released scope API", value: "ScopeHelper.getScopeFromSettings", color: GREEN }
+    ];
+    latestVersionCards.forEach((card, i) => {
+      const x = 0.6 + i * 4.12;
+      s.addShape(ST.roundRect, { x, y: 2.16, w: 3.88, h: 0.78, fill: { color: PANEL }, line: { color: card.color, width: 1.2 }, rectRadius: 0.06 });
+      s.addText(card.label.toUpperCase(), { x: x + 0.16, y: 2.27, w: 3.56, h: 0.17, color: SOFT, bold: true, fontSize: 8.8, margin: 0 });
+      s.addText(card.value, { x: x + 0.16, y: 2.51, w: 3.56, h: 0.26, color: card.color, bold: true, fontFace: "Consolas", fontSize: i === 2 ? 10.3 : 11.2, margin: 0 });
+    });
+    const latestSteps = [
+      { tag: "1 · identity", desc: "Delegated Power Platform token", mono: "Microsoft auth" },
+      { tag: "2 · guard", desc: "Exact host, path, port, API", mono: "no redirect · no cookies" },
+      { tag: "3 · prove", desc: "Health + preflight versions", mono: ":3981/healthz" },
+      { tag: "4 · stream", desc: "RunStreamingAsync updates", mono: "NDJSON → streamId" }
+    ];
+    latestSteps.forEach((stp, i) => {
+      const x = 0.6 + i * 3.06;
+      s.addShape(ST.roundRect, { x, y: 3.18, w: 2.86, h: 0.94, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.06 });
+      s.addText([
+        { text: stp.tag, options: { bold: true, color: ACCENT, fontSize: 9.8, breakLine: true } },
+        { text: stp.desc, options: { color: INK, fontSize: 9.7, breakLine: true } },
+        { text: stp.mono, options: { color: SOFT, fontFace: "Consolas", fontSize: 8.5 } }
+      ], { x: x + 0.14, y: 3.27, w: 2.58, h: 0.74, margin: 0, valign: "top" });
+      if (i < 3) s.addText("→", { x: x + 2.86, y: 3.18, w: 0.2, h: 0.94, color: SOFT, fontSize: 17, bold: true, align: "center", valign: "middle", margin: 0 });
+    });
+    const latestDocs = [
+      ["Agents SDK quickstart", "learn.microsoft.com/microsoft-365/agents-sdk/quickstart"],
+      ["Copilot Studio support note", "learn.microsoft.com/microsoft-365/agents-sdk/integrate-with-mcs"],
+      ["Agent Framework provider", "learn.microsoft.com/agent-framework/agents/providers/copilot-studio"],
+      ["ConnectionSettings API", "learn.microsoft.com/javascript/api/@microsoft/agents-copilotstudio-client/connectionsettings"]
+    ];
+    latestDocs.forEach(([label, url], i) => {
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      const x = 0.6 + col * 6.18;
+      const y = 4.4 + row * 0.67;
+      s.addShape(ST.roundRect, { x, y, w: 5.95, h: 0.52, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.04 });
+      s.addText(label, { x: x + 0.15, y: y + 0.08, w: 2.22, h: 0.18, color: INK, bold: true, fontSize: 9.5, margin: 0 });
+      s.addText(url, { x: x + 2.36, y: y + 0.08, w: 3.42, h: 0.3, color: ACCENT2, fontFace: "Consolas", fontSize: 7.7, margin: 0, hyperlink: { url: `https://${url}` } });
+    });
+    takeaway(s, "VERDICT — Package compatibility and delegated Microsoft identity are proven. A new GHCP transport or official client-library support is not.");
+    footer(s, 16);
+
+    // 17 — Agent Framework provider architecture
+    s = pptx.addSlide();
+    header(s, "16 \u00B7 PROVIDER ARCHITECTURE", "Agent Framework provider map — reuse the published GHCP agent");
     s.addText("Copilot Studio provider → authenticated /3p → existing published GHCP agent.", { x: 0.6, y: 1.5, w: 12.13, h: 0.3, color: "4B5563", fontSize: 13.2, margin: 0 });
     s.addShape(ST.roundRect, { x: 0.6, y: 1.86, w: 5.75, h: 4.88, fill: { color: "FFFFFF" }, line: { color: "D8CBB5", width: 1.2 }, rectRadius: 0.06 });
     s.addImage({ data: AGENT_FRAMEWORK_ARCHITECTURE_CROPPED_DATA, x: 1.045, y: 1.98, w: 4.86, h: 4.32 });
@@ -1635,11 +1752,11 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
     s.addText("REUSE BOUNDARY", { x: zoomX + 0.2, y: 4.79, w: 1.5, h: 0.24, color: "FFFFFF", bold: true, fontSize: 8.5, align: "center", valign: "middle", margin: 0 });
     s.addShape(ST.roundRect, { x: zoomX, y: 6.16, w: zoomW, h: 0.5, fill: { color: PANEL }, line: { color: "D8CBB5", width: 1 }, rectRadius: 0.05 });
     s.addText("browser adapter updates  →  streamId merge  →  one Web Chat activity", { x: zoomX + 0.18, y: 6.16, w: zoomW - 0.36, h: 0.5, color: GREEN, bold: true, fontFace: "Consolas", fontSize: 10.5, align: "center", valign: "middle", margin: 0 });
-    footer(s, 16);
+    footer(s, 17);
 
-    // 17 — App-only S2S architecture
+    // 18 — App-only S2S architecture
     s = pptx.addSlide();
-    header(s, "16 · S2S ARCHITECTURE", "App-only S2S adds a new identity branch to the guarded /3p route");
+    header(s, "17 · S2S ARCHITECTURE", "App-only S2S adds a new identity branch to the guarded /3p route");
     s.addText("The browser configures a confidential Entra application, but the Node sidecar owns the client secret, app-token cache, /3p preflight, conversation session, and SSE stream.", { x: 0.6, y: 1.55, w: 12.13, h: 0.48, color: MUTED, fontSize: 12.8, margin: 0 });
     const s2sSteps = [
       { tag: "1 · configure", desc: "Client ID, tenant, secret, environment, and schema.", mono: "Save locally" },
@@ -1678,11 +1795,11 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
       s.addText(card.body, { x: card.x + 0.27, y: 4.48, w: 5.42, h: 1.18, color: MUTED, fontSize: 11.2, breakLine: false, valign: "top", margin: 0 });
     });
     takeaway(s, "PATTERN — Treat app-only S2S as a separate authentication branch. Reuse the proven /3p URL guard and stream adapter, but never reuse delegated conversation state.");
-    footer(s, 17);
+    footer(s, 18);
 
-    // 18 — S2S live diagnostic evidence
+    // 19 — S2S live diagnostic evidence
     s = pptx.addSlide();
-    header(s, "17 · S2S LIVE DIAGNOSTIC", "Authentication passed; the platform feature gate stopped the call");
+    header(s, "18 · S2S LIVE DIAGNOSTIC", "Authentication passed; the platform feature gate stopped the call");
     s.addText("Live-probed August 13, 2026 against the published no-auth agent mjsrc_mjnewagent4customer_Kvhq-e. A fresh client-credentials token reached the Agentic Runtime gateway.", { x: 0.6, y: 1.55, w: 12.13, h: 0.48, color: MUTED, fontSize: 12.5, margin: 0 });
     const s2sClaims = [
       { value: "api.powerplatform.com", label: "token audience" },
@@ -1724,11 +1841,11 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
       s.addText([{ text: card.title + ": ", options: { bold: true, color: card.color } }, { text: card.body, options: { color: INK } }], { x: card.x + 0.16, y: 5.56, w: 5.63, h: 0.62, fontSize: 9.8, margin: 0, valign: "middle" });
     });
     takeaway(s, "FINDING — A correctly formed app-only token is necessary but not sufficient. The server-side feature flag is evaluated before the agent-share ACL.");
-    footer(s, 18);
+    footer(s, 19);
 
-    // 19 — S2S sharing and support mismatch
+    // 20 — S2S sharing and support mismatch
     s = pptx.addSlide();
-    header(s, "18 · S2S SHARING BOUNDARY", "Why a no-auth GHCP agent may have no usable Share button");
+    header(s, "19 · S2S SHARING BOUNDARY", "Why a no-auth GHCP agent may have no usable Share button");
     s.addText("The public GHCP sharing experience and the private-preview S2S ACL describe different identity models. Their prerequisites currently conflict in the new agent experience.", { x: 0.6, y: 1.55, w: 12.13, h: 0.48, color: MUTED, fontSize: 12.5, margin: 0 });
     const s2sShareCards = [
       {
@@ -1772,11 +1889,11 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
       if (i < 2) s.addText("→", { x: x + 3.88, y: 5.26, w: 0.24, h: 0.82, color: SOFT, fontSize: 17, bold: true, align: "center", valign: "middle" });
     });
     takeaway(s, "SUPPORT BOUNDARY — Do not switch to Microsoft authentication just to expose Share; it breaks true app-only S2S. Preview enablement and the app ACL must be provisioned server-side.");
-    footer(s, 19);
+    footer(s, 20);
 
-    // 20 — Takeaways
+    // 21 — Takeaways
     s = pptx.addSlide();
-    header(s, "19 \u00B7 TAKEAWAYS", "If you remember five things");
+    header(s, "20 \u00B7 TAKEAWAYS", "If you remember five things");
     const tk = [
       [{ text: "Both " }, { text: "Direct Line", bold: true }, { text: " and " }, { text: "Direct-to-Engine", bold: true }, { text: " stream \u2014 DtE is native; DL needs " }, { text: "deliveryMode:\"stream\"", mono: true }, { text: "." }],
       [{ text: "Web Chat groups bubbles by activity " }, { text: "id", bold: true }, { text: "; force " }, { text: "id = streamId", mono: true }, { text: " for one growing bubble." }],
@@ -1799,11 +1916,11 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
       { text: "Questions?", options: { bold: true, color: INK } },
       { text: " Reach out \u2014 happy to walk through the inspector live.", options: { color: SOFT } }
     ], { x: 0.6, y: 6.22, w: 12, h: 0.3, fontSize: 13, margin: 0 });
-    footer(s, 20);
+    footer(s, 21);
 
-    // 21 — Community share
+    // 22 — Community share
     s = pptx.addSlide();
-    header(s, "20 \u00B7 COMMUNITY SHARE", "Discover more and test with your own agent");
+    header(s, "21 \u00B7 COMMUNITY SHARE", "Discover more and test with your own agent");
     s.addText("We shared this streaming reference publicly so teams can reproduce progressive-response UX, then validate the actual wire behavior with the same inspector patterns.", { x: 0.6, y: 1.8, w: 12.13, h: 0.9, color: MUTED, fontSize: 14 });
     s.addShape(ST.roundRect, { x: 0.6, y: 2.7, w: 7.2, h: 3.2, fill: { color: PANEL }, line: { color: PANEL_BD, width: 1 }, rectRadius: 0.08 });
     s.addText("Repository snapshot", { x: 0.85, y: 2.9, w: 6.7, h: 0.4, color: INK, bold: true, fontSize: 15 });
@@ -1826,7 +1943,7 @@ turn:  client.sendActivityStreaming(activity, conversationId)</pre>
     });
     s.addText(shareText, { x: 8.23, y: 2.92, w: 4.28, h: 2.5, valign: "top" });
     takeaway(s, "Start from the repo, run locally, and use this deck + inspector to shorten streaming rollout time for your own Copilot Studio projects.");
-    footer(s, 21);
+    footer(s, 22);
   }
 
   const exportBtn = document.getElementById("exportPptx");

@@ -59,6 +59,13 @@ const afGhcpEnvironmentId = el('afGhcpEnvironmentId');
 const afGhcpSchemaName = el('afGhcpSchemaName');
 const afGhcpUrl = el('afGhcpUrl');
 const afGhcpSidecarUrl = el('afGhcpSidecarUrl');
+const ghcpAgentFrameworkLatestField = el('ghcpAgentFrameworkLatestField');
+const latestAfGhcpClientId = el('latestAfGhcpClientId');
+const latestAfGhcpTenantId = el('latestAfGhcpTenantId');
+const latestAfGhcpEnvironmentId = el('latestAfGhcpEnvironmentId');
+const latestAfGhcpSchemaName = el('latestAfGhcpSchemaName');
+const latestAfGhcpUrl = el('latestAfGhcpUrl');
+const latestAfGhcpSidecarUrl = el('latestAfGhcpSidecarUrl');
 const forceWebSocket = el('forceWebSocket');
 const autoInspect = el('autoInspect');
 const typewriterToggle = el('typewriter');
@@ -311,6 +318,10 @@ function setHint(message, kind = '', vars = null) {
 // ---------------------------------------------------------------------------
 // Mode UI
 // ---------------------------------------------------------------------------
+function isAgentFrameworkMode(mode) {
+  return mode === 'ghcpAgentFramework' || mode === 'ghcpAgentFrameworkLatest';
+}
+
 function refreshModeUI() {
   const mode = modeSel.value;
   tokenEndpointField.hidden = mode !== 'tokenEndpoint';
@@ -323,16 +334,21 @@ function refreshModeUI() {
   if (ghcp3pField) ghcp3pField.hidden = mode !== 'ghcp3p';
   if (ghcpS2SField) ghcpS2SField.hidden = mode !== 'ghcpS2S';
   if (ghcpAgentFrameworkField) ghcpAgentFrameworkField.hidden = mode !== 'ghcpAgentFramework';
+  if (ghcpAgentFrameworkLatestField) {
+    ghcpAgentFrameworkLatestField.hidden = mode !== 'ghcpAgentFrameworkLatest';
+  }
   // Web Socket transport only applies to Direct Line modes (and is mandatory
   // for the live-streaming adapter, so it is forced/locked there).
   forceWebSocket.disabled =
-    mode === 'sdk' || mode === 'newAgent' || mode === 'dlStream' || mode === 'newAgentDL' || mode === 'newAgentDTE' || mode === 'ghcp3p' || mode === 'ghcpS2S' || mode === 'ghcpAgentFramework';
+    mode === 'sdk' || mode === 'newAgent' || mode === 'dlStream' || mode === 'newAgentDL' || mode === 'newAgentDTE' || mode === 'ghcp3p' || mode === 'ghcpS2S' || isAgentFrameworkMode(mode);
   if (mode === 'dlStream' || mode === 'newAgentDL') forceWebSocket.checked = true;
 }
 modeSel.addEventListener('change', () => {
   refreshModeUI();
   if (modeSel.value === 'ghcpAgentFramework') {
     setHint('Start the .NET sidecar with npm run agent-framework:poc, then click Test connection or Connect.');
+  } else if (modeSel.value === 'ghcpAgentFrameworkLatest') {
+    setHint('Start the latest .NET sidecar with npm run agent-framework:latest, then click Test connection or Connect.');
   } else if (modeSel.value === 'ghcpS2S') {
     setHint(
       s2sServerConfigured
@@ -394,6 +410,15 @@ async function loadServerConfig() {
     if (sdk.tenantId && afGhcpTenantId && !afGhcpTenantId.value) afGhcpTenantId.value = sdk.tenantId;
     if (sdk.environmentId && afGhcpEnvironmentId && !afGhcpEnvironmentId.value) {
       afGhcpEnvironmentId.value = sdk.environmentId;
+    }
+    if (sdk.clientId && latestAfGhcpClientId && !latestAfGhcpClientId.value) {
+      latestAfGhcpClientId.value = sdk.clientId;
+    }
+    if (sdk.tenantId && latestAfGhcpTenantId && !latestAfGhcpTenantId.value) {
+      latestAfGhcpTenantId.value = sdk.tenantId;
+    }
+    if (sdk.environmentId && latestAfGhcpEnvironmentId && !latestAfGhcpEnvironmentId.value) {
+      latestAfGhcpEnvironmentId.value = sdk.environmentId;
     }
 
     s2sServerConfigured = Boolean(s2s.configured);
@@ -892,6 +917,123 @@ function restoreGhcpAgentFrameworkConfig() {
     input.addEventListener('input', syncGhcpAgentFrameworkUrl);
   });
 
+const GHCP_AGENT_FRAMEWORK_LATEST_FIELDS_KEY = 'ghcpAgentFrameworkLatestFields';
+
+function readGhcpAgentFrameworkLatestConfigRaw() {
+  const environmentId =
+    (latestAfGhcpEnvironmentId && latestAfGhcpEnvironmentId.value.trim()) || '';
+  const schemaName = (latestAfGhcpSchemaName && latestAfGhcpSchemaName.value.trim()) || '';
+  return {
+    clientId: (latestAfGhcpClientId && latestAfGhcpClientId.value.trim()) || '',
+    tenantId: (latestAfGhcpTenantId && latestAfGhcpTenantId.value.trim()) || '',
+    environmentId,
+    schemaName,
+    directConnectUrl: buildGhcp3pDirectConnectUrl(environmentId, schemaName),
+    sidecarUrl: (
+      (latestAfGhcpSidecarUrl && latestAfGhcpSidecarUrl.value.trim()) ||
+      'http://127.0.0.1:3981'
+    ).replace(/\/+$/, ''),
+    cloud: sdkCloud || 'Prod',
+    copilotAgentType: 'Published',
+    useExperimentalEndpoint: false,
+    runtime: 'ghcpAgentFrameworkLatest'
+  };
+}
+
+function syncGhcpAgentFrameworkLatestUrl() {
+  if (!latestAfGhcpUrl) return;
+  try {
+    latestAfGhcpUrl.value = readGhcpAgentFrameworkLatestConfigRaw().directConnectUrl;
+  } catch {
+    latestAfGhcpUrl.value = '';
+  }
+}
+
+function readGhcpAgentFrameworkLatestConfig() {
+  const cfg = readGhcpAgentFrameworkLatestConfigRaw();
+  if (!window.CopilotStudioSDK || !window.CopilotStudioSDK.ready) {
+    throw new Error('Copilot Studio SDK is still loading. Wait a moment and retry.');
+  }
+  if (!window.msal) throw new Error('MSAL did not load. Check your network/CDN access and reload.');
+  if (!cfg.clientId) throw new Error('Enter the Entra application (client) ID.');
+  if (!cfg.tenantId) throw new Error('Enter the directory (tenant) ID.');
+  if (!cfg.environmentId) throw new Error('Enter the Copilot Studio Environment ID.');
+  if (!cfg.schemaName) throw new Error('Enter the Copilot Studio GHCP agent schema name.');
+  const sidecar = new URL(cfg.sidecarUrl);
+  const loopbackHosts = new Set(['127.0.0.1', 'localhost', '[::1]']);
+  if (
+    !['http:', 'https:'].includes(sidecar.protocol) ||
+    !loopbackHosts.has(sidecar.hostname) ||
+    sidecar.username ||
+    sidecar.password ||
+    (sidecar.pathname !== '/' && sidecar.pathname !== '') ||
+    sidecar.search ||
+    sidecar.hash
+  ) {
+    throw new Error('Latest Agent Framework sidecar URL must be a loopback origin, such as http://127.0.0.1:3981.');
+  }
+  cfg.sidecarUrl = sidecar.origin;
+  return cfg;
+}
+
+function readGhcpAgentFrameworkLatestConfigSafe() {
+  if (!window.CopilotStudioSDK || !window.CopilotStudioSDK.ready || !window.msal) return null;
+  const cfg = readGhcpAgentFrameworkLatestConfigRaw();
+  if (!cfg.clientId || !cfg.tenantId || !cfg.environmentId || !cfg.schemaName) return null;
+  return cfg;
+}
+
+function saveGhcpAgentFrameworkLatestConfig() {
+  try {
+    const cfg = readGhcpAgentFrameworkLatestConfigRaw();
+    sessionStorage.setItem(GHCP_AGENT_FRAMEWORK_LATEST_FIELDS_KEY, JSON.stringify({
+      clientId: cfg.clientId,
+      tenantId: cfg.tenantId,
+      environmentId: cfg.environmentId,
+      schemaName: cfg.schemaName,
+      sidecarUrl: cfg.sidecarUrl
+    }));
+  } catch { /* storage unavailable */ }
+  syncGhcpAgentFrameworkLatestUrl();
+}
+
+function restoreGhcpAgentFrameworkLatestConfig() {
+  try {
+    const saved = JSON.parse(
+      sessionStorage.getItem(GHCP_AGENT_FRAMEWORK_LATEST_FIELDS_KEY) || '{}'
+    );
+    if (saved.clientId && latestAfGhcpClientId && !latestAfGhcpClientId.value) {
+      latestAfGhcpClientId.value = saved.clientId;
+    }
+    if (saved.tenantId && latestAfGhcpTenantId && !latestAfGhcpTenantId.value) {
+      latestAfGhcpTenantId.value = saved.tenantId;
+    }
+    if (saved.environmentId && latestAfGhcpEnvironmentId && !latestAfGhcpEnvironmentId.value) {
+      latestAfGhcpEnvironmentId.value = saved.environmentId;
+    }
+    if (saved.schemaName && latestAfGhcpSchemaName && !latestAfGhcpSchemaName.value) {
+      latestAfGhcpSchemaName.value = saved.schemaName;
+    }
+    if (saved.sidecarUrl && latestAfGhcpSidecarUrl) {
+      latestAfGhcpSidecarUrl.value = saved.sidecarUrl;
+    }
+  } catch { /* ignore */ }
+  syncGhcpAgentFrameworkLatestUrl();
+}
+
+[
+  latestAfGhcpClientId,
+  latestAfGhcpTenantId,
+  latestAfGhcpEnvironmentId,
+  latestAfGhcpSchemaName,
+  latestAfGhcpSidecarUrl
+]
+  .filter(Boolean)
+  .forEach((input) => {
+    input.addEventListener('change', saveGhcpAgentFrameworkLatestConfig);
+    input.addEventListener('input', syncGhcpAgentFrameworkLatestUrl);
+  });
+
 async function acquireNewAgentDLToken() {
   const cfg = readNewAgentDLConfigRaw();
   if (!cfg.environmentId) throw new Error('Enter the Copilot Studio Environment ID.');
@@ -1215,6 +1357,14 @@ async function getMsalInstance(cfg) {
 
 const SDK_RESUME_KEY = 'sdkAutoConnect';
 
+function getCopilotStudioScope(settings) {
+  const { ScopeHelper, CopilotStudioClient } = window.CopilotStudioSDK;
+  if (ScopeHelper && typeof ScopeHelper.getScopeFromSettings === 'function') {
+    return ScopeHelper.getScopeFromSettings(settings);
+  }
+  return CopilotStudioClient.scopeFromSettings(settings);
+}
+
 /**
  * Acquires a delegated Power Platform token.
  *
@@ -1225,9 +1375,8 @@ const SDK_RESUME_KEY = 'sdkAutoConnect';
  * processSdkRedirect() on load.
  */
 async function acquireSdkToken(cfg, mode = 'sdk') {
-  const { CopilotStudioClient } = window.CopilotStudioSDK;
   const settings = buildSdkSettings(cfg);
-  const scope = CopilotStudioClient.scopeFromSettings(settings);
+  const scope = getCopilotStudioScope(settings);
   const pca = await getMsalInstance(cfg);
   const request = { scopes: [scope], redirectUri: window.location.origin };
 
@@ -1247,6 +1396,7 @@ async function acquireSdkToken(cfg, mode = 'sdk') {
   else if (mode === 'newAgentDTE') saveNewAgentDTEConfig();
   else if (mode === 'ghcp3p') saveGhcp3pConfig();
   else if (mode === 'ghcpAgentFramework') saveGhcpAgentFrameworkConfig();
+  else if (mode === 'ghcpAgentFrameworkLatest') saveGhcpAgentFrameworkLatestConfig();
   else saveSdkConfig();
   sessionStorage.setItem(SDK_RESUME_KEY, mode);
   await pca.acquireTokenRedirect(request);
@@ -1258,9 +1408,8 @@ async function acquireSdkToken(cfg, mode = 'sdk') {
  * Silent-only token acquisition for "Test connection" — never redirects.
  */
 async function acquireSdkTokenSilent(cfg) {
-  const { CopilotStudioClient } = window.CopilotStudioSDK;
   const settings = buildSdkSettings(cfg);
-  const scope = CopilotStudioClient.scopeFromSettings(settings);
+  const scope = getCopilotStudioScope(settings);
   const pca = await getMsalInstance(cfg);
   const request = { scopes: [scope], redirectUri: window.location.origin };
   const accounts = await pca.getAllAccounts();
@@ -1285,12 +1434,15 @@ async function processSdkRedirect() {
           ? 'ghcp3p'
           : resuming === 'ghcpAgentFramework'
             ? 'ghcpAgentFramework'
+            : resuming === 'ghcpAgentFrameworkLatest'
+              ? 'ghcpAgentFrameworkLatest'
             : 'sdk';
   const cfg =
     resumeMode === 'newAgent'    ? readNewAgentConfigSafe()    :
     resumeMode === 'newAgentDTE' ? readNewAgentDTEConfigSafe() :
     resumeMode === 'ghcp3p'      ? readGhcp3pConfigSafe()      :
     resumeMode === 'ghcpAgentFramework' ? readGhcpAgentFrameworkConfigSafe() :
+    resumeMode === 'ghcpAgentFrameworkLatest' ? readGhcpAgentFrameworkLatestConfigSafe() :
                                    readSdkConfigSafe();
   if (!cfg) return;
   const pca = await getMsalInstance(cfg);
@@ -2598,17 +2750,18 @@ async function connect() {
         sendUrl: '/api/dte/s2s/send',
         serverManagedAuth: true
       });
-    } else if (mode === 'sdk' || mode === 'newAgent' || mode === 'newAgentDTE' || mode === 'ghcp3p' || mode === 'ghcpAgentFramework') {
+    } else if (mode === 'sdk' || mode === 'newAgent' || mode === 'newAgentDTE' || mode === 'ghcp3p' || isAgentFrameworkMode(mode)) {
       // Direct-to-Engine: MSAL sign-in, then a Web Chat-compatible connection.
       const cfg =
         mode === 'newAgent'    ? readNewAgentConfig()    :
         mode === 'newAgentDTE' ? readNewAgentDTEConfig() :
         mode === 'ghcp3p'      ? readGhcp3pConfig()      :
         mode === 'ghcpAgentFramework' ? readGhcpAgentFrameworkConfig() :
+        mode === 'ghcpAgentFrameworkLatest' ? readGhcpAgentFrameworkLatestConfig() :
                                  readSdkConfig();
       setHint('Signing in with Entra ID…');
       const { token, settings } = await acquireSdkToken(cfg, mode);
-      if ((mode === 'newAgentDTE' && cfg.viaSidecar) || mode === 'ghcp3p' || mode === 'ghcpAgentFramework') {
+      if ((mode === 'newAgentDTE' && cfg.viaSidecar) || mode === 'ghcp3p' || isAgentFrameworkMode(mode)) {
         // Server-sidecar Direct-to-Engine: the correct transport for an MS-auth
         // modern agent. The server runs the identical CopilotStudioClient with
         // the delegated user token and — unlike the CORS-blocked browser — can
@@ -2621,7 +2774,9 @@ async function connect() {
         // into every later turn — the first USER message already lands on the
         // island runtime.
         setHint(
-          mode === 'ghcpAgentFramework'
+          mode === 'ghcpAgentFrameworkLatest'
+            ? 'Connecting to the GHCP harness through the latest .NET Agent Framework SDK…'
+            : mode === 'ghcpAgentFramework'
             ? 'Connecting to the Copilot Studio GHCP harness through .NET Agent Framework…'
             : mode === 'ghcp3p'
               ? 'Connecting to GHCP /3p runtime via server sidecar…'
@@ -2631,7 +2786,7 @@ async function connect() {
         // A manually pasted Direct connect URL (Channels → Web/Native app →
         // "Microsoft 365 Agents SDK") always wins; otherwise leave it empty so
         // the experimental island redirect can engage on the server.
-        const directConnectUrl = mode === 'ghcp3p' || mode === 'ghcpAgentFramework'
+        const directConnectUrl = mode === 'ghcp3p' || isAgentFrameworkMode(mode)
           ? cfg.directConnectUrl
           : readNewAgentDTEConfigRaw().directConnectUrl || cfg.directConnectUrl || '';
 
@@ -2646,7 +2801,7 @@ async function connect() {
             directConnectUrl,
             runtime: cfg.runtime
           },
-          ...(mode === 'ghcpAgentFramework'
+          ...(isAgentFrameworkMode(mode)
             ? {
                 startUrl: `${cfg.sidecarUrl}/api/agent-framework/start`,
                 sendUrl: `${cfg.sidecarUrl}/api/agent-framework/send`,
@@ -2708,11 +2863,15 @@ async function connect() {
               ? 'Online · S2S app identity connected'
             : status === 2 && mode === 'ghcpAgentFramework'
               ? 'Online · .NET Agent Framework connected'
+            : status === 2 && mode === 'ghcpAgentFrameworkLatest'
+              ? 'Online · latest .NET Agent Framework connected'
               : meta.label
         );
         if (status === 2) {
           setHint(
-            mode === 'ghcpAgentFramework'
+            mode === 'ghcpAgentFrameworkLatest'
+              ? 'Connected through the latest .NET Agent Framework package. Send a prompt to compare RunStreamingAsync updates.'
+              : mode === 'ghcpAgentFramework'
               ? 'Connected through .NET Agent Framework. Send a prompt to observe real RunStreamingAsync updates.'
               : mode === 'ghcpS2S'
               ? 'Connected with a server-managed S2S app identity. Send a prompt to inspect the runtime stream.'
@@ -2964,7 +3123,7 @@ async function testConnection() {
     } catch (err) {
       setHint('✗ {message}', 'err', { message: err.message });
     }
-  } else if (modeSel.value === 'sdk' || modeSel.value === 'newAgent' || modeSel.value === 'newAgentDTE' || modeSel.value === 'ghcp3p' || modeSel.value === 'ghcpAgentFramework') {
+  } else if (modeSel.value === 'sdk' || modeSel.value === 'newAgent' || modeSel.value === 'newAgentDTE' || modeSel.value === 'ghcp3p' || isAgentFrameworkMode(modeSel.value)) {
     setHint('Checking existing Entra session…');
     try {
       const cfg =
@@ -2972,10 +3131,12 @@ async function testConnection() {
         modeSel.value === 'newAgentDTE' ? readNewAgentDTEConfig() :
         modeSel.value === 'ghcp3p'      ? readGhcp3pConfig()      :
         modeSel.value === 'ghcpAgentFramework' ? readGhcpAgentFrameworkConfig() :
+        modeSel.value === 'ghcpAgentFrameworkLatest' ? readGhcpAgentFrameworkLatestConfig() :
                                           readSdkConfig();
       const { token } = await acquireSdkTokenSilent(cfg);
-      if (modeSel.value === 'ghcp3p' || modeSel.value === 'ghcpAgentFramework') {
-        const isAgentFramework = modeSel.value === 'ghcpAgentFramework';
+      if (modeSel.value === 'ghcp3p' || isAgentFrameworkMode(modeSel.value)) {
+        const isAgentFramework = isAgentFrameworkMode(modeSel.value);
+        const isLatestAgentFramework = modeSel.value === 'ghcpAgentFrameworkLatest';
         setHint('Testing GHCP /3p runtime…');
         const response = await fetch(
           isAgentFramework ? `${cfg.sidecarUrl}/api/agent-framework/preflight` : '/api/dte/preflight',
@@ -2989,10 +3150,18 @@ async function testConnection() {
         if (!response.ok || !body.ok) throw new Error(body.error || body.detail || `HTTP ${response.status}`);
         setHint(
           isAgentFramework
-            ? '✓ .NET Agent Framework reached the Copilot Studio GHCP /3p runtime. Click Connect to compare streaming.'
+            ? isLatestAgentFramework
+              ? '✓ {provider} reached GHCP /3p · Agent Framework {frameworkVersion} · Copilot Studio provider {providerVersion}. Click Connect to compare streaming.'
+              : '✓ .NET Agent Framework reached the Copilot Studio GHCP /3p runtime. Click Connect to compare streaming.'
             : '✓ GHCP /3p runtime reached · HTTP {status} · {elapsedMs}ms. Click Connect to chat.',
           'ok',
-          { status: body.status, elapsedMs: body.elapsedMs }
+          {
+            status: body.status,
+            elapsedMs: body.elapsedMs,
+            provider: body.provider || 'Latest .NET Agent Framework',
+            frameworkVersion: body.frameworkVersion || 'unknown',
+            providerVersion: body.copilotStudioProviderVersion || 'unknown'
+          }
         );
       } else {
         setHint(
@@ -3048,6 +3217,7 @@ async function start() {
   restoreGhcp3pConfig();
   restoreGhcpS2SConfig();
   restoreGhcpAgentFrameworkConfig();
+  restoreGhcpAgentFrameworkLatestConfig();
   await whenSdkReady();
   // Complete a returning Entra redirect (if any) and auto-resume Connect.
   await processSdkRedirect();
